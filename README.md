@@ -72,16 +72,16 @@ possible later. That is why more availability data never fixed this.
 One card. A stack of blocks. Walking time in the seams. Nothing is ever empty.
 
 ```
-┌────────────────────────────────┐
-│  ✓ 09:00–10:50  Class   COMP1110 · KB      │   past, folded flat
-│      ┊ walk 5 min                          │
-│  ▎ 11:00–12:00  Study   KB 227        ●    │   now, enlarged
-│      ┊ walk 10 min                         │
-│  ┆ 12:10–12:40  Lunch   CYM G/F      ┆     │   dotted: not booked yet
-│      ┊ walk 10 min                         │
-│  ▎ 14:00–15:50  Class   CPD · LG05         │
-└────────────────────────────────┘
-     End the day      Stay a bit longer
+┌────────────────────────────────────────────┐
+│ ✓ 09:00–10:50  Class  COMP1110 · KB        │
+│     ┊ walk 5 min                           │
+│ ▎ 11:00–12:00  Study  KB 227  ●            │
+│     ┊ walk 10 min                          │
+│ ┆ 12:10–12:40  Lunch  CYM G/F  ┆           │
+│     ┊ walk 10 min                          │
+│ ▎ 14:00–15:50  Class  CPD · LG05           │
+└────────────────────────────────────────────┘
+     End the day        Stay a bit longer
 ```
 
 Block states are the whole legend: **solid** means solved, **dashed** means an external fact such

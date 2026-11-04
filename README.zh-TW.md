@@ -68,16 +68,16 @@ ROOM FINDER                     YOU
 一張卡。一疊塊。塊與塊之間只寫走路時間。**沒有空著的時間。**
 
 ```
-┌────────────────────────────────┐
-│  ✓ 09:00–10:50  Class   COMP1110 · KB      │   past, folded flat
-│      ┊ walk 5 min                          │
-│  ▎ 11:00–12:00  Study   KB 227        ●    │   now, enlarged
-│      ┊ walk 10 min                         │
-│  ┆ 12:10–12:40  Lunch   CYM G/F      ┆     │   dotted: not booked yet
-│      ┊ walk 10 min                         │
-│  ▎ 14:00–15:50  Class   CPD · LG05         │
-└────────────────────────────────┘
-     End the day      Stay a bit longer
+┌────────────────────────────────────────────┐
+│ ✓ 09:00–10:50  Class  COMP1110 · KB        │
+│     ┊ walk 5 min                           │
+│ ▎ 11:00–12:00  Study  KB 227  ●            │
+│     ┊ walk 10 min                          │
+│ ┆ 12:10–12:40  Lunch  CYM G/F  ┆           │
+│     ┊ walk 10 min                          │
+│ ▎ 14:00–15:50  Class  CPD · LG05           │
+└────────────────────────────────────────────┘
+     End the day        Stay a bit longer
 ```
 
 圖例就是全部：**實心**是已經解出來的，**虛線**是外部事實（比如已經訂到的房間），**點線**是還待訂。已經過去的塊壓成一條細線，因為它不該繼續搶注意力。
