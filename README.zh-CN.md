@@ -29,64 +29,45 @@
   <img src="product/web-day.png" width="230" alt="一张卡，一叠块">
 </p>
 
----
-
-## 周四 09:47
-
-KB 的课提前下了。下一节 11:00 在 CPD。
-
-```
-09:47  KB      you are here, holding a laptop and seventy minutes
-10:50          the next class starts, in a different building
-        ?
-```
-
-你知道学校有空房间，你知道有图书馆，你知道自己欠着一篇报告。你不知道的是 **接下来这一小时，在这栋楼还是隔壁楼，该做哪一件事**。
-
-于是你站在走廊里自己决定。一天三次到五次，每天都这样，你其实也习惯了。**而这就是没人做的那部分。**
+<p align="center"><sub>一张卡、一个时间、一个去向。剩下的一天在下面。</sub></p>
 
 ---
 
-## 查找器回答的，和你需要的
+查找器告诉你哪些房间空着，日历存着你已经决定的事。两者都不回答一个学生 09:47 站在走廊里真正的问题：**现在干什么**。
 
-```
-ROOM FINDER                     YOU
-────────────────────────────    ────────────────────────────
-"14:00 to 15:50, 12 rooms       "I have 70 minutes, my laptop
- free in this building."         is dying, and I have 2 hours
-                                 of reading to do."
-   ↑ an answer to a question       ↑ a decision about a day
-     you did not ask
-```
-
-查找器返回一个**集合**。而一天是一条**序列**，你现在做的选择会改变后面能做什么。这就是为什么再多可用性数据也修不好这件事。
+NextStop 回答这个，而且在一天动起来的时候，改得尽量少。
 
 ---
 
-## 它给的是什么
+## 这事发生在谁身上
 
-一张卡。一叠块。块与块之间只写走路时间。**没有空着的时间。**
+- **高考完的第一年**，再没人告诉你该去哪接着卷。
+- **交换生**，两节课之间两小时，找不到一个能正大光明打盹的地方。
+- **站在电梯口那位**，已经"决定"了十一分钟。
+- **下午三点四十才吃午饭那位**，因为中午那个决定太大了。
+- **五个人都说"随便"**，然后二十分钟哪也没去。
 
-```
-┌────────────────────────────────────────────┐
-│ ✓ 09:00–10:50  Class  COMP1110 · KB        │
-│     ┊ walk 5 min                           │
-│ ▎ 11:00–12:00  Study  KB 227  ●            │
-│     ┊ walk 10 min                          │
-│ ┆ 12:10–12:40  Lunch  CYM G/F  ┆           │
-│     ┊ walk 10 min                          │
-│ ▎ 14:00–15:50  Class  CPD · LG05           │
-└────────────────────────────────────────────┘
-     End the day        Stay a bit longer
-```
-
-图例就是全部：**实心**是已经解出来的，**虚线**是外部事实（比如已经订到的房间），**点线**是还待订。已经过去的块压成一条细线，因为它不该继续抢注意力。
+他们都不缺信息。都缺下一步。
 
 ---
 
-## 打乱时，它只改一块，不是五块
+## 它给什么
 
-一节课拖堂二十分钟，两种反应：
+<p align="center">
+  <img src="product/day.png" width="240" alt="一天">
+  <img src="product/repair.png" width="240" alt="拖堂 20 分钟后的修复">
+  <img src="product/plan.png" width="240" alt="规划页">
+</p>
+
+<p align="center"><sub>左：一天是一叠块。中：拖堂 20 分钟只改一块，不是五块。右：一周、一天、一句话。</sub></p>
+
+三个 tab，没有工具栏。块自己带着动作，而且没有空着的时间。
+
+---
+
+## 真正难的部分
+
+不是决定一天，是决定**打乱之后最少改多少**。
 
 ```
 RECOMPUTE EVERYTHING            REPAIR
@@ -100,22 +81,8 @@ RECOMPUTE EVERYTHING            REPAIR
 5 blocks moved                  1 block moved
 ```
 
-一个每次被打断就整体重写的计划，跟没有计划是无法区分的。所以修复问的不是"最好的一天长什么样"，而是一个更窄的问题：**哪几站真的坏了**，然后只动那几站。两个停靠点算同一站，条件还是那三条：目的、楼栋、开始时间都还对得上。容忍度是参数，不是天条。
-
-👉 判据、过程与代价顺序都在 **[algorithm.zh-CN.md](docs/algorithm.zh-CN.md)**。
-
----
-
-## 四个动作，没有工具栏
-
-| 你在哪 | 你能做什么 | 你不能做什么 |
-|---|---|---|
-| 一节课 | 不去 | 改时间、取消、重排 |
-| 一段自习 | 换一个 | 拆成两段 |
-| 吃饭 | 换一个 | 替你点单 |
-| 一个见面 | 预约、换地方 | 订一间学校不允许你订的房 |
-
-最后一行很重要。**系统不假装能分配它分配不了的房间。** 普通教室给一个可撤回的认领，真有预约流程的场地，它只说什么时候该订，然后把结果当成事实贴回计划。
+一个每次被打断就整体重写的计划，跟没有计划无法区分。两个停靠点算同一站，条件是目的、楼栋、开始时间都还对得上。
+👉 **[algorithm.zh-CN.md](docs/algorithm.zh-CN.md)**
 
 ---
 
@@ -127,14 +94,13 @@ web/            Vue 3 + Vite. One build, four containers:
      |
      |  REST + JSON
      v
-backend/        Spring Boot + PostgreSQL
-                timetable · rooms · availability · room updates · audit · accounts
+backend/        Spring Boot + PostgreSQL  (timetable, rooms, availability, audit)
      |
      v
-mock-school-api/ a simulated school feed (the real endpoint is not connected)
+mock-school-api/ a simulated school feed
 ```
 
-后端回答的是**我能去哪**。那是学生不知道的三件事之一，而且是最容易的那件。计划在客户端，所以走廊里没信号也能用，也所以换一台设备看不到你的计划。两个后果都如实写在这里。
+后端回答的是**我能去哪**，那是学生不知道的三件事之一，也是最容易的那件。计划在客户端，所以走廊里没信号也能用，也所以换一台设备看不到你的计划。两个后果都如实写在这里。
 
 ---
 
@@ -165,17 +131,7 @@ cd web && npm install && npm run dev    # http://127.0.0.1:5175
 
 `web/` 把 `/api` 代理到 8080，所以你看到的一天是用真实可用性数据拼出来的。背后的规划器仍是桩，界面不掩饰。
 
-不想构建？打开 [`product/demo/index.html`](product/demo/index.html)，单文件、不用服务、能离线，右上角切 English / 简体 / 繁體。
-
----
-
-## 它永远不会做的事
-
-1. 问一个它自己看两眼就能知道答案的问题。
-2. 给你一块空白，然后管它叫计划。
-3. 一改就改三块，还不告诉你。
-4. 假装那间房是你的。
-5. 评价你去没去上课。
+不想构建？打开 [`product/demo/index.html`](product/demo/index.html)，单文件、不用服务、能离线，右上角切三种语言。
 
 ---
 
@@ -190,22 +146,7 @@ cd web && npm install && npm run dev    # http://127.0.0.1:5175
 | 学习层 | **已设计，未实现** |
 | PWA manifest、Android 与 iOS 壳 | **已选定，未构建** |
 
-课表是样例数据。"空闲"不等于"没人"。"改一块 vs 改五块"是示例，不是实测结果。鉴权是原型级。这里没有一句撑不起的话。
-
----
-
-## 仓库结构
-
-```
-web/               界面：Vue 3 + Vite，一套代码兼顾手机与桌面
-backend/           Spring Boot 服务：课表、可用性、账号、审计
-frontend/          早期桌面客户端，保留因为可用性相关工作在这里
-mobile/            早期手机客户端，原因同上
-mock-school-api/   模拟学校课表源，含设计记录
-docs/              十二份文档，每份三语
-product/           原型、截图、一页 PDF
-scripts/           启动 / 停止 / 测试
-```
+课表是样例数据。"空闲"不等于"没人"。"改一块 vs 改五块"是示例，不是实测。鉴权是原型级。
 
 ---
 
