@@ -90,9 +90,8 @@ is to keep the plan from pointing at a place that does not exist.
 
 ## Try the prototype
 
-```bash
-open product/demo/index.html       # no build, no server, no install
-```
+**Live:** <https://henryliu520.github.io/nextstop/> — or open `product/demo/index.html` locally, no build and no server.
+Language switch (EN / 简 / 繁) is in the header.
 
 Three tabs: **day · plan · mine**. Everything is clickable — swap a meal, book a meeting room, skip
 a class, move a block, add something by hand. Every change can be undone.

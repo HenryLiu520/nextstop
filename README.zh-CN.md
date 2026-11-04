@@ -79,9 +79,8 @@ COMP1110 第 08 组 · 香港大学 · 作者 **LIU Haoran (u3686264)**
 
 ## 试一下原型
 
-```bash
-open product/demo/index.html       # 不用编译、不用服务、不用安装
-```
+**在线：** <https://henryliu520.github.io/nextstop/> —— 或者本地直接打开 `product/demo/index.html`，不用编译、不用服务。
+右上角可以切 EN / 简 / 繁。
 
 三个 tab：**一天 · 规划 · 我的**。全部可点 —— 换饭点、订会议室、跳过一节课、挪动块、手动添加，每一次改动都能撤回。
 
