@@ -2,8 +2,8 @@
 
 <p align="center">
   <b>NextStop</b><br>
-  You have 73 minutes and no plan.<br>
-  It writes one, and repairs it when the day moves.
+  <b>Class ends and you are free.</b><br>
+  It picks the next stop before you reach the stairs.
 </p>
 
 <p align="center">
@@ -36,95 +36,70 @@
 It is 09:47 on a Thursday. The lecture in KB just ended, the next one is at 11:00 in CPD, and the
 walk between the two buildings takes eleven of the minutes in between.
 
-You will spend a while not deciding. Then you will walk to CPD and sit outside the room for
-another forty, because a place you are certainly allowed to sit asks nothing of you.
+You will spend a while putting off the choice. Then you will walk to CPD and sit outside the room
+for another forty, because a place you are certainly allowed to sit asks only that you stay.
 
-The hour was not wasted on purpose. It was never decided.
+The hour slipped away on its own. The choice stayed open to the last minute.
 
 NextStop decides it.
 
 ---
 
-## Who this keeps happening to
+## Context
 
-- The **international student** who landed this term and still cannot work out where to sit for ninety minutes.
+- The **international student** who landed this term and spends the full ninety minutes hunting for a seat.
 - The **first-year after gaokao**, in the first term nobody tells them where to go and grind.
 - The one in the **lift lobby**, eleven minutes into choosing a floor.
 - The one **eating lunch at 15:40**, because the noon decision was too big.
 - The **five who all said "wherever you want"**, then spent twenty minutes going nowhere.
 
-All five own a phone that knows exactly which rooms are empty. 📱
+All five own a phone that knows exactly which rooms are empty.
 
 ---
 
-## ⚡ It decides for you
+## ⚡ Extremely convenient
 
-A room finder hands you a list, then asks you to fill four boxes it already knows the answer to.
-It has your timetable. It knows the gap is 73 minutes and the walk is eleven of them. NextStop
-asks nothing. Open it and the answer is already there. One card, one time, one destination.
-KB 227, until 12:00, walk 5 min.
+**You open it and the day is already there. One card, one time, nothing to fill in.**
 
-The number that matters is operations per day, and it may only fall. The first version needed 3. Pick a room, pick a time, confirm the day. Then the time came to be
-derived from the gap, so 2. Then the reveal came to compute the day, so 1, and the only work left
-is opening the app. The
-target is 0, a day that is already right when you read it. Every new feature pays for itself
-inside the card, never with a new screen or a new question.
+The room finder, the tool this app replaces, asks you to fill **four boxes**, which building, which day, from what time until what time, and every one of those answers is already in its hands, because it holds your timetable. Getting through a day here is a count that only shrinks: **3 steps, then 2, then 1**, with zero as the target, and zero is attainable, because reading costs zero.
 
-The arithmetic all runs on the phone, so nothing waits on a round trip in a corridor, and no
-signal is not a case it fails. Planning runs once, at reveal, and the plan is read-only
-afterwards. Open the app again and it renders the day it already holds, so the afternoon cannot
-reshuffle while you are looking at it. Features accumulate inside the plan layer. What reaches
-the screen stays one card.
+Fill runs once, at reveal. The plan is published and stays read-only until something moves, and opening the app again draws the same plan out of memory in one step. That is how the form goes away. A form is where the system asks a question after the answer already exists, and once the day is computed at reveal, every moment that follows already carries the answer with it. After publish, the only writer is repair.
+
+> The cost is the night before. The arithmetic has to finish inside the second you open the app, on the phone, so the plan ships within that same second. Availability arrives as one fetched window, because one fetch covers every room at once.
+
+*Implemented: the reveal and the read-only plan. The operation counts are a design sequence, with no measurement behind them.*
 
 ---
 
-## 📈 It gets smarter the longer you use it
+## 📈 Self-learning
 
-NextStop learns four numbers about you, each one read from an action you were doing anyway,
-never from a form. Tap "I am late" and the gap between the plan and the tap is how fast you actually walk. Tap "End the day" and that hour is when your day really ends. Pick an option
-while changing a meal and the pick is where you actually eat. Tap "Not going" on a class and
-the tap is whether you attend it.
+**It works out how fast you walk from actions you already perform.**
 
-Each quantity is one parameter plus one counter. No model file, no training run, no inference
-call at plan time. A default stands until three observations land on it, and the interface says
-"still learning you" until then. One late day because the lift was out does not make you a slow
-walker for the term. Learning never touches the algorithm. A walk factor of 1.28 multiplies the
-walk matrix and nothing else, which is why you can audit the planner by reading one number.
+It learns **four quantities**, each read from an action you perform anyway. Walking speed comes from the gap you leave before pressing "I am late". When your day ends comes from the moment you tap "End the day". Where you actually eat comes from which option you pick when several are open. Whether you attend comes from pressing "Not going". The walking factor is designed to travel from ×1.00 to ×1.28.
 
-Every value sits on the Mine screen next to its counter, in the units the planner uses. It is
-visible and it is editable. Type over one and the counter resets, so the next three observations
-refine the number you chose instead of arguing with it.
+A value moves only after **three observations** land on it, which is the entire gate. Under three, the default stands and the screen says "still learning you" beside it. At the third, the parameter takes the observed value, smoothed, so one strange Tuesday counts as one data point inside the average. Only parameters move while the algorithm stays fixed, so a learned value can be audited by reading one number. The Mine screen is where these values are meant to live: visible, editable, each with its counter beside it, and editing one resets that counter.
 
-*Status: the values are on Mine and editable today. The part that derives them is specified,
-not running.*
+> The cost is that learning turns exactly the knobs placed there in advance. It works with the rules, the cost ladder and the actions that already exist. And the attendance rate stays on the device: totals accumulate locally, and screens show the parameters with their counters.
+
+*Designed, implementation pending. The prototype runs on fixed defaults while showing the still learning label.*
 
 ---
 
-## 🧠 It is genuinely intelligent
+## 🧠 Highly intelligent
 
-NextStop takes a timetable and one round of preferences, and computes a whole day. Every gap
-gets walking time and a buffer subtracted before anything is placed in it. Every gap gets a
-purpose and a place, so no gap is ever empty. A meal is not given a guessed duration. It is
-given a latest departure time, and two options.
+**From a timetable and one round of preferences it produces the whole day.**
 
-One sentence changes the plan. "Leave tomorrow afternoon for study, back in the lab by three"
-resolves into a sequence of actions that already exist, shows you a preview, and applies with
-an undo. Language is a second door onto the same buttons, never a privileged channel. A sentence
-that cannot be expressed as existing actions fails, and says so, instead of inventing a
-capability. Delete the sentence box and what is left is a complete app, which is the test every
-capability passes before it reaches language.
+Walking time and a buffer are subtracted from every gap. Every remaining gap gets a purpose and a place. The meal is given a latest departure time, and the schedule reads its end from that moment. Study fills whatever is left, so every gap holds something. You can check all of it by walking the day, and a general assistant sounds most convincing exactly where your checking runs out.
 
-When the day slips it repairs rather than recomputes. A 20 minute overrun moves one block,
-where a full replan moves five. A stop survives the repair when its purpose, its building and
-its start time still line up. Underneath, it weighs several things at once, how far you walk,
-how long you wait, whether you have eaten, and how hard the next commitment is.
+A sentence presses the buttons that already exist, so the box holds exactly four destinations. First comes a preview: the affected block, the new end time, and the line that every other block keeps its time. Applying writes the same undo record a tap would. An unmatched sentence returns a refusal line, and the day keeps its written state, because silence would cost the box your trust. Every capability passes the **removal test** before language may touch it: take the box away and a complete app remains. When the day breaks, repair replaces recompute, rewriting **one block** where a full solve would rewrite five. A stop survives while its purpose, building and start time hold.
 
-*Status: the planner behind this is a stub today. The repair ladder and the sentence parser are
-specified, not running.*
+> The cost is a ceiling on phrasing. A request that needs a new kind of operation fails out loud on the spot, so the box refuses more than a chat window would.
+
+*Implemented: the four actions and their undo records. The preview covers one worked sentence, with no parser behind it.*
 
 ---
 
-## What it looks like
+## Screens
 
 <p align="center">
   <img src="product/triptych.png" width="620" alt="Day, a 20 minute overrun repaired, and the plan tab">
@@ -137,7 +112,7 @@ a gap defaults to study.
 
 ---
 
-## When the day moves
+## Deviation and repair
 
 A class overruns by twenty minutes. Two ways to answer:
 
@@ -157,11 +132,11 @@ Five blocks moving is how a plan loses your trust. Repair asks a narrower questi
 the best new day". It asks which stops are actually broken, touches only those, and counts two
 stops as the same stop when the purpose, the building and the start time still line up.
 
-👉 **[algorithm.md](docs/algorithm.md)** for the criterion, the procedure and the cost order.
+**[algorithm.md](docs/algorithm.md)** for the criterion, the procedure and the cost order.
 
 ---
 
-## How it is built
+## Architecture
 
 ```
 web/     Vue 3 + Vite, one build, four containers
@@ -173,29 +148,25 @@ backend  Spring Boot + PostgreSQL
          timetable · rooms · availability · audit · accounts
 ```
 
-Planning, repair and the interface all run in the client, which is why the corridor case works
-with no signal. The availability service underneath was built earlier in the project and answers
-one question well, which rooms are free, so the plan never points at a place that does not
-exist.
+Planning, repair and the interface all run in the client, so the corridor case keeps working with no signal in the corridor. The availability service underneath was built earlier in the project and answers one question well, which rooms are free, so the plan points only at places the service lists as free.
 
-### From a timetable to a room
+---
+
+## Planning pipeline
 
 Five steps, in order, every time.
 
-1. **Read.** The timetable arrives from the school feed, read only, and it is taken as correct.
-Nothing checks it and nothing questions it.
-2. **Sync.** A calendar subscription is merged in. Nothing is written back to it.
-3. **Add.** The one-off things you enter yourself, a dentist appointment, a parcel to collect. Same
-weight as a class, except that yours can be deleted.
-4. **Union.** The three become one list of committed time. Overlaps merge, and so do neighbours
-closer than fifteen minutes, because a ten minute hole is not a hole, it is a corridor.
+1. **Read.** The timetable arrives from the school feed, the pipeline reads it straight off the wire, and it takes every entry as correct.
+2. **Sync.** A calendar subscription merges in, and data flows one way, from the calendar into the app.
+3. **Add.** The one-off things you enter yourself, a dentist appointment, a parcel to collect. Same weight as a class, and you can delete yours at any time.
+4. **Union.** The three become one list of committed time. Overlaps merge, and neighbours closer than fifteen minutes merge too, because a ten minute gap counts as a corridor.
 5. **Subtract.** Walking time and a buffer come off every gap, and walking is multiplied by your
 own factor, 1.00 until it learns otherwise.
 
 What is left is a set of windows. Each one gets a purpose and a place. A meal gets a latest
-departure time rather than a guessed duration, and study fills whatever remains, so no window is
-ever empty. Then the room, where the hard filters run first, free for the whole window, enough
-seats, you are allowed in, not the building you just left, and a cost picks among the survivors.
+departure time, and study fills whatever remains, so every window stays full. Then the room,
+where the hard filters run first, free for the whole window, enough seats, you are allowed in,
+the building you just left drops off the list, and a cost picks among the survivors.
 
 ```
 cost = 1.0 x walk minutes
@@ -208,7 +179,13 @@ A failed filter ends that candidate. The weights only choose between rooms that 
 
 ---
 
-## Documentation, in three languages
+## What's included
+
+- The clickable prototype ships as one file, it covers three languages and runs offline.
+- The availability service, built earlier in the project, runs on Spring Boot with PostgreSQL, answers which rooms are free, and passes 27 tests.
+- The planner is a stub today, it returns a shaped day and hands the solving step to the roadmap.
+
+## Documentation
 
 | | English | 简体 | 繁體 |
 |---|---|---|---|
@@ -223,7 +200,7 @@ A failed filter ends that candidate. The weights only choose between rooms that 
 
 ---
 
-## Run it
+## Running locally
 
 ```bash
 git clone https://github.com/HenryLiu520/nextstop
@@ -240,25 +217,11 @@ works offline, three languages in the header.
 
 ---
 
-## What is real and what is not
+## Roadmap
 
-| Part | State |
-|---|---|
-| Availability engine, rules, roles, audit, 27 tests | **built and tested** |
-| Web interface, three tabs, three languages, real availability | **built** |
-| Single file prototype, clickable end to end | **built** |
-| The Mine screen and its editable values | **built** |
-| The planner | **a stub, one study stop per gap** |
-| The repair ladder and the identity test | **specified, not implemented** |
-| The learning layer | **specified, not implemented** |
-| The sentence preview | **one worked sentence in the prototype** |
-| PWA manifest, Android and iOS shells | **chosen, not built** |
-
-The timetable is sample data. "Free" is not "empty". The one-block-versus-five-block comparison
-is illustrative, not measured. Authentication is prototype grade. The learned numbers are
-designed directions, not measurements.
-
-We keep this table instead of a roadmap.
+- The planner will learn to fill a gap.
+- The sentence box will connect to the four actions.
+- The PWA and the two phone shells will ship.
 
 ---
 
