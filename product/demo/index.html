@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NextStop · demo</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{background:#e6e2da;font-family:"Songti SC",Georgia,serif;color:#1C1A17;
+     min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+#phone{width:390px;height:844px;background:#FAF7F2;border-radius:34px;overflow:hidden;
+       box-shadow:0 18px 60px rgba(60,50,35,.20);display:flex;flex-direction:column;position:relative}
+header{padding:20px 20px 0;display:flex;align-items:flex-end;flex:0 0 auto}
+.brand{font-size:25px;font-weight:600}
+.hint{margin-left:auto;font-size:11px;color:#8C8478;border-bottom:1px solid #E2DCCF;padding-bottom:2px;letter-spacing:.04em;cursor:pointer}
+.date{font-size:11.5px;color:#6B655C;margin:5px 20px 0;letter-spacing:.06em;flex:0 0 auto}
+main{flex:1;overflow-y:auto;padding:10px 20px 16px;display:flex;flex-direction:column;scrollbar-width:none}
+main::-webkit-scrollbar{display:none}
+.past{display:flex;align-items:center;gap:8px;opacity:.42;font-size:11.5px;padding:2px 0}
+.past .tick{font-size:10px;color:#6B655C}
+.past b{font-weight:600}
+.gap{display:flex;align-items:center;gap:8px;padding:9px 0 9px 2px;color:#8C8478;font-size:10.5px;letter-spacing:.03em}
+.gap:before{content:"";width:0;height:16px;border-left:1.5px dotted #C9C0AE;margin-left:1px}
+.blk{position:relative;background:#fff;border:1px solid #E2DCCF;border-radius:12px;padding:12px 14px 12px 18px;transition:.25s}
+.blk .bar{position:absolute;left:0;top:11px;bottom:11px;width:4px;border-radius:2px}
+.row{display:flex;align-items:baseline;gap:9px}
+.t{font-family:Georgia,"Songti SC",serif;font-size:14.5px;font-variant-numeric:tabular-nums}
+.k{font-size:11px;color:#6B655C}
+.pl{font-size:13.5px;font-weight:600;margin-left:auto}
+.cur{padding:15px 15px 13px 20px;border-color:#D9D0BE}
+.cur .t{font-size:26px;letter-spacing:-.01em}
+.cur .bar{width:5px;top:14px;bottom:14px}
+.now{font-size:11px;color:#6B655C;margin-top:4px;letter-spacing:.04em}
+.dot{width:6px;height:6px;border-radius:50%;background:#C8452D;display:inline-block;margin-left:7px;vertical-align:middle}
+.btn{height:34px;padding:0 20px;border-radius:999px;font-size:12.5px;letter-spacing:.05em;background:#fff;
+     color:#1C1A17;border:1px solid #1C1A17;display:inline-flex;align-items:center;justify-content:center;
+     font-family:inherit;line-height:1;cursor:pointer;user-select:none;transition:.15s}
+.btn:active{transform:scale(.97)}
+.btn.state{color:#9A9285;border-color:#C9C0AE;border-style:dashed;cursor:default}
+.rowbtn{display:flex;gap:9px;margin-top:10px;align-items:center;flex-wrap:wrap}
+.todo{border-style:dotted;border-width:1.5px;border-color:#BDB4A4;background:transparent}
+.done{opacity:.34}
+.done .t{text-decoration:line-through}
+.end{display:flex;gap:9px;justify-content:center;margin-top:22px}
+nav{height:56px;border-top:1px solid #E2DCCF;display:flex;align-items:center;background:#FAF7F2;flex:0 0 auto}
+nav .tab{flex:1;text-align:center;font-size:11.5px;color:#9A9285;letter-spacing:.1em;position:relative;
+         padding-top:2px;cursor:pointer;height:100%;display:flex;align-items:center;justify-content:center}
+nav .tab.on{color:#1C1A17}
+nav .tab.on:after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:12px;width:4px;height:4px;border-radius:50%;background:#C8452D}
+/* toast */
+#toast{position:absolute;left:16px;right:16px;bottom:66px;background:#fff;border:1px solid #E2DCCF;border-radius:12px;
+       padding:11px 14px;font-size:11.5px;color:#1C1A17;display:none;align-items:center;gap:10px;
+       box-shadow:0 6px 20px rgba(60,50,35,.10);z-index:30}
+#toast b{font-weight:600}
+#toast .undo{margin-left:auto;color:#C8452D;cursor:pointer;letter-spacing:.04em}
+#toast .alt{color:#8C8478;cursor:pointer;font-size:10.5px;border-bottom:1px solid #E2DCCF}
+/* sheet */
+#veil{position:absolute;inset:0;background:rgba(28,26,23,.28);display:none;z-index:40}
+#sheet{position:absolute;left:0;right:0;bottom:0;background:#FAF7F2;border-radius:18px 18px 0 0;
+       padding:20px 20px 26px;display:none;z-index:41;max-height:76%;overflow-y:auto}
+#sheet h3{font-size:13px;font-weight:600;letter-spacing:.05em;margin-bottom:14px;color:#1C1A17}
+.opt{border:1px solid #E2DCCF;background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:9px;cursor:pointer}
+.opt:active{background:#F3EFE6}
+.opt .n{font-size:14px;font-weight:600}
+.opt .m{font-size:11px;color:#6B655C;margin-top:4px}
+.opt .w{font-size:10.5px;color:#B4763A;margin-top:3px}
+.sheetrow{display:flex;gap:9px;margin-top:14px}
+.chips{display:flex;flex-direction:column;gap:8px}
+.chip{font-size:11.5px;color:#6B655C;border:1px dashed #D8D0C2;border-radius:999px;padding:8px 14px;cursor:pointer}
+.chip:active{background:#F3EFE6}
+textarea{width:100%;border:1px solid #E2DCCF;border-radius:12px;background:#fff;padding:12px 14px;
+         font-family:inherit;font-size:13px;color:#1C1A17;resize:none;height:76px;outline:none}
+/* 规划 / 我的 */
+h2{font-size:17px;font-weight:600;margin:6px 0 4px}
+.sub{font-size:11.5px;color:#6B655C;margin-bottom:16px;line-height:1.6}
+.preview{border:1px solid #E2DCCF;background:#fff;border-radius:12px;padding:13px 15px;font-size:12.5px;line-height:1.85;margin-bottom:12px;display:none}
+.preview b{font-weight:600}
+.row2{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-bottom:1px solid #EBE5D9;font-size:12.5px}
+.row2 .v{color:#6B655C;font-family:Georgia,serif}
+.row2 .v input{width:52px;border:none;border-bottom:1px solid #C9C0AE;background:transparent;font-family:inherit;
+               font-size:12.5px;text-align:right;color:#1C1A17;outline:none}
+.learned{font-size:10.5px;color:#8C8478;margin-top:6px;letter-spacing:.03em}
+/* 今天从…到… */
+.bounds{display:flex;align-items:center;gap:8px;font-size:11.5px;color:#6B655C;padding:0 0 12px;letter-spacing:.02em}
+.tappill{border-bottom:1px solid #C9C0AE;padding-bottom:1px;color:#1C1A17;font-family:Georgia,serif;font-size:12.5px;cursor:pointer}
+.blk{cursor:pointer}
+/* 时间选择列表 */
+.tlist{max-height:300px;overflow-y:auto;margin:-4px -4px 0}
+.trow{display:flex;justify-content:space-between;padding:11px 12px;font-size:13px;border-radius:9px;
+      font-family:Georgia,serif;cursor:pointer}
+.trow:active{background:#F3EFE6}
+.trow.on{background:#fff;border:1px solid #1C1A17;font-weight:600}
+/* 规划：周条 */
+.week{display:flex;gap:6px;margin:2px 0 18px}
+.dcol{flex:1;text-align:center;cursor:pointer;padding:8px 0 6px;border-radius:10px;transition:.15s}
+.dcol.on{background:#fff;border:1px solid #D9D0BE}
+.dcol .dw{font-size:10px;color:#8C8478;letter-spacing:.06em}
+.dcol .dn{font-size:14px;margin-top:3px;font-family:Georgia,serif}
+.dcol.on .dn{font-weight:600}
+.bars{display:flex;flex-direction:column;gap:2px;margin-top:7px;align-items:center;min-height:34px;justify-content:flex-end}
+.bars i{display:block;height:4px;border-radius:2px;background:#D8D0C2;width:14px}
+.bars i.k{background:#1C1A17}
+.bars i.s{background:#2F5D9E}
+.bars i.e{background:#B4763A}
+.bars i.m{background:#6A4C93}
+/* 日列 */
+.dayhdr{font-size:12.5px;color:#6B655C;letter-spacing:.05em;margin-bottom:10px}
+.dl{display:flex;gap:10px;align-items:flex-start;margin-bottom:6px}
+.dl .hh{width:38px;flex:0 0 38px;font-size:10.5px;color:#9A9285;font-family:Georgia,serif;padding-top:9px}
+.dl .bx{flex:1;border-radius:9px;padding:8px 12px;font-size:12px;border:1px solid #E2DCCF;background:#fff;
+        display:flex;align-items:baseline;gap:8px}
+.dl .bx b{font-weight:600;margin-left:auto;font-size:11.5px;color:#6B655C}
+.dl .bx .tm{font-family:Georgia,serif;font-size:11px;color:#6B655C}
+.dl.free .bx{background:transparent;border:1px dashed #D8D0C2;color:#9A9285;cursor:pointer}
+.dl.free .bx:active{background:#F3EFE6}
+#planBox{margin-top:auto}
+</style></head><body>
+<div id="phone">
+  <header><div class="brand">NextStop</div><div class="hint" id="hintBtn">有变化？说一句</div></header>
+  <div class="date" id="dateLine">周四 · 10 月 30 日</div>
+  <main id="main"></main>
+  <nav>
+    <div class="tab on" data-tab="day">一天</div>
+    <div class="tab" data-tab="plan">规划</div>
+    <div class="tab" data-tab="me">我的</div>
+  </nav>
+  <div id="toast"></div>
+  <div id="veil"></div>
+  <div id="sheet"></div>
+</div>
+
+<script>
+/* ---------------- state ---------------- */
+const S = {
+  tab: 'day',
+  learned: { walk: 1.00, endThu: '18:20', favEat: '庄月明' },
+  walk: {KB_CPD: 8, KB_LIB: 10, KB_KB: 5, CPD_LIB: 6},
+  stops: [
+    {id:1, type:'class', typeName:'课', start:'09:00', end:'10:50', place:'COMP1110 · KB', status:'done'},
+    {id:2, type:'study', typeName:'自习', start:'11:00', end:'12:00', place:'KB 227', status:'now'},
+    {id:3, type:'eat',   typeName:'吃饭', start:'12:10', end:'12:40', place:'庄月明', status:'todo'},
+    {id:4, type:'class', typeName:'课', start:'14:00', end:'15:50', place:'CPD · LG05', status:'planned'},
+    {id:5, type:'meet',  typeName:'见面 × 5', start:'16:00', end:'16:50', place:'待定', status:'planned', booking:'none'},
+    {id:6, type:'study', typeName:'自习', start:'17:00', end:'18:20', place:'LIB 3/F', status:'planned'}
+  ],
+  gaps: ['走 5 分钟','走 10 分钟','走 10 分钟','走 10 分钟'],
+  started:'09:00', ends:'18:20', ended:false,
+  history:[]   // 撤回栈
+};
+const COLORS = {class:'#1C1A17', study:'#2F5D9E', eat:'#B4763A', meet:'#6A4C93'};
+const EAT_POOL = [
+  ['庄月明楼 1F','走 8 分钟','12:40 前必须走','余量 20 分钟'],
+  ['智华馆 B1','走 12 分钟','12:36 前必须走','你常去'],
+  ['学生会食堂','走 15 分钟','12:30 前必须走','人多'],
+  ['仪礼堂小食','走 6 分钟','12:42 前必须走','快'],
+  ['苏记面档','走 10 分钟','12:38 前必须走','热食'],
+  ['主图书馆咖啡','走 7 分钟','12:41 前必须走','可带走']
+];
+let eatIdx = 0;
+
+/* ---------------- render ---------------- */
+const main = document.getElementById('main');
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+
+function renderDay(){
+  if(S.ended){
+    main.innerHTML = `<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;opacity:.85">
+      <div style="font-size:15px">今天到这儿</div>
+      <div style="font-size:11.5px;color:#6B655C;letter-spacing:.04em">周四 一般 20:00 结束 · 还在学你</div>
+      <span class="btn" onclick="unEnd()">还早，继续</span></div>`;
+    return;
+  }
+  let h = '';
+  S.stops.forEach((s,i)=>{
+    if(i>0) h += `<div class="gap">${esc(S.gaps[i-1]||'')}</div>`;
+    h += block(s, i);
+  });
+  h += `<div class="end"><span class="btn" onclick="endDay()">结束这一天</span><span class="btn" onclick="extend()">再待一会儿</span></div>`;
+  main.innerHTML = h;
+}
+
+function block(s, i){
+  if(s.status==='skipped')
+    return `<div class="blk done" style="padding:9px 14px 9px 18px">
+      <div class="bar" style="background:#BDB4A4"></div>
+      <div class="row"><span class="t" style="font-size:12.5px">${s.start}–${s.end}</span>
+      <span class="k">${esc(s.typeName)}</span><span class="pl" style="font-weight:400;font-size:12px">不去了</span></div></div>`;
+
+  const isNow = s.status==='now';
+  const cls = ['blk', isNow?'cur':'', s.status==='todo'?'todo':''].filter(Boolean).join(' ');
+  let acts = '';
+  if(s.status==='done'){ acts=''; }
+  else if(s.type==='class'){
+    acts = `<span class="btn" onclick="skip(${s.id})">不去</span>`;
+  } else if(s.type==='eat' || s.type==='study'){
+    acts = `<span class="btn" onclick="swap(${s.id})">换一个</span>`;
+  } else if(s.type==='meet'){
+    acts = s.booking==='done'
+      ? `<span class="btn state">✓ 已预约 · LIB 3/F 讨论室 2</span><span class="btn" onclick="unbook(${s.id})">取消</span>`
+      : (s.booking==='booking'
+        ? `<span class="btn state">订呢…</span>`
+        : `<span class="btn" onclick="book(${s.id})">一键预约</span><span class="btn state">✓ 已预约</span>`);
+  }
+  const nowLine = isNow ? `<div class="now">你在这 · 到 ${s.end}</div>` : '';
+  if(s.status==='dropped') return '';
+  return `<div class="${cls}" onclick="blockSheet(${s.id},event)">
+    <div class="bar" style="background:${COLORS[s.type]||'#1C1A17'}"></div>
+    <div class="row"><span class="t">${s.start}–${s.end}</span><span class="k">${esc(s.typeName)}</span>
+      <span class="pl">${esc(s.place)}${isNow?'<span class="dot"></span>':''}</span></div>
+    ${nowLine}
+    ${acts?`<div class="rowbtn">${acts}</div>`:''}
+  </div>`;
+}
+
+/* 一周（假数据）：每天 = 时段列表；空档可点 */
+const WEEK = [
+  {dw:'一', dn:'27', label:'周一 · 10 月 27 日', rows:[
+    ['09:00','10:50','k','课','COMP1110 · KB'],['11:00','12:00','s','自习','KB 227'],
+    ['13:00','14:00',null,'',''],['14:00','15:50','k','课','CPD · LG05'],['16:00','17:30','s','自习','LIB 3/F']]},
+  {dw:'二', dn:'28', label:'周二 · 10 月 28 日', rows:[
+    ['10:00','11:50','k','课','COMP1110'],['12:00','13:00','e','吃饭','学生会食堂'],
+    ['14:00','15:50','m','见面 × 3','LIB 讨论室'],['16:00','18:00','s','自习','KB 315']]},
+  {dw:'三', dn:'29', label:'周三 · 10 月 29 日', rows:[
+    ['09:00','10:50','k','课','MATH1013'],['11:00','11:50','s','自习','KB 221'],
+    ['12:10','12:40','e','吃饭','庄月明'],['14:00','15:50','k','课','CPD'],['16:00','17:00',null,'','']]},
+  {dw:'四', dn:'30', label:'周四 · 10 月 30 日（今天）', rows:[
+    ['09:00','10:50','k','课','COMP1110 · KB'],['11:00','11:50','s','自习','KB 227'],
+    ['12:10','12:40','e','吃饭','庄月明'],['14:00','15:50','k','课','CPD · LG05'],
+    ['16:00','16:50','m','见面 × 5','待定'],['17:00','18:20','s','自习','LIB 3/F']]},
+  {dw:'五', dn:'31', label:'周五 · 10 月 31 日', rows:[
+    ['09:00','10:50','k','课','COMP1110'],['11:00','12:30','s','自习','LIB 3/F'],
+    ['13:00','14:00','e','吃饭','智华馆 B1'],['15:00','16:00',null,'','']]}
+];
+let selDay = 3;
+const i0IsToday = i => i === 3;
+function todayRows(){
+  return S.stops.filter(s=>s.status!=='dropped').map(s=>[s.start, s.end, s.type, s.typeName, s.place]);
+}
+
+function renderPlan(){
+  const d = WEEK[selDay];
+  main.innerHTML = `
+    <h2>规划</h2>
+    <div class="sub">点一天，然后说一句。空着的时间默认是自习，它只改必要的那部分。</div>
+    <div class="week">
+      ${WEEK.map((x,i)=>`<div class="dcol ${i===selDay?'on':''}" onclick="selDay=${i};renderPlan()">
+        <div class="dw">${x.dw}</div><div class="dn">${x.dn}</div>
+        <div class="bars">${x.rows.filter(r=>r[2]).slice(0,6).map(r=>`<i class="${r[2]}"></i>`).join('')}</div>
+      </div>`).join('')}
+    </div>
+    <div class="dayhdr">${d.label}</div>
+    ${i0IsToday(selDay)
+      ? `<div class="bounds" style="padding-bottom:14px">今天从 <span class="tappill" onclick="pickTime('start')">${S.started}</span> 开始
+         <span style="color:#C9C0AE">·</span> 排到 <span class="tappill" onclick="pickTime('ends')">${S.ends}</span></div>`
+      : `<div class="bounds" style="padding-bottom:14px;opacity:.6">沿用默认 · ${S.started} 开始，${S.ends} 结束</div>`}
+    ${d.rows.map(r=> `<div class="dl" onclick="planRow('${r[0]}')">
+        <div class="hh">${r[0]}</div>
+        <div class="bx">${r[2] ? r[3] : '自习'}<span class="tm">到 ${r[1]}</span><b>${r[2] ? r[4] : 'LIB 3/F'}</b></div>
+      </div>`).join('')}
+    <div style="margin-top:10px"><span class="btn" onclick="addSheet()">＋ 手动添加</span></div>
+    <div id="planBox"><textarea id="inp" placeholder="说一句：明天下午排成自习，三点前回实验室"></textarea>
+    <div class="preview" id="pv"></div>
+    <div class="sheetrow"><span class="btn" onclick="planPreview()">预览</span><span class="btn" id="applyBtn" style="display:none" onclick="planApply()">应用</span></div></div>`;
+}
+
+function renderMe(){
+  const L = S.learned;
+  main.innerHTML = `
+    <h2>我的</h2>
+    <div class="sub">它学到的全是默认值，不是被拿走的按钮。</div>
+    <div class="row2"><span>走路速度</span><span class="v">× <input id="pwalk" value="${L.walk.toFixed(2)}"></span></div>
+    <div class="row2"><span>周四一般几点结束</span><span class="v"><input id="pend" value="${L.endThu}"></span></div>
+    <div class="row2"><span>常去的吃饭点</span><span class="v">${L.favEat}</span></div>
+    <div class="learned">walk × ${L.walk.toFixed(2)} · 学自“我晚了”的差值 · 3 次观测后启用</div>
+    <div class="row2" style="margin-top:22px"><span>“该走了”提醒</span><span class="v">开 · 每天一次</span></div>
+    <div class="row2"><span>它在学你</span><span class="v">第 12 天</span></div>
+    <div class="learned">翘课记录只存本地，不上传、不统计</div>
+    <div class="sheetrow"><span class="btn" onclick="saveParams()">保存</span></div>`;
+}
+
+function render(){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.dataset.tab===S.tab));
+  document.getElementById('hintBtn').style.display = S.tab==='day' ? '' : 'none';
+  if(S.tab==='day') renderDay();
+  else if(S.tab==='plan') renderPlan();
+  else renderMe();
+}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{S.tab=t.dataset.tab;render();});
+
+/* ---------------- toast ---------------- */
+let toastTimer=null;
+function toast(msg, undoCb, altCb, altText){
+  const el=document.getElementById('toast');
+  el.innerHTML = `<span>${msg}</span>` +
+    (altCb?`<span class="alt" id="altBtn">${altText}</span>`:'') +
+    (undoCb?`<span class="undo" id="undoBtn">撤回</span>`:'');
+  el.style.display='flex';
+  if(undoCb) document.getElementById('undoBtn').onclick=()=>{hideToast();undoCb();};
+  if(altCb) document.getElementById('altBtn').onclick=()=>{hideToast();altCb();};
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(hideToast, 6000);
+}
+function hideToast(){document.getElementById('toast').style.display='none';}
+
+/* ---------------- 核心：用自习填空 ---------------- */
+const WALK = 8;   // 默认步行分钟
+
+function sortStops(){ S.stops.sort((a,b)=> a.start.localeCompare(b.start)); }
+
+function fillGaps(){
+  sortStops();
+  const live = S.stops.filter(s=>s.status!=='dropped' && s.status!=='skipped');
+  for(let i=1;i<live.length;i++){
+    const prev = live[i-1], next = live[i];
+    const free = mins(next.start) - mins(prev.end) - WALK;
+    if(free < 10) continue;
+    if(prev.type==='study' || prev.type==='eat'){
+      prev.end = r10(shift(next.start, -WALK));     // 前一块自己吃掉这段
+    } else {
+      const st = r10(shift(prev.end, WALK));        // 课/见面不能延长 → 插一段自习
+      const en = r10(shift(next.start, -WALK));
+      if(mins(en) - mins(st) >= 10){
+        S.stops.push({id: nextId++, type:'study', typeName:'自习', start: st,
+                      end: en, place:'就近自习', status:'planned', auto:true});
+      }
+    }
+  }
+  sortStops();
+  // 缝隙文字全部重算成走路
+  S.gaps = [];
+  const now = S.stops.filter(s=>s.status!=='dropped');
+  for(let i=1;i<now.length;i++){
+    const w = Math.max(5, Math.round((mins(now[i].start) - mins(now[i-1].end))/5)*5);
+    S.gaps.push('走 ' + w + ' 分钟');
+  }
+}
+let nextId = 100;
+function mins(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+function r10(t){                       // 所有算出来的时间都取整到 10 分钟
+  const m = Math.round(mins(t)/10)*10;
+  return String(Math.floor(m/60)).padStart(2,'0')+':'+String(m%60).padStart(2,'0');
+}
+
+/* ---------------- 两个时间口 ---------------- */
+function timeList(from, to){           // 每 30 分钟一个
+  const out=[]; let t=from;
+  while(t<=to){ out.push(t); t = shift(t,30); }
+  return out;
+}
+function pickTime(which){
+  const cur = which==='start' ? S.started : S.ends;
+  const list = timeList('07:00','23:00');
+  showSheet(`<h3>${which==='start'?'今天从几点开始':'今天排到几点'}</h3>` +
+    `<div class="tlist">` + list.map(t=>
+      `<div class="trow ${t===cur?'on':''}" onclick="setBound('${which}','${t}')">${t}</div>`
+    ).join('') + `</div>` +
+    `<div class="sheetrow"><span class="btn" onclick="closeSheet()">取消</span></div>`);
+}
+function setBound(which, t){
+  closeSheet();
+  const before = which==='start' ? S.started : S.ends;
+  if(which==='start') S.started=t; else S.ends=t;
+  // 结束时间早于最后一站 → 截断（并如实标出没排完）
+  render();
+  toast(`今天 ${which==='start'?'从 '+t+' 开始':'排到 '+t}`,
+    ()=>{ if(which==='start') S.started=before; else S.ends=before; render(); hideToast(); });
+}
+
+/* ---------------- 点块：换时间 / 换地点 / 删掉 ---------------- */
+function blockSheet(id, ev){
+  if(ev && ev.target.closest('.btn')) return;
+  if(ev) ev.stopPropagation();
+  const s = S.stops.find(x=>x.id===id);
+  if(s.status==='done'){ toast('这一项已经过去了'); return; }
+  const t = s.type;
+
+  // 每个类型能做什么
+  let rows = '';
+  if(t==='class'){
+    rows = `<div class="trow" onclick="skip(${id})">跳过这节课<span style="color:#9A9285">时间用自习填上</span></div>` +
+           ['提前 30 分钟','提前 15 分钟','推后 15 分钟','推后 30 分钟'].map((lab,i)=>
+             `<div class="trow" onclick="moveStop(${id},${[-30,-15,15,30][i]})">${lab}<span style="color:#9A9285">${shift(s.start,[-30,-15,15,30][i])}</span></div>`).join('');
+  } else if(t==='eat'){
+    rows = `<div class="trow" onclick="closeSheet();swap(${id})">换地方<span style="color:#9A9285">${s.place}</span></div>` +
+           ['提前 15 分钟','推后 15 分钟','推后 30 分钟'].map((lab,i)=>
+             `<div class="trow" onclick="moveStop(${id},${[-15,15,30][i]})">${lab}<span style="color:#9A9285">${shift(s.start,[-15,15,30][i])}</span></div>`).join('');
+  } else if(t==='study'){
+    rows = `<div class="trow" onclick="closeSheet();swap(${id})">换地方<span style="color:#9A9285">${s.place}</span></div>`;
+  } else if(t==='meet'){
+    rows = `<div class="trow" onclick="closeSheet();book(${id})">一键预约<span style="color:#9A9285">${s.place}</span></div>` +
+           `<div class="trow" onclick="closeSheet();swap(${id})">换地方</div>` +
+           ['提前 15 分钟','推后 15 分钟'].map((lab,i)=>
+             `<div class="trow" onclick="moveStop(${id},${[-15,15][i]})">${lab}<span style="color:#9A9285">${shift(s.start,[-15,15][i])}</span></div>`).join('');
+  }
+  rows += `<div class="trow" onclick="dropStop(${id})">删掉这一项</div>`;
+
+  showSheet(`<h3>${s.start}–${s.end} · ${esc(s.typeName)}</h3><div class="tlist">${rows}</div>` +
+    `<div class="sheetrow"><span class="btn" onclick="closeSheet()">取消</span></div>`);
+}
+function moveStop(id, d){
+  const s = S.stops.find(x=>x.id===id);
+  const bs=s.start, be=s.end;
+  s.start = r10(shift(s.start,d)); s.end = r10(shift(s.end,d));
+  fillGaps(); closeSheet(); render();
+  toast(`这一站挪到 <b>${s.start}–${s.end}</b> · 其余不动`, ()=>{ s.start=bs; s.end=be; render(); hideToast(); });
+}
+function dropStop(id){
+  const s = S.stops.find(x=>x.id===id);
+  const before = s.status;
+  s.status='dropped';
+  fillGaps(); closeSheet(); render();
+  toast(`删掉了这一站 · 后面的顺延`, ()=>{ s.status=before; render(); hideToast(); });
+}
+
+/* ---------------- 换一个 ---------------- */
+function swap(id){
+  const s = S.stops.find(x=>x.id===id);
+  const isEat = s.type==='eat';
+  const pool = isEat ? EAT_POOL : [
+    ['KB 221','走 2 分钟','同楼','更安静'],
+    ['KB 315','走 4 分钟','同楼','靠窗'],
+    ['CPD 2/F 开放区','走 8 分钟','换楼','有插座'],
+    ['LIB 3/F','走 10 分钟','换楼','最安静'],
+    ['智华馆 2/F','走 12 分钟','换楼','人多'],
+    ['庄月明 自修室','走 9 分钟','换楼','能说话']
+  ];
+  showSheet(`<h3>${s.start} ${isEat?'吃饭':'自习'} · 换一个</h3>` +
+    pool.slice(eatIdx, eatIdx+3).map(p=>
+      `<div class="opt" onclick="pickSwap(${id},'${p[0]}','${p[2]}')">
+         <div class="n">${p[0]}</div><div class="m">${p[1]} · ${p[2]}</div><div class="w">${p[3]}</div></div>`
+    ).join('') +
+    `<div class="sheetrow"><span class="btn" onclick="nextBatch(${id})">换一批</span>
+     <span class="btn" onclick="closeSheet()">取消</span></div>`);
+}
+
+let batchCount = 0;
+function nextBatch(id){
+  batchCount++;
+  if(batchCount>2){ closeSheet(); toast('附近就这些了，要不换个时间？'); batchCount=0; return; }
+  eatIdx = (eatIdx+3) % EAT_POOL.length;
+  swap(id);
+}
+function pickSwap(id, place, extra){
+  const s = S.stops.find(x=>x.id===id);
+  const before = s.place;
+  s.place = place;
+  if(s.status==='todo') s.status='planned';
+  fillGaps(); closeSheet(); render();
+  toast(`已换到 <b>${place}</b> · 只改了这一站`, ()=>{ s.place=before; render(); hideToast(); });
+}
+
+/* ---------------- 预约 ---------------- */
+function book(id){
+  const s = S.stops.find(x=>x.id===id);
+  s.booking='booking'; render();
+  setTimeout(()=>{
+    s.booking='done'; s.status='planned'; s.place='LIB 3/F 讨论室 2'; s.booked=true;
+    render();
+    toast('已订 <b>LIB 3/F 讨论室 2</b> · 16:00–16:50', ()=>{ s.booking='none'; s.booked=false; s.place='待定'; render(); hideToast(); });
+  }, 850);
+}
+function unbook(id){
+  const s = S.stops.find(x=>x.id===id);
+  s.booking='none'; s.booked=false; s.place='待定'; render();
+  toast('已取消预约');
+}
+
+/* ---------------- 不去 / 结束 / 延长 ---------------- */
+function skip(id){
+  const s = S.stops.find(x=>x.id===id);
+  const before = s.status;
+  s.status='skipped';
+  fillGaps();                                   // 先把空档用自习填好
+  if(!S.stops.some(x=>x.start===s.start && x.type==='study' && x.status!=='dropped')){
+    S.stops.push({id: nextId++, type:'study', typeName:'自习', start:s.start, end:s.end,
+                  place:'就近自习', status:'planned', auto:true});
+  }
+  fillGaps(); sortStops();
+  render();
+  toast('这节课不去了 · 这段时间当空的用', ()=>{ s.status=before; render(); hideToast(); });
+}
+function endDay(){
+  S.ended=true; render();
+  toast('今天到这儿 · 周四一般 20:00 结束', ()=>{ S.ended=false; render(); hideToast(); });
+}
+function unEnd(){ S.ended=false; render(); hideToast(); }
+function extend(){
+  const last = S.stops[S.stops.length-1];
+  const before = last.end;
+  last.end = '18:50';
+  render();
+  toast('延到 <b>18:50</b> · 学到你会待更久', ()=>{ last.end=before; render(); hideToast(); });
+}
+
+/* ---------------- 修复（有变化？说一句） ---------------- */
+function hintSheet(){
+  showSheet(`<h3>有变化？说一句</h3>` +
+    `<textarea id="hintInp" placeholder="比如：课拖了 20 分钟"></textarea>` +
+    `<div class="chips" style="margin-top:12px">` +
+      `<div class="chip" onclick="document.getElementById('hintInp').value='课拖了 20 分钟'">课拖了 20 分钟</div>` +
+      `<div class="chip" onclick="document.getElementById('hintInp').value='我晚了 10 分钟'">我晚了 10 分钟</div>` +
+      `<div class="chip" onclick="document.getElementById('hintInp').value='想再待 30 分钟'">想再待 30 分钟</div>` +
+    `</div>` +
+    `<div class="sheetrow"><span class="btn" onclick="applyDeviation(20)">应用</span>` +
+    `<span class="btn" onclick="closeSheet()">取消</span></div>`);
+}
+function applyDeviation(mins){
+  closeSheet();
+  const now = S.stops.find(x=>x.status==='now') || S.stops[1];
+  const beforeEnd = now.end;
+  now.end = shift(now.end, -mins);          // 只改这一站
+  render();
+  toast(`改了一站 · 其余不变（${now.end} 结束）`,
+    ()=>{ now.end=beforeEnd; render(); hideToast(); },
+    ()=>{ now.end=beforeEnd; fullRecompute(mins); }, '看看全部重算会怎样');
+}
+function fullRecompute(mins){
+  const idx = S.stops.findIndex(x=>x.status==='now');
+  let count=0;
+  for(let i=idx;i<S.stops.length;i++){
+    if(i>idx){ S.stops[i].start = shift(S.stops[i].start, -mins); }
+    S.stops[i].end = shift(S.stops[i].end, -mins);
+    count++;
+  }
+  render();
+  toast(`全部重算：改了 <b>${count} 站</b>`, ()=>{ location.reload(); });
+}
+function shift(t, d){
+  const [h,m]=t.split(':').map(Number);
+  let tot=h*60+m+d;
+  tot=Math.max(0,tot);
+  return String(Math.floor(tot/60)).padStart(2,'0')+':'+String(tot%60).padStart(2,'0');
+}
+
+/* 规划页点一行 → 打开那一项 */
+function planRow(start){
+  const s = S.stops.find(x=>x.start===start);
+  if(s){ blockSheet(s.id); return; }
+  // 不是今天的日子 → 只读
+  if(!i0IsToday(selDay)){
+    const d = WEEK[selDay];
+    const r = d.rows.find(x=>x[0]===start);
+    if(r) showSheet(`<h3>${r[0]}–${r[1]} · ${r[2]?r[3]:'自习'}</h3>` +
+      `<div class="tlist"><div class="trow">${r[2]?r[4]:'LIB 3/F'}<span style="color:#9A9285">${d.label}</span></div></div>` +
+      `<div class="sheetrow"><span class="btn" onclick="closeSheet()">关闭</span></div>`);
+  }
+}
+
+/* 手动添加 */
+let addType = 'study';
+function addSheet(){
+  showSheet(`<h3>手动添加</h3>` +
+    `<div class="tlist">` +
+      [['study','自习'],['eat','吃饭'],['meet','见面'],['class','课']].map(([k,lab])=>
+        `<div class="trow ${addType===k?'on':''}" onclick="addType='${k}';addSheet()">${lab}</div>`).join('') +
+    `</div>` +
+    `<div style="display:flex;gap:8px;margin:14px 0">
+       <input id="aStart" value="13:00" style="flex:1;border:1px solid #E2DCCF;border-radius:9px;padding:10px;font-family:inherit;font-size:13px">
+       <input id="aEnd" value="14:00" style="flex:1;border:1px solid #E2DCCF;border-radius:9px;padding:10px;font-family:inherit;font-size:13px">
+     </div>` +
+    `<input id="aPlace" placeholder="地点（可留空）" style="width:100%;border:1px solid #E2DCCF;border-radius:9px;padding:10px;font-family:inherit;font-size:13px">` +
+    `<div class="sheetrow"><span class="btn" onclick="doAdd()">添加</span><span class="btn" onclick="closeSheet()">取消</span></div>`);
+}
+function doAdd(){
+  const st = document.getElementById('aStart').value;
+  const en = document.getElementById('aEnd').value;
+  const pl = document.getElementById('aPlace').value ||
+             (addType==='study'?'就近自习':addType==='eat'?'食堂':'待定');
+  const nameMap = {study:'自习', eat:'吃饭', meet:'见面 × 2', class:'课'};
+  S.stops.push({id: nextId++, type: addType, typeName: nameMap[addType],
+                start: st, end: en, place: pl, status:'planned'});
+  fillGaps(); closeSheet(); render();
+  if(S.tab==='plan') renderPlan();
+  setTimeout(()=>toast(`加了 <b>${st}–${en} ${nameMap[addType]}</b> · 空档已用自习填好`,
+        ()=>{ S.stops.pop(); fillGaps(); render(); hideToast(); }), 30);
+}
+
+/* ---------------- 规划 ---------------- */
+function fill(t){ document.getElementById('inp').value=t; }
+function planPreview(){
+  const v = document.getElementById('inp').value.trim();
+  const pv = document.getElementById('pv');
+  pv.style.display='block';
+  pv.innerHTML = v
+    ? `它做了什么（预览）<br>· <b>明天</b> 13:00–14:40 自习 → KB 227<br>· 移到 14:50 结束（留 10 分钟走）<br>· 其余不动`
+    : `先说一句要改什么`;
+  document.getElementById('applyBtn').style.display = v ? '' : 'none';
+}
+function planApply(){
+  document.getElementById('applyBtn').style.display='none';
+  toast('已排到 <b>明天</b> · 改了一站', ()=>{ hideToast(); });
+}
+
+/* ---------------- 我的 ---------------- */
+function saveParams(){
+  const w = parseFloat(document.getElementById('pwalk').value);
+  const e = document.getElementById('pend').value;
+  if(!isNaN(w)) S.learned.walk = w;
+  if(/^\d{1,2}:\d{2}$/.test(e)) S.learned.endThu = e;
+  renderMe();
+  toast('已保存 · 它以后按这个来');
+}
+
+/* ---------------- sheet ---------------- */
+function showSheet(html){
+  const sh=document.getElementById('sheet'), v=document.getElementById('veil');
+  sh.innerHTML=html; sh.style.display='block'; v.style.display='block';
+}
+function closeSheet(){
+  document.getElementById('sheet').style.display='none';
+  document.getElementById('veil').style.display='none';
+}
+document.getElementById('veil').onclick=closeSheet;
+document.getElementById('hintBtn').onclick=hintSheet;
+
+render();
+</script>
+</body></html>

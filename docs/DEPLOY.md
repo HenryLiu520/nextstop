@@ -18,8 +18,8 @@ the project folder, so nothing on your machine is touched.
 ## 1. Fast path
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git
-cd hku-empty-classroom
+git clone https://github.com/HenryLiu520/nextstop.git
+cd nextstop
 ./scripts/start-all.sh
 ```
 
@@ -238,7 +238,7 @@ Friday. If you use an older database, run the migrations again or recreate the c
 Clone into a fresh directory and build all three pieces:
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git /tmp/fresh-clone
+git clone https://github.com/HenryLiu520/nextstop.git /tmp/fresh-clone
 cd /tmp/fresh-clone/backend && mvn -o -q -DskipTests package    # → target/empty-classroom-0.1.0.jar (52 MB)
 cd /tmp/fresh-clone/mobile  && npm ci && npm run build          # → 161 KB JS, 4 KB CSS
 cd /tmp/fresh-clone/frontend && npm ci && npm run build         # → builds clean

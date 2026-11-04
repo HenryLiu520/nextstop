@@ -1,267 +1,190 @@
-# Empty Classroom Plan
+# NextStop
 
 **English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
 
-> A web app that answers one question about HKU teaching rooms: **which rooms are free between classes, right now?**
-> Vue 3 + Spring Boot + PostgreSQL · COMP1110 Group 08 (HKU) · built by **LIU Haoran (u3686264)**
+> A student walks out of a lecture with seventy minutes in front of them. The campus is full of
+> rooms. What they do not know is **where to go**. NextStop decides that for them, and keeps the
+> decision standing when the day moves.
 
-![Search page: which rooms are free from 14:00 to 15:50](docs/screens/desktop/02-find-a-room.jpg)
+COMP1110 Group 08 · HKU · built by **LIU Haoran (u3686264)**
+
+<img src="product/day.png" width="330" alt="The day as a stack of blocks: 09:00 class, 11:00 study, 12:10 lunch, 14:00 class, 16:00 meeting, 17:00 study">
 
 ---
 
-## Why this exists
-
-Between 09:50 and 10:10, the corridors of every HKU teaching building fill up with students looking for a seat. Each of them is asking the same question — *is there a free room nearby?* — and none of them can answer it without walking over to find out.
-
-The information needed to answer it already exists. The University runs the weekly timetable, and it already pushes that data to the end of the chain: outside every classroom door there is a display showing that room's timetable for the day. What does not exist is a view that turns the timetable into *"which rooms are free in the next hour"* for a student who is standing in a corridor.
-
-This project joins the two things that decide whether a room is usable — the **fixed weekly timetable** and **temporary changes posted by staff** (a room taken for an event, a room no longer needed) — and reports the free time that remains. It deliberately reports **rooms, not people**: it never guesses how full a room is, and it never asks a student to reserve anything.
-
-## What it does
-
-The order below is the order a person actually meets the system: sign in, look for a free room, open
-a room, and — only if the account is allowed to — change room time or manage accounts.
-
-### 1. Sign in
-- Self sign-up with an HKU address (`@connect.hku.hk`, `@hku.hk`, …): email and password, no
-  verification mail in the prototype. Accounts can also be created by a super administrator.
-- Seeded accounts cover all three roles (see *Quick start*).
-
-### 2. Find a free room — everyone
-- Pick a day, a building and a time window (`14:00 → 15:50`) and see which rooms are free for all of
-  it. Each result says whether the room is free now, free later, or in use, and when its next class
-  starts. Sorting: longest free window, room code, building, or most seats.
-- Two warnings sit on the page rather than in a footnote: a room must be given up if a class or a
-  member of staff needs it, and "free" means *not timetabled or taken*, not *empty* — rooms are shared.
-
-### 3. Open a room — everyone
-- The day as whole-hour blocks. A two-hour class is **one block spanning two hours**, labelled with
-  its real times (`13:00–14:50`), never split into two halves.
-- The room's facilities (seats, sockets, seat type). Administrators can edit them; every save stamps a
-  "last verified" date, and a room that has never been verified says so on screen.
-- Reviews: one star rating and one review per person per room. Anyone can write, change and delete
-  their **own** review; removing someone else's review is a super administrator action, and the
-  server enforces it.
-
-### 4. Change room use time — administrators
-- **Add use** takes free hours away (an event needs the room); **release** gives hours back.
-- Whole blocks only: a change starts on the hour and ends at `:50`, exactly like a class.
-- The University timetable always wins. A change that would overlap a class is rejected outright with
-  `400 TIMETABLE_PRIORITY` instead of being silently ignored.
-- You can cancel your own changes. Cancelling **another** administrator's change is a super administrator
-  action, and the server enforces that — the button is disabled and the API answers `403 FORBIDDEN_OWNER`.
-- Every change carries a reason, expires on its own when given an expiry, and is written to the audit log.
-
-### 5. Manage accounts — super administrators
-- Create, rename, reset the password of, promote or demote, and delete accounts.
-- Roles are layered (`user` < `admin` < `superadmin`), so a super administrator also holds every
-  administrator permission.
-- Two safeguards: you cannot change or delete your own account, and the last super administrator
-  cannot be demoted or deleted.
-
-### Roles and permissions
-
-| Capability | `user` | `admin` | `superadmin` |
-|---|---|---|---|
-| Search rooms and open room pages | ✓ | ✓ | ✓ |
-| Write, change and delete your own review | ✓ | ✓ | ✓ |
-| Lock, release or cancel **your own** changes (whole hours) | — | ✓ | ✓ |
-| Cancel **any** change, including another administrator's | — | — | ✓ |
-| Edit room facilities | — | ✓ | ✓ |
-| Remove **any** review (your own: everyone) | — | — | ✓ |
-| Manage accounts: create, promote/demote, reset password, delete | — | — | ✓ |
-
-### Mobile client
-
-`mobile/` is a second front end for the **same backend**: Vue 3 + Vite, built mobile first (bottom tabs, cards, one-handed reach), served on **5174**.
-
-It calls the same `/api` end points with the same token, so **the backend did not change**. The dev server proxies `/api` to `8080`, which means there is no second API and no copy of the business rules.
-
-- Sign in · find a free room · open a room (timetable strip + reviews) · switch language (EN / 简体 / 繁體)
-- Administrator pages stay on the desktop client; the mobile app is the student view
-- `cd mobile && npm install && npm run dev` → <http://localhost:5174>
-
-## Screenshots
-
-Desktop, phone, and the simulated feed, all captured from the running project:
-**[docs/SCREENS.md](docs/SCREENS.md)**.
-
-| | | |
-|---|---|---|
-| ![Find a free room](docs/screens/desktop/02-find-a-room.jpg) | ![Room and reviews](docs/screens/desktop/03-room-and-reviews.jpg) | ![Phone client](docs/screens/mobile/02-room.jpg) |
-
-## How it works
-
-The mental model is one sentence: **free time is the day minus the busy blocks.**
-
-Draw one day as a single line from 08:00 to 22:00. Every class and every posted change is a block that gets coloured in. What is left uncoloured is the free time. Answering *"is this room free from 10:00 to 11:00?"* is then just checking whether that stretch stays inside an uncoloured part. The service does this by merging and subtracting blocks of time, and it keeps a ten-minute changeover margin on both sides of every block, because a room is not usable up to the minute a class ends.
-
-Where the busy blocks come from is the part that matters most:
+## What it is
 
 | | |
 |---|---|
-| **Occupancy is whole hours** | Every class starts on the hour and ends at `:50`, so a two-hour class occupies two whole blocks (`13:00–14:50`) and never half of one. Staff changes follow the same convention: they start on the hour and end at `:50`. |
-| **The University timetable is the authority** | A change posted by staff can only occupy time the timetable shows as free. The server rejects any change that overlaps a class (`400 TIMETABLE_PRIORITY`) — it does not silently ignore it. |
-| **Students cannot affect occupancy** | Student accounts have no write path at all. The check happens on the server, not by hiding buttons: a student token gets `403` on the change endpoint. |
-| **We ask, we do not copy** | The University's timetable is read from a read-only endpoint and polled, with a freshness check against a last-updated stamp. We keep no copy and never write to their system. In the prototype this source is sample data (see *Limitations*). |
+| **It answers** | what to do with the next hour, and where |
+| **It does not** | hand you a list and let you choose |
+| **You do** | open it once a day, and follow it |
+| **It is not** | a room finder, and not a calendar |
 
-### Rules the server enforces
+A room finder tells you which rooms are empty. A calendar stores what you have already decided.
+Neither answers the question a student actually has, standing in a corridor: *what now?*
 
-| Rule | Where | How it was verified |
+---
+
+## The problem, stated properly
+
+Between two classes a student does not know three things:
+
+**where to go · where they are allowed to go · what to do**
+
+"Which room is empty" is a small part of the middle one, and the easiest part. Every existing tool
+answers that part and hands the other two back.
+
+So the question here is one level up from the one we started with. Not *which room*, but *where
+should this person be, and when should they move*.
+
+---
+
+## How it decides
+
+Four layers, each checkable on its own. That separability is what makes the thing buildable.
+
+```
+1  Anchors     the timetable. Fixed, authoritative, never questioned.
+2  Free time   gaps between commitments, minus walking and a buffer.
+3  Fill        what goes in each gap, and where, from the availability layer.
+4  Repair      when reality deviates, change as little as possible.
+```
+
+The user makes one gesture a day: reveal the day. After that the plan is read-only until something
+deviates — a class overruns, a friend appears, a lecture is skipped.
+
+### The part that is actually hard
+
+Not deciding a day. Deciding **how little to change** when the day moves.
+
+Two stops count as *the same thing* only if the purpose is unchanged, the place is the same
+building (or within walking tolerance), and the start time is within ±15 minutes. On that criterion
+the system repairs the broken window and leaves everything else alone, because a plan that rewrites
+itself every time a class overruns is indistinguishable from having no plan at all.
+
+Repair has a cost order, and it climbs it in this sequence: move a stop 5–10 minutes · change room
+in the same building · change building · drop a stop · and only then touch attendance, which is the
+user's decision and never the system's.
+
+<img src="product/repair.png" width="330" alt="After a 20-minute overrun: one block changed, the rest untouched">
+
+> A finder answers a set. A plan answers a sequence.
+
+---
+
+## What exists today
+
+| Part | State | Where |
 |---|---|---|
-| Start on the hour, end at `:50` (searches and staff changes alike) | `AvailabilityService.requireSearchWindow` / `requireWholeHours` | `from=14:30` → `400`; `to=16:00` → `400` |
-| Staff changes may not touch class time | `UpdateService.create` (overlap test) | `RELEASE`/`USE` over a class → `400 TIMETABLE_PRIORITY` |
-| Roles are layered: `user` < `admin` < `superadmin` | `AuthService.require(token, minRole)` | a student token on `/updates` → `403`; an administrator token on `/accounts` → `403` |
-| Only `hku.hk` addresses can register | `AuthService.isHkuEmail` | `@gmail.com` and `@connect.hku.hk.evil.com` → `400` |
-| Every change is attributed and expirable | `room_updates`, `audit_log` | `GET /api/audit` |
+| Concept, feature map, screen plan | written | [`product/`](product/) |
+| Clickable prototype — one day, three tabs | **runs in a browser** | [`product/demo/index.html`](product/demo/index.html) |
+| Availability engine — free rooms derived from the timetable | **built and tested** | [`backend/`](backend/) · [`mock-school-api/`](mock-school-api/) |
+| Two clients (desktop + phone) on one service | built | [`frontend/`](frontend/) · [`mobile/`](mobile/) |
+| Repair criterion and its cost order | designed; not yet measured | report, in progress |
 
-## Architecture
+The availability engine is not the product. It answers *where can I be*, and its job in this design
+is to keep the plan from pointing at a place that does not exist.
 
-Database schema, with ER diagrams generated from the live database: **[docs/ERD.md](docs/ERD.md)**.
+---
 
-![Architecture: two Vue front ends, one Spring Boot service, one database, and the University's timetable as a read-only input](docs/diagrams/architecture.png)
-
-Three parts, and the split between them is the design:
-
-1. **Two Vue 3 front ends, one per device.** The desktop client (port 5173) carries all three account roles (`user` < `admin` < `superadmin`): a student page has no control over occupancy anywhere, an administrator adds *change room use time* and facility editing, and a super administrator adds account management. The phone client (port 5174) is the student view: find a free room, a room's timetable, reviews and photos. Both call the same API with the same token, and **what a role may do is decided by the server rather than by hiding buttons** — there is no second copy of the rules to keep in step.
-2. **One Spring Boot service** that computes availability, applies the rules above, and is the only part of the system that writes anything.
-3. **One PostgreSQL database** holding the timetable, the posted changes, the audit log and the accounts.
-
-The University's timetable is an **input, not a part we build**. Our service calls a read-only endpoint on a schedule and compares a last-updated stamp; if the data behind an answer is stale, the answer says so rather than pretending to be current.
-
-## Quick start
-
-**Requirements:** Java 21, Maven, Node 18+, PostgreSQL 17 (`brew install maven openjdk@21 postgresql@17 node` on macOS).
-
-Step-by-step deployment, ports, accounts and troubleshooting: **[docs/DEPLOY.md](docs/DEPLOY.md)**.
+## Try the prototype
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git
-cd hku-empty-classroom
-
-./scripts/start-all.sh      # starts PostgreSQL (5433) → Spring Boot (8080) → Vite (5173)
-# first run installs dependencies and applies the Flyway migrations: allow 3–8 minutes
+open product/demo/index.html       # no build, no server, no install
 ```
 
-Then open **http://localhost:5173/login** and sign in:
+Three tabs: **day · plan · mine**. Everything is clickable — swap a meal, book a meeting room, skip
+a class, move a block, add something by hand. Every change can be undone.
 
-| Account | Role | What it shows |
-|---|---|---|
-| `user1` | `user` (student) | Search and room pages only — no write control exists in the UI |
-| `admin1` | `admin` | The same app plus *Change room use time*, facility editing, and the audit trail |
-| `teacher1` | `admin` | A second administrator, to show that one administrator can manage another's changes |
-| `super1` | `superadmin` | Everything above plus *Accounts*: create, promote/demote, reset password, delete |
+The one worth trying: open the day, click **"something changed?"** top right, pick *the class ran 20
+minutes late*, and watch it change **one** block rather than five. The link in the toast shows what
+full recomputation would have done to the same day.
 
-Seeded passwords are in the Flyway migrations: `V2__seed.sql` (renamed in `V5__account_names.sql`) for the original three accounts, and `V12__super_admin.sql` for `super1`.
+The prototype is a design instrument, not an implementation. The data is a fixed day and the
+planner behind it is a stub. What is real is the state machine: every action changes the plan,
+propagates only as far as it must, and can be reversed.
 
-Stop everything with `./scripts/stop-all.sh`. Layers can be started individually with `scripts/start-db.sh`, `start-backend.sh`, `start-frontend.sh`.
+<img src="product/plan.png" width="330" alt="The plan tab: the week as five columns, the selected day below, free slots tappable">
 
-Sanity check from the command line:
+---
+
+## Run the whole system
+
+The two-client application behind the availability layer is fully runnable.
 
 ```bash
-curl -s "http://localhost:8080/api/availability?date=$(date +%F)&building=Central%20Podium&from=14:00&to=15:50" | python3 -m json.tool | head -30
+git clone https://github.com/HenryLiu520/nextstop
+cd nextstop
+./scripts/start-all.sh     # PostgreSQL 5433 → Spring Boot 8080 → Vite 5173
 ```
 
-## API (prototype)
+First run installs dependencies and applies the Flyway migrations — allow 3–8 minutes. Then open
+<http://localhost:5173/login>. Seeded accounts cover all three roles; passwords are in the Flyway
+migrations under `backend/src/main/resources/db/migration/`.
 
-| Method | Path | Notes |
-|---|---|---|
-| `POST` | `/api/auth/register` | Sign up with an `hku.hk` email; returns a token |
-| `POST` | `/api/auth/login` | Returns a token (kept in memory, 24 h) |
-| `GET` | `/api/buildings` | Buildings |
-| `GET` | `/api/rooms?building=Central%20Podium` | Room list, with facilities and review averages |
-| `GET` | `/api/availability?date=&building=&from=&to=` | **Main query** — which rooms are free for the whole window |
-
-The `building` parameter takes the University's own building name, as listed by `/api/buildings` — written in full and without a campus prefix: `Central Podium`, `Knowles Building`, `K. K. Leung Building`, `Main Building`. Room codes keep the University's short form (`CPD-LG.01`).
-| `GET` | `/api/rooms/{code}/timeline?date=` | Busy / free / buffer segments for one room, one day |
-| `POST` | `/api/updates` | Post a change (`USE` / `RELEASE`) — administrators only |
-| `GET` | `/api/updates/mine` · `GET`/`DELETE` `/api/updates[/{id}]` | List, inspect and cancel changes (cancel keeps the record, marks it expired) |
-| `PATCH` | `/api/rooms/{code}` | Edit facilities — administrators only |
-| `GET` | `/api/rooms/{code}/reviews` · `POST` · `DELETE /api/reviews/{id}` | Reviews (one per person per room) |
-| `GET` | `/api/audit` | Audit trail — administrators only |
-| `GET` | `/api/accounts` | List accounts — **super administrators only** |
-| `POST` | `/api/accounts` | Create an account, with its role — super administrators only |
-| `PATCH` | `/api/accounts/{id}` | Rename, reset password, promote or demote — super administrators only |
-| `DELETE` | `/api/accounts/{id}` | Delete an account — super administrators only |
-
-## Tests
+Docker is supported too: **[docs/DEPLOY.md](docs/DEPLOY.md)** ([简体](docs/DEPLOY.zh-CN.md) ·
+[繁體](docs/DEPLOY.zh-TW.md)).
 
 ```bash
-./scripts/test.sh        # needs the database running; the script starts it if needed
+./scripts/test.sh          # 27 automated tests, needs the database
 ```
 
-**27 automated tests, all passing** (9 interval-maths, 11 availability/rule, 2 sign-up rule, 4 role and account-management, 1 review-permission). The boundary cases the report leans on:
+---
 
-| Case | Test | |
-|---|---|---|
-| A normal gap between two classes is usable | `normalGapIsUsable` | ✓ |
-| Two classes back to back give no window | `backToBackGivesNoWindow` | ✓ |
-| A gap shorter than the changeover margin is not offered | `gapShorterThanBufferIsNotOffered` | ✓ |
-| A release can only cancel a staff-added block, never a class | `releaseOnlyCancelsAnAdminAddition` | ✓ |
-| A release can never punch a hole in the timetable | `releaseCannotOverrideTheTimetable` | ✓ |
-| A change that overlaps a class is rejected outright | `adminCannotChangeClassTime` | ✓ |
-| During a class the room reports *in use* | `duringClassIsInUse` | ✓ |
-| Non-hour times are rejected | `offHourTimesAreRejected` | ✓ |
-| A two-hour class is one block spanning two hours | `timelineMergesWholeHourBlocks` | ✓ |
-| Only `hku.hk` addresses may register | `RegistrationRulesTest` (2 cases) | ✓ |
-| Only the author — or a super administrator — may delete a review | `ReviewRulesTest` | ✓ |
-| Roles are layered and account management is guarded | `AccountRulesTest` (4 cases) | ✓ |
-
-Tests are `@Transactional` and roll back, so running them never pollutes the demo data.
-
-## Performance (measured 2026-10-02)
-
-| Metric | Value |
-|---|---|
-| Throughput of the search endpoint | **~8,500 requests/s** (stable from 50 to 1000 concurrent) |
-| Latency | 5.9 ms @ 50 concurrent · 121 ms @ 1000 concurrent |
-| SQL statements per request | **3** (rooms + that day's classes + that day's changes) |
-| Heaviest run | 1000 concurrent × 10 s → 84,713 requests, all `200`, 0 errors |
-
-The first version issued 31 statements per request (one class query and one change query per room — an N+1), which made the database the bottleneck at ~1,100 requests/s. Batching the two lookups and grouping in memory cut it to 3 statements and raised throughput 7.7×. Redis was deliberately not used: one instance, read-mostly, a few KB of data — Redis matters for a multi-instance deployment, not for this load.
-
-## Project layout
+## Repo map
 
 ```
-empty-classroom/
-├── backend/                      Spring Boot 4.1.1 · Java 21 · Maven
-│   └── src/main/java/hku/ec/
-│       ├── domain/               Room · ClassSlot · RoomUpdate · AuditEntry · AppUser
-│       ├── repo/                 Spring Data JPA repositories
-│       ├── service/
-│       │   ├── AvailabilityService.java   ★ the free-interval computation
-│       │   ├── UpdateService.java         staff changes, expiry, timetable-priority check
-│       │   └── AuthService.java           roles, sign-up rule, prototype tokens
-│       └── web/                  controllers and DTOs
-│   └── src/main/resources/
-│       ├── application.yml       changeover buffer, opening hours, datasource
-│       └── db/migration/         Flyway migrations: schema, seed, roles, reviews, facilities,
-│                                  sign-up, whole-hour blocks, super administrators
-├── frontend/                     Vue 3 · Vite · Element Plus · Pinia
-│   └── src/views/                Login.vue · FindRoom.vue · AllRooms.vue (with the room panel) · AdminUpdates.vue
-├── docs/images/                  screenshots used above
-├── db/pgdata/                    project-local PostgreSQL data directory (safe to delete and rebuild)
-├── logs/                         backend.log · frontend.log · pg.log
-└── scripts/                      start-all.sh · stop-all.sh · test.sh · per-layer scripts
+product/           the idea: concept, features, screens, prototype, one-page PDF
+backend/           Spring Boot service — timetable, availability, accounts, audit
+frontend/          Vue 3 desktop client (5173)
+mobile/            Vue 3 phone client (5174)
+mock-school-api/   simulated school timetable feed, plus its design log
+docs/              deployment, ER diagrams, screenshots, folder conventions
+scripts/           start / stop / test
 ```
 
-## Limitations, and what we do not claim
+Worth opening:
 
-| Limitation | Detail |
-|---|---|
-| **"Free" does not mean "empty"** | The system answers *"is this room taken by a class or a posted change?"*, not *"how many people are in it?"*. Rooms are shared; the UI says so explicitly. |
-| The timetable is sample data | `V2__seed.sql` is a plausible mock, not the real timetable, and the University's endpoint is not connected yet. Every figure in the report must come from real data before it is claimed. |
-| Prototype-grade auth | Tokens live in memory (a restart invalidates them) — when that happens the app signs you out and returns to the login page; passwords use `SHA-256(salt:password)` rather than bcrypt, and there is no HTTPS. This is not a production authentication design. |
-| No verification email | Sign-up checks the address suffix only; anyone can type any `hku.hk`-shaped address. |
-| Reviews are not moderated | "One per person per room, deletable by the author, removable by an administrator" — there is no report or filtering queue. |
-| Facilities are sample values | Pre-filled placeholders per room type; the screen says `sample data, not verified yet` until an administrator saves. Do not present them as surveyed. |
-| Single instance | No clustering; the expiry sweep is a single `@Scheduled` job. |
-| CORS configured per method | Adding an HTTP method means adding it to `WebConfig.allowedMethods` as well — a missing `PATCH` once produced `403 Invalid CORS request` from the browser while `curl` (no `Origin` header) still passed. |
+- [`product/concept.md`](product/concept.md) — the idea in one page
+- [`product/features.md`](product/features.md) — every feature, and how to see it working
+- [`product/screens.md`](product/screens.md) — screen structure, actions, and the rules behind them
+- [`docs/ERD.md`](docs/ERD.md) — the data model, and three things it deliberately lacks
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — how to run all of it
+
+---
+
+## Design rules we hold to
+
+1. **Never ask what the user would not have done anyway.** No forms, no ratings, no "was this
+   helpful". Everything learned comes from actions taken for the user's own reasons.
+2. **The timetable is authoritative.** We do not model it as something that might be wrong.
+3. **No empty time.** Gaps are filled by default; a planner that permits "nothing" degrades into a
+   copy of the timetable.
+4. **Show the number, not the parameter.** One card, one time, one destination.
+5. **Every change is reversible** — including a skipped class.
+
+---
+
+## What we do not claim
+
+- **The timetable is sample data.** `V2__seed.sql` is a plausible mock; the University's endpoint
+  is not connected. Figures must come from real data before anyone claims them.
+- **"Free" is not "empty".** The system answers *is this room taken by a class or a posted change*,
+  never *how many people are in it*. Rooms are shared, and the interface says so.
+- **The repair comparison is still a design claim.** The one-block-versus-five-block example is
+  illustrative, not a measured result.
+- **Prototype-grade auth.** Tokens live in memory, passwords use salted SHA-256, no HTTPS.
+- **No learning yet.** The self-learning layer is designed and written up, not implemented; the
+  prototype uses fixed defaults.
+
+---
 
 ## Licence and credits
 
-This repository is coursework and is not distributed, so it carries no licence file of its own. All third-party components are used under permissive licences — MIT for the front-end stack (Vue 3, Vite, Element Plus, Pinia, axios, vue-i18n), Apache-2.0 for Spring Boot and Flyway, the PostgreSQL licence for the database, BSD-2-Clause for the JDBC driver — and each is credited in [THIRD-PARTY.md](THIRD-PARTY.md). The interface follows the sidebar-dashboard idiom popularised by youlai's [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) (MIT); **no code from that template is copied into this project**. The header carries the University's shield and wordmark and uses the HKU Green (#024638) from the University's visual identity; those marks are the University's property, used only to identify this coursework prototype. Two photographs of the Main Building are used as page backgrounds, from Wikimedia Commons under CC BY-SA (photographers Yumeto and Damaskam); see [THIRD-PARTY.md](THIRD-PARTY.md).
-
-## Context
-
-COMP1110 Group Project, Group 08 — The University of Hong Kong, 2026. Under the course's Group Project Guidelines, code and prototypes are optional and are not graded: this prototype exists to show that the design in our Project Plan actually runs.
+Coursework, not distributed; no licence file. Third-party components are used under permissive
+licences (MIT front-end stack, Apache-2.0 Spring Boot and Flyway, PostgreSQL licence, BSD-2 JDBC
+driver) and credited in [THIRD-PARTY.md](THIRD-PARTY.md). No code is copied from the
+[vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) template (MIT) that inspired
+the layout. The header uses the University's shield, wordmark and HKU Green (#024638) only to
+identify this coursework prototype.

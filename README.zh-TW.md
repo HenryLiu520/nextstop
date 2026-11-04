@@ -1,260 +1,160 @@
-# Empty Classroom Plan
+# NextStop
 
-[English](README.md) · [简体中文](README.zh-CN.md) · **繁體中文**
+[English](README.md) · **簡體中文** · [繁體中文](README.zh-TW.md)
 
-> 回答一個關於港大教室的問題：**課堂之間，到底哪幾間教室是空的？**
-> Vue 3 + Spring Boot + PostgreSQL · COMP1110 第 08 組（香港大學）· 由 **LIU Haoran（u3686264）** 開發
+> 學生上完一節課走出來，手上還有七十分鐘。校園裡到處是空房間。
+> 他不知道的是**能去哪裡**。NextStop 替他把這件事決定掉，並且在一天被打亂時守住這個決定。
 
-![查詢頁：14:00 到 15:50 哪些教室空著](docs/screens/desktop/02-find-a-room.jpg)
+COMP1110 第 08 組 · 香港大學 · 作者 **LIU Haoran (u3686264)**
+
+<img src="product/day.png" width="330" alt="一天是一疊塊：09:00 課、11:00 自習、12:10 吃飯、14:00 課、16:00 見面、17:00 自習">
 
 ---
 
-## 這個專案解決什麼問題
-
-09:50 到 10:10 之間，港大每一棟教學大樓的走廊裡都擠著找座位的同學。他們問的是同一個問題——**附近有沒有空教室？**——但沒有人能在不走過去看看的情況下回答它。
-
-回答這個問題需要的資訊其實一直都在。學校有每週課表，而且它已經把資料推到了最末端：**每間教室門外都有一個顯示屏，顯示這間教室當天的課表**。缺的不是資料，而是一個把課表變成「**接下來這一小時哪幾間教室空著**」的視圖，給一個正站在走廊裡的學生看。
-
-本專案把決定「教室能不能用」的兩件事合起來——**固定的週課表** 與 **管理人員發布的臨時變更**（教室被活動佔用、或某段不再使用）——然後報出剩下的空檔。它刻意只描述**房間，不描述人**：不猜房間裡有幾個人，也不要求學生預約任何東西。
-
-## 功能
-
-下面按**一個人實際會遇到的順序**排：登入 → 找空教室 → 看某間教室 → （有權限才有的）改教室時間、管理帳號。
-
-### 1. 登入
-- 可以用 HKU 信箱自助註冊（`@connect.hku.hk`、`@hku.hk` 等）：信箱 + 密碼，原型階段不發驗證信。
-  帳號也可以由超級管理員直接建立。
-- 種子帳號涵蓋三種角色（見「快速開始」）。
-
-### 2. 找空教室 —— 所有角色
-- 選日期、樓棟、時間窗（`14:00 → 15:50`），列出整段都空著的教室；每條結果標明「現在可用 / 稍後可用
-  / 正在使用」，以及下一節課什麼時候開始。排序可按：空檔最長、房號、樓棟、座位最多。
-- 兩條提醒直接放在頁面上：如果上課或教職員需要，你必須讓出教室；「空檔」只表示**沒有被課表或徵用佔住**，
-  不代表裡面沒人——教室是共用的。
-
-### 3. 看某間教室 —— 所有角色
-- 當天課表畫成**整點方格**：兩小時的課就是**跨兩格的一整塊**，標籤寫真實時間（`13:00–14:50`），
-  絕不拆成兩半。
-- 教室設施（座位數、插座、座位類型）。管理員可以修改；每次儲存蓋「最後核實」日期，從未核實過的房間
-  會在介面上說明。
-- 評價：一人一房一則星級 + 一則文字。任何人都可以寫、改、刪**自己的**評價；刪別人的評價屬於超級管理員的權限，這一條由伺服器端強制。
-
-### 4. 改教室使用時間 —— 管理員
-- **新增使用**：把空檔佔掉（例如教室要辦活動）；**釋放時間**：把時間還回來。
-- 只按整塊：起點整點、終點 `:50`，和一節課完全同規。
-- **學校課表優先級最高**：與課重疊的變更會被直接拒絕（`400 TIMETABLE_PRIORITY`），而不是默默忽略。
-- 你可以撤銷**自己提交**的變更。撤銷**別的管理員**提交的變更屬於超級管理員的權限——這一條由伺服器端
-  強制：按鈕變灰，介面直接回 `403 FORBIDDEN_OWNER`。
-- 每次變更都寫理由、可以設到期時間自動失效，並寫進稽核日誌。
-
-### 5. 管理帳號 —— 超級管理員
-- 新增、改名、重設密碼、提權 / 降權、刪除帳號。
-- 角色是分層的（`user` < `admin` < `superadmin`），所以超級管理員自動擁有管理員的全部權限。
-- 兩條護欄：不能修改或刪除自己的帳號；最後一個超級管理員不能被降權或刪除。
-
-### 角色與權限
-
-| 能力 | `user` | `admin` | `superadmin` |
-|---|---|---|---|
-| 查詢教室、打開教室頁 | ✓ | ✓ | ✓ |
-| 寫 / 改 / 刪自己的評價 | ✓ | ✓ | ✓ |
-| 鎖定、釋放或撤銷**自己提交**的變更（按整塊） | — | ✓ | ✓ |
-| 撤銷**任何**變更，包括別的管理員提交的 | — | — | ✓ |
-| 編輯教室設施 | — | ✓ | ✓ |
-| 刪除**任何**評價（刪自己的：所有人都行） | — | — | ✓ |
-| 管理帳號：新增、提權降權、重設密碼、刪除 | — | — | ✓ |
-
-### 行動端
-
-`mobile/` 是**同一個後端**的第二個前端：Vue 3 + Vite，按手機螢幕做的（底部標籤列、卡片、單手可及），跑在 **5174**。
-
-它用同一個 token 打同一套 `/api`，所以**後端一行沒改**。開發伺服器把 `/api` 代理到 `8080`，因此不存在第二個 API，也沒有複製一份業務規則。
-
-- 登入 · 找空教室 · 看某間教室（課表條 + 評價）· 切換語言（EN / 简体 / 繁體）
-- 管理員頁面留在桌面端；手機端是學生視角
-- `cd mobile && npm install && npm run dev` → <http://localhost:5174>
-
-## 介面
-
-桌面端、手機端、模擬學校系統，全部從跑著的專案裡截的：**[docs/SCREENS.zh-TW.md](docs/SCREENS.zh-TW.md)**。
-
-| | | |
-|---|---|---|
-| ![找空教室](docs/screens/desktop/02-find-a-room.jpg) | ![教室與評價](docs/screens/desktop/03-room-and-reviews.jpg) | ![手機端](docs/screens/mobile/02-room.jpg) |
-
-## 怎麼算的
-
-核心一句話：**空檔 = 一天 減去 被佔的塊。**
-
-把一天畫成 08:00 到 22:00 的一條線，每節課、每個發布的變更都是一個塗黑的塊；**沒被塗黑的部分就是空檔**。「10:00 到 11:00 這間房空嗎？」就變成「這一段是否整段落在沒塗黑的地方」。後端做的就是把这些時間塊**合併與相減**，並且每個塊兩側各留 **10 分鐘換場餘量**——因為不能上課上到最後一分鐘才算空出來。
-
-介面上這件事畫成**一格一小時的方格**：一節 10:00–11:50 的課會佔滿 10:00 和 11:00 兩格，格子裡寫的是真實時間（`11:00–11:50`）——**格線對齊整點，數字照樣是幾點 50**。
-
-而這些「被佔的塊」從哪來，才是最關鍵的部分：
+## 它是什麼
 
 | | |
 |---|---|
-| **佔用以整塊為單位** | 所有課整點開始、`:50` 結束，所以兩小時的課佔兩個整塊（`13:00–14:50`），絕不會佔半塊；管理員的變更同樣如此：起點整點、終點 `:50`。 |
-| **學校課表優先級最高** | 管理人員發布的變更，只能佔用**課表顯示為空**的時間。任何與課重疊的變更會被伺服器端**直接拒絕**（`400 TIMETABLE_PRIORITY`），而不是默默接受一個不生效的變更。 |
-| **學生影響不了佔用** | 學生帳號根本不存在寫入路徑。攔截在**伺服器端**做，不是靠藏按鈕：學生 token 呼叫變更介面一律 `403`。 |
-| **我們是去問，不是抄一份** | 學校課表從對方的**唯讀介面**讀取、定期輪詢，並用 `last-updated` 時間戳做新鮮度檢查。我們不儲存副本，絕不寫對方系統。原型階段這個來源仍是樣本資料（見「限制」）。 |
+| **它回答** | 接下來這一小時做什麼，以及在哪 |
+| **它不做** | 給你一張清單讓你自己挑 |
+| **你要做的** | 一天開啟一次，然後照著走 |
+| **它不是** | 查詢器，也不是日曆 |
 
-### 伺服器端真正執行的規則
+查詢器告訴你哪些房間空著。日曆存著你已經決定的事。兩者都不回答一個學生站在走廊裡真正的問題：**現在幹什麼**。
 
-| 規則 | 實作位置 | 怎麼驗證的 |
+---
+
+## 問題說清楚
+
+兩節課之間，學生不知道三件事：
+
+**能去哪裡 · 被允許去哪裡 · 做什麼**
+
+"哪間房空著"只是第二件事裡的一小塊，而且是最容易的那塊。現有工具回答了這一小塊，把另外兩件半退回給人。
+
+所以這裡的問題比我們最初問的高一層。不是**哪間房**，而是**這個人應該在哪，什麼時候該動身**。
+
+---
+
+## 它怎麼決定
+
+四層，每層可以單獨檢查 —— 這種可分離性才是它能被做出來的原因。
+
+```
+1  固定    課表。權威、不可疑。
+2  空出    承諾之間的空隙，扣掉走路和緩衝。
+3  填      每段空隙放什麼、放哪，由可用性層給候選。
+4  修復    現實偏離時，儘量少改。
+```
+
+使用者一天只做一個動作：揭開這一天。之後計劃是隻讀的，直到有什麼偏離了 —— 課拖了、朋友來了、這節課不去了。
+
+### 真正難的地方
+
+不是決定一天。是決定**打亂之後最少改多少**。
+
+只有三件事都沒變，兩個停靠點才算"同一件事"：目的不變、地點同樓（或在步行容忍範圍內）、開始時間相差不超過 ±15 分鐘。按這個判據，系統只修被破壞的那一段，其餘一概不動 —— 因為一個每次課拖堂就整體重寫的計劃，跟沒有計劃是無法區分的。
+
+修復有一個代價順序，它按這個順序往上爬：挪動 5–10 分鐘 · 換同樓房間 · 換樓 · 取消一站 · **最後才是動出勤**，而出勤是使用者自己的決定，不是系統的。
+
+<img src="product/repair.png" width="330" alt="拖堂 20 分鐘後：只改了一站，其餘不動">
+
+> 查詢器回答一個集合。計劃回答一個序列。
+
+---
+
+## 現在有什麼
+
+| 部分 | 狀態 | 位置 |
 |---|---|---|
-| 起點整點、終點 `:50`（查詢與管理員變更同規） | `AvailabilityService.requireSearchWindow` / `requireWholeHours` | `from=14:30` → `400`；`to=16:00` → `400` |
-| 管理員不得觸碰課表裡的課 | `UpdateService.create`（重疊判斷） | 對課程時段發 `RELEASE`/`USE` → `400 TIMETABLE_PRIORITY` |
-| 角色分層：`user` < `admin` < `superadmin` | `AuthService.require(token, minRole)` | 學生 token 呼叫 `/updates` → `403`；管理員 token 呼叫 `/accounts` → `403` |
-| 只有 `hku.hk` 信箱能註冊 | `AuthService.isHkuEmail` | `@gmail.com`、`@connect.hku.hk.evil.com` → `400` |
-| 每次變更可追溯、可到期失效 | `room_updates`、`audit_log` | `GET /api/audit` |
+| 概念、功能概要、介面規劃 | 已寫 | [`product/`](product/) |
+| 可點原型 —— 一天，三個 tab | **瀏覽器直接開啟** | [`product/demo/index.html`](product/demo/index.html) |
+| 可用性引擎 —— 從課表推出空閒房間 | **已實現並測試** | [`backend/`](backend/) · [`mock-school-api/`](mock-school-api/) |
+| 兩個客戶端（桌面 + 手機）共用一個服務 | 已實現 | [`frontend/`](frontend/) · [`mobile/`](mobile/) |
+| 修復判據與代價順序 | 已設計，尚未測量 | 報告，進行中 |
 
-## 架構
+可用性引擎不是產品。它回答"我能去哪"，它在這套設計裡的職責是：**保證計劃不會指向一個不存在的地方**。
 
-資料庫結構，含從**跑著的資料庫**生成的 ER 圖：**[docs/ERD.zh-TW.md](docs/ERD.zh-TW.md)**。
+---
 
-![架構：兩個 Vue 前端、一個 Spring Boot 服務、一個資料庫，學校課表是唯讀輸入](docs/diagrams/architecture.png)
-
-三個部分，**它們之間的分工就是設計本身**：
-
-1. **兩個 Vue 3 前端，一台裝置一個。** 桌面端（5173）承載三種帳號角色（`user` < `admin` < `superadmin`）：學生頁面裡不存在任何改占用的控件；管理員多加「更改教室使用時間」與設施編輯；超級管理員再加帳號管理。手機端（5174）是學生視角：找空教室、某間教室的課表與評價、照片。兩個前端用同一個 token 打同一套介面，**能做什麼由伺服器端決定，不是靠藏按鈕**——也就沒有第二份規則要跟著改。
-2. **一個 Spring Boot 服務**：計算空檔、執行上面的規則，是系統裡**唯一會寫資料的部分**。
-3. **一個 PostgreSQL 資料庫**：課表、發布的變更、審計日誌、帳號。
-
-學校課表是**輸入，不是我們要造的東西**。我們的服務按計畫呼叫對方的唯讀介面並比對 `last-updated` 時間戳；資料變舊就說變舊，不假裝是當前的。
-
-## 快速開始
-
-**環境需求：** Java 21、Maven、Node 18+、PostgreSQL 17（macOS 上 `brew install maven openjdk@21 postgresql@17 node`）。
-
-逐步部署、連接埠、帳號、常見問題：**[docs/DEPLOY.zh-TW.md](docs/DEPLOY.zh-TW.md)**。
+## 試一下原型
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git
-cd hku-empty-classroom
-
-./scripts/start-all.sh      # 依序啟動 PostgreSQL(5433) → Spring Boot(8080) → Vite(5173)
-# 首次執行會安裝依賴並套用 Flyway 遷移，約 3–8 分鐘
+open product/demo/index.html       # 不用編譯、不用服務、不用安裝
 ```
 
-然後打開 **http://localhost:5173/login** 登入：
+三個 tab：**一天 · 規劃 · 我的**。全部可點 —— 換飯點、訂會議室、跳過一節課、挪動塊、手動新增，每一次改動都能撤回。
 
-| 帳號 | 角色 | 能看到什麼 |
-|---|---|---|
-| `user1` | `user`（學生） | 只有查詢與教室頁——介面上不存在任何寫入入口 |
-| `admin1` | `admin` | 同一個應用，外加 *修改教室使用時間*、設施編輯、審計 |
-| `teacher1` | `admin` | 第二個管理員，示範「一個管理員可以管理另一個管理員提交的變更」 |
-| `super1` | `superadmin` | 以上全部，外加「帳號管理」：新增、提權降權、重設密碼、刪除 |
+最值得試的一下：開啟「一天」，點右上角**「有變化？說一句」**，選「課拖了 20 分鐘」，看它只改**一塊**而不是五塊。toast 上那個連結會顯示：同樣的偏離，全部重算會改成什麼樣。
 
-種子密碼在 Flyway 遷移裡：最初的三個帳號見 `V2__seed.sql`（帳號名在 `V5__account_names.sql` 中改過），`super1` 見 `V12__super_admin.sql`。
+原型是一個設計工具，不是實現。資料是固定的一天，背後的規劃器是樁。真的是狀態機：每個動作都改計劃，只傳播到必要的地方，而且都能撤回。
 
-停止：`./scripts/stop-all.sh`。單獨啟停某一層：`scripts/start-db.sh`、`start-backend.sh`、`start-frontend.sh`。
+<img src="product/plan.png" width="330" alt="規劃頁：一週五列，下面是選中那天的列，空檔可點">
 
-命令列自測：
+---
+
+## 跑整套系統
+
+可用性層背後的雙客戶端應用是可以完整跑起來的。
 
 ```bash
-curl -s "http://localhost:8080/api/availability?date=$(date +%F)&building=Central%20Podium&from=14:00&to=15:50" | python3 -m json.tool | head -30
+git clone https://github.com/HenryLiu520/nextstop
+cd nextstop
+./scripts/start-all.sh     # PostgreSQL 5433 → Spring Boot 8080 → Vite 5173
 ```
 
-## 介面（API，原型版）
+首次執行會安裝依賴並執行 Flyway 遷移，約需 3–8 分鐘。然後開啟 <http://localhost:5173/login>。種子帳號覆蓋三種角色，密碼在 `backend/src/main/resources/db/migration/` 裡。
 
-| 方法 | 路徑 | 說明 |
-|---|---|---|
-| `POST` | `/api/auth/register` | 用 `hku.hk` 信箱註冊，回傳 token |
-| `POST` | `/api/auth/login` | 回傳 token（記憶體保存 24 小時） |
-| `GET` | `/api/buildings` | 樓棟列表 |
-| `GET` | `/api/rooms?building=Central%20Podium` | 教室列表（含設施與評價均分） |
-| `GET` | `/api/availability?date=&building=&from=&to=` | **主查詢**：整段都空著的教室 |
-
-`building` 參數用學校自己的大樓名（見 `/api/buildings`），寫**全稱、不帶校區前綴**：`Central Podium`、`Knowles Building`、`K. K. Leung Building`、`Main Building`。教室編號維持學校原本的簡寫（`CPD-LG.01`）。
-| `GET` | `/api/rooms/{code}/timeline?date=` | 某教室一天的忙／閒方格 |
-| `POST` | `/api/updates` | 發布變更（`USE` / `RELEASE`）——僅管理員 |
-| `GET` | `/api/updates/mine`、`GET`/`DELETE` `/api/updates[/{id}]` | 檢視與撤銷變更（撤銷保留記錄，只設為失效） |
-| `PATCH` | `/api/rooms/{code}` | 編輯設施——僅管理員 |
-| `GET` | `/api/rooms/{code}/reviews`、`POST`、`DELETE /api/reviews/{id}` | 評價（一人一房一條） |
-| `GET` | `/api/audit` | 審計日誌——僅管理員 |
-| `GET` | `/api/accounts` | 帳號列表——**僅超級管理員** |
-| `POST` | `/api/accounts` | 新增帳號（可指定角色）——僅超級管理員 |
-| `PATCH` | `/api/accounts/{id}` | 改名、重設密碼、提權 / 降權——僅超級管理員 |
-| `DELETE` | `/api/accounts/{id}` | 刪除帳號——僅超級管理員 |
-
-## 測試
+也支援 Docker：**[docs/DEPLOY.zh-CN.md](docs/DEPLOY.zh-CN.md)**（[EN](docs/DEPLOY.md) · [繁體](docs/DEPLOY.zh-TW.md)）。
 
 ```bash
-./scripts/test.sh        # 需要資料庫在跑；腳本會先確保資料庫起來
+./scripts/test.sh          # 27 個自動測試，需要資料庫
 ```
 
-**27 個自動化用例全部通過**（9 個區間運算 + 11 個可用性／規則 + 2 個註冊規則 + 4 個角色與帳號管理 + 1 個評價權限測試）。報告裡會引用的邊界算例：
+---
 
-| 算例 | 測試方法 | |
-|---|---|---|
-| 兩節課之間的大空檔可用 | `normalGapIsUsable` | ✓ |
-| 背靠背兩節課，中間不給窗口 | `backToBackGivesNoWindow` | ✓ |
-| 間隙小於換場餘量，不展示為可用 | `gapShorterThanBufferIsNotOffered` | ✓ |
-| 釋放只能撤銷管理員自己加的佔用 | `releaseOnlyCancelsAnAdminAddition` | ✓ |
-| 釋放永遠挖不掉課表裡的課 | `releaseCannotOverrideTheTimetable` | ✓ |
-| 與課重疊的變更被直接拒絕 | `adminCannotChangeClassTime` | ✓ |
-| 查詢時刻正在上課 → 正在使用 | `duringClassIsInUse` | ✓ |
-| 非整點時間被拒絕 | `offHourTimesAreRejected` | ✓ |
-| 兩小時的課是一整塊（跨兩格） | `timelineMergesWholeHourBlocks` | ✓ |
-| 只有 `hku.hk` 信箱能註冊 | `RegistrationRulesTest`（2 例） | ✓ |
-| 只有本人（或超級管理員）能刪評價 | `ReviewRulesTest` | ✓ |
-| 角色分層、帳號管理有護欄 | `AccountRulesTest`（4 例） | ✓ |
-
-測試用 `@Transactional`，跑完自動回滾，**不會污染示範資料**。
-
-## 效能（實測，2026-10-02）
-
-| 指標 | 數值 |
-|---|---|
-| 查詢介面吞吐 | **約 8,500 請求/秒**（並發 50–1000 都穩定） |
-| 單請求延遲 | 5.9 ms @ 50 並發 · 121 ms @ 1000 並發 |
-| 每請求 SQL 條數 | **3 條**（房間列表 + 當天課表 + 當天變更） |
-| 最大壓力實測 | 並發 1000 × 10 秒 → 84,713 次請求全部 `200`，0 錯誤 |
-
-第一版每請求要發 **31 條 SQL**（每間房各查一次課表與變更，典型的 N+1），資料庫因此成為瓶頸（約 1,100 請求/秒）。改成批次取回、在記憶體裡按房間分組後降到 3 條，吞吐提升 **7.7 倍**。**沒有用 Redis 是有意的**：單實例 + 以唯讀為主 + 資料只有幾 KB；Redis 的價值在多實例部署，而不是這個負載。
-
-## 目錄結構
+## 倉庫結構
 
 ```
-empty-classroom/
-├── backend/                      Spring Boot 4.1.1 · Java 21 · Maven
-│   └── src/main/java/hku/ec/
-│       ├── domain/               Room · ClassSlot · RoomUpdate · AuditEntry · AppUser
-│       ├── repo/                 Spring Data JPA 儲存庫
-│       ├── service/
-│       │   ├── AvailabilityService.java   ★ 空檔區間計算
-│       │   ├── UpdateService.java         變更、到期失效、課表優先校驗
-│       │   └── AuthService.java           角色、註冊規則、原型級 token
-│       └── web/                  控制器與 DTO
-│   └── src/main/resources/
-│       ├── application.yml       換場餘量、開放時段、資料來源
-│       └── db/migration/         Flyway 遷移：建表、種子、角色、評價、設施、註冊、整點塊、超級管理員
-├── frontend/                     Vue 3 · Vite · Element Plus · Pinia
-│   └── src/views/                Login.vue · FindRoom.vue · AllRooms.vue（含房間詳情面板）· AdminUpdates.vue
-├── docs/images/                  上面用到的截圖
-├── db/pgdata/                    專案專用的 PostgreSQL 資料目錄（可刪掉重建）
-├── logs/                         backend.log · frontend.log · pg.log
-└── scripts/                      start-all.sh · stop-all.sh · test.sh · 各層單獨腳本
+product/           想法：概念、功能、介面、原型、一頁 PDF
+backend/           Spring Boot 服務 —— 課表、可用性、帳號、審計
+frontend/          Vue 3 桌面客戶端（5173）
+mobile/            Vue 3 手機客戶端（5174）
+mock-school-api/   模擬學校課表源，含它的設計記錄
+docs/              部署、ER 圖、截圖、目錄約定
+scripts/           啟動 / 停止 / 測試
 ```
 
-## 已知限制（報告裡要如實寫）
+值得點開：
 
-| 限制 | 說明 |
-|---|---|
-| **「空檔」不等於「沒人」** | 系統回答的是「這間房有沒有被課表或發布的變更佔住」，**不測房間裡有幾個人**。教室是共用的，介面上已明確寫出。 |
-| 課表是樣本資料 | `V2__seed.sql` 是合理的模擬排布，**不是真實課表**；學校介面尚未接入。報告裡任何數字都必須來自真實資料再聲稱。 |
-| 鑑權是原型級 | token 存記憶體（重啟失效）—— 失效時應用會**自動登出並回到登入頁**；密碼用 `SHA-256(salt:password)` 而非 bcrypt、無 HTTPS。**不是生產方案**。 |
-| 沒有信箱驗證 | 註冊只檢查後綴，任何人可以填一個形如 `hku.hk` 的地址。 |
-| 評價沒有審核佇列 | 「一人一房一條 + 可自刪 + 管理員可刪」，沒有檢舉或自動過濾。 |
-| 設施是樣本值 | 按房間類型預填的佔位值；管理員儲存前介面標註 `sample data, not verified yet`。**不要當普查結果寫進報告**。 |
-| 單實例 | 無叢集；到期檢查是單實例 `@Scheduled`。 |
-| CORS 白名單要跟著方法走 | 新增 HTTP 方法時 `WebConfig.allowedMethods` 也要同步——漏掉 `PATCH` 曾導致瀏覽器側 `403 Invalid CORS request`，而 `curl`（不帶 `Origin`）依然通過。 |
+- [`product/concept.md`](product/concept.md) —— 一頁講完這個想法
+- [`product/features.md`](product/features.md) —— 每個功能，以及怎麼看見它在工作
+- [`product/screens.md`](product/screens.md) —— 介面結構、動作，以及背後的規則
+- [`docs/ERD.md`](docs/ERD.md) —— 資料模型，以及它刻意沒有的三樣東西
+- [`docs/DEPLOY.zh-CN.md`](docs/DEPLOY.zh-CN.md) —— 怎麼全部跑起來
 
-## 授權與致謝
+---
 
-本儲存庫是課程作業、不對外分發，因此沒有獨立的 LICENSE 檔案。用到的第三方元件全部是寬鬆授權——前端棧（Vue 3、Vite、Element Plus、Pinia、axios、vue-i18n）為 MIT，Spring Boot 與 Flyway 為 Apache-2.0，資料庫為 PostgreSQL 授權，JDBC 驅動為 BSD-2-Clause——逐項列在 [THIRD-PARTY.md](THIRD-PARTY.md)。介面沿用了 youlai [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)（MIT）帶起的側欄式後台版式；**未複製該專案任何程式碼**。 介面頂部使用香港大學的校徽與字標，主色取港大視覺規範裡的 HKU Green（#024638）；這些標記屬於香港大學，此處僅用於標示這份課程作業原型。 頁面背景用了兩張港大主樓的照片，來自 Wikimedia Commons，CC BY-SA 授權（攝影 Yumeto、Damaskam），見 [THIRD-PARTY.md](THIRD-PARTY.md)。
+## 我們守的幾條規則
 
-## 專案背景
+1. **不問任何使用者本來不會做的事。** 沒有表單、沒有評分、沒有"這次準嗎"。學到的一切都來自使用者為自己做的事。
+2. **課表是權威。** 我們不把它建模成"可能會錯"的東西。
+3. **沒有空著的時間。** 空隙預設被填滿；允許"什麼都不排"的規劃器會退化成課表的影印件。
+4. **給數字，不給引數。** 一張卡、一個時間、一個去向。
+5. **每一次改動都可以撤回** —— 包括翹課。
 
-COMP1110 Group Project，第 08 組 —— 香港大學，2026。按課程《Group Project Guidelines》，程式碼與原型可選、不計分：這個原型存在的意義是證明我們 Project Plan 裡的設計**確實能跑起來**。
+---
+
+## 我們不聲稱的事
+
+- **課表是樣例資料。** `V2__seed.sql` 是合理的模擬；學校的介面尚未接入。任何數字都要等真實資料之後才能聲稱。
+- **"空閒"不等於"沒人"。** 系統回答的是"這間房有沒有課或被佔用"，從不回答"裡面有多少人"。房間是共享的，介面也這麼說。
+- **修復的對比目前還是設計主張。** "改一塊 vs 改五塊"是示例，不是實測結果。
+- **原型級鑑權。** token 存在記憶體裡，密碼是加鹽 SHA-256，沒有 HTTPS。
+- **學習功能還沒做。** 自適應那層只有設計和文字，原型用的是固定預設值。
+
+---
+
+## 許可與致謝
+
+課程作業，不對外分發，因此沒有獨立的 licence 檔案。第三方元件均按寬鬆許可使用（前端棧 MIT、Spring Boot 與 Flyway Apache-2.0、PostgreSQL 許可、JDBC 驅動 BSD-2），逐項記錄在 [THIRD-PARTY.md](THIRD-PARTY.md)。佈局受 [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)（MIT）啟發，**未複製其程式碼**。頁首使用學校校徽、字標與 HKU Green（#024638），僅用於標識這份課程原型。

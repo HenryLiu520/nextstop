@@ -16,8 +16,8 @@
 ## 1. 一条命令
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git
-cd hku-empty-classroom
+git clone https://github.com/HenryLiu520/nextstop.git
+cd nextstop
 ./scripts/start-all.sh
 ```
 
@@ -220,7 +220,7 @@ Flyway 没跑。看 `logs/backend.log` 里有没有 `Migrating schema`。注意 
 把仓库 clone 到一个空目录，三块都编一遍：
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git /tmp/fresh-clone
+git clone https://github.com/HenryLiu520/nextstop.git /tmp/fresh-clone
 cd /tmp/fresh-clone/backend && mvn -o -q -DskipTests package    # → target/empty-classroom-0.1.0.jar（52 MB）
 cd /tmp/fresh-clone/mobile  && npm ci && npm run build          # → 161 KB JS、4 KB CSS
 cd /tmp/fresh-clone/frontend && npm ci && npm run build         # → 干净构建

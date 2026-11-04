@@ -1,258 +1,160 @@
-# Empty Classroom Plan
+# NextStop
 
 [English](README.md) · **简体中文** · [繁體中文](README.zh-TW.md)
 
-> 回答一个关于港大教室的问题：**课间到底哪几间教室是空的？**
-> Vue 3 + Spring Boot + PostgreSQL · COMP1110 第 08 组（香港大学）· 由 **LIU Haoran（u3686264）** 开发
+> 学生上完一节课走出来，手上还有七十分钟。校园里到处是空房间。
+> 他不知道的是**能去哪里**。NextStop 替他把这件事决定掉，并且在一天被打乱时守住这个决定。
 
-![查询页：14:00 到 15:50 哪些教室空着](docs/screens/desktop/02-find-a-room.jpg)
+COMP1110 第 08 组 · 香港大学 · 作者 **LIU Haoran (u3686264)**
+
+<img src="product/day.png" width="330" alt="一天是一叠块：09:00 课、11:00 自习、12:10 吃饭、14:00 课、16:00 见面、17:00 自习">
 
 ---
 
-## 这个项目解决什么问题
-
-09:50 到 10:10 之间，港大每一栋教学楼的走廊里都挤着找座位的同学。他们问的是同一个问题——**附近有没有空教室？**——但没有人能在不走过去看看的情况下回答它。
-
-回答这个问题需要的信息其实一直都在。学校有每周课表，而且它已经把数据推到了最末端：**每间教室门外都有一个显示屏，显示这间教室当天的课表**。缺的不是数据，而是一个把课表变成"**接下来这一小时哪几间教室空着**"的视图，给一个正站在走廊里的学生看。
-
-本项目把决定"教室能不能用"的两件事合起来——**固定的周课表** 与 **管理人员发布的临时变更**（教室被活动占用、或某段不再使用）——然后报出剩下的空闲时间。它刻意只描述**房间，不描述人**：不猜房间里有几个人，也不要求学生预约任何东西。
-
-## 功能
-
-下面按**一个人实际会遇到的顺序**排：登录 → 找空教室 → 看某间教室 → （有权限才有的）改教室时间、管理账户。
-
-### 1. 登录
-- 可以用 HKU 邮箱自助注册（`@connect.hku.hk`、`@hku.hk` 等）：邮箱 + 密码，原型阶段不发验证邮件。
-  账户也可以由超级管理员直接创建。
-- 种子账号覆盖三种角色（见「快速开始」）。
-
-### 2. 找空教室 —— 所有角色
-- 选日期、楼栋、时间窗（`14:00 → 15:50`），列出整段都空着的教室；每条结果标明「现在可用 / 稍后可用
-  / 正在使用」，以及下一节课什么时候开始。排序可按：空闲窗口最长、房号、楼栋、座位最多。
-- 两条提醒直接放在页面上：如果上课或教职员需要，你必须让出教室；「空闲」只表示**没有被课表或征用占住**，
-  不代表里面没人——教室是共用的。
-
-### 3. 看某间教室 —— 所有角色
-- 当天课表画成**整点方格**：两小时的课就是**跨两格的一整块**，标签写真实时间（`13:00–14:50`），
-  绝不拆成两半。
-- 教室设施（座位数、插座、座位类型）。管理员可以修改；每次保存盖「最后核实」日期，从未核实过的房间
-  会在界面上说明。
-- 评价：一人一房一条星级 + 一条文字。任何人都可以写、改、删**自己的**评价；删别人的评价属于超级管理员的权限，这一条由服务端强制。
-
-### 4. 改教室使用时间 —— 管理员
-- **添加使用**：把空闲时间占掉（例如教室要办活动）；**释放时间**：把时间还回来。
-- 只按整块：起点整点、终点 `:50`，和一节课完全同规。
-- **学校课表优先级最高**：与课重叠的变更会被直接拒绝（`400 TIMETABLE_PRIORITY`），而不是默默忽略。
-- 你可以撤销**自己提交**的变更。撤销**别的管理员**提交的变更属于超级管理员的权限——这一条由服务端
-  强制：按钮置灰，接口直接回 `403 FORBIDDEN_OWNER`。
-- 每次变更都写理由、可以设到期时间自动失效，并写进审计日志。
-
-### 5. 管理账户 —— 超级管理员
-- 新建、改名、重置密码、提权 / 降权、删除账户。
-- 角色是分层的（`user` < `admin` < `superadmin`），所以超级管理员自动拥有管理员的全部权限。
-- 两条护栏：不能修改或删除自己的账户；最后一个超级管理员不能被降权或删除。
-
-### 角色与权限
-
-| 能力 | `user` | `admin` | `superadmin` |
-|---|---|---|---|
-| 查询教室、打开教室页 | ✓ | ✓ | ✓ |
-| 写 / 改 / 删自己的评价 | ✓ | ✓ | ✓ |
-| 锁定、释放或撤销**自己提交**的变更（按整块） | — | ✓ | ✓ |
-| 撤销**任何**变更，包括别的管理员提交的 | — | — | ✓ |
-| 编辑教室设施 | — | ✓ | ✓ |
-| 删除**任何**评价（删自己的：所有人都行） | — | — | ✓ |
-| 管理账户：增、提权降权、重置密码、删 | — | — | ✓ |
-
-### 移动端
-
-`mobile/` 是**同一个后端**的第二个前端：Vue 3 + Vite，按手机屏做的（底部标签栏、卡片、单手可达），跑在 **5174**。
-
-它用同一个 token 打同一套 `/api`，所以**后端一行没改**。开发服务器把 `/api` 代理到 `8080`，因此不存在第二个 API，也没有复制一份业务规则。
-
-- 登录 · 找空教室 · 看某间教室（课表条 + 评价）· 切换语言（EN / 简体 / 繁體）
-- 管理员页面留在桌面端；手机端是学生视角
-- `cd mobile && npm install && npm run dev` → <http://localhost:5174>
-
-## 界面
-
-桌面端、手机端、模拟学校系统，全部从跑着的项目里截的：**[docs/SCREENS.zh-CN.md](docs/SCREENS.zh-CN.md)**。
-
-| | | |
-|---|---|---|
-| ![找空教室](docs/screens/desktop/02-find-a-room.jpg) | ![教室与评价](docs/screens/desktop/03-room-and-reviews.jpg) | ![手机端](docs/screens/mobile/02-room.jpg) |
-
-## 怎么算的
-
-核心一句话：**空闲 = 一天 减去 被占的块。**
-
-把一天画成 08:00 到 22:00 的一条线，每节课、每个发布的变更都是一个涂黑的块；**没被涂黑的部分就是空闲时间**。"10:00 到 11:00 这间房空吗？"就变成"这一段是否整段落在没涂黑的地方"。后端做的就是把这些时间块**合并与相减**，并且每个块两侧各留 **10 分钟换场余量**——因为不能上课上到最后一分钟才算空出来。
-
-而这些"被占的块"从哪来，才是最关键的部分：
+## 它是什么
 
 | | |
 |---|---|
-| **占用以整块为单位** | 所有课整点开始、`:50` 结束，所以两小时的课占两个整块（`13:00–14:50`），绝不会占半块；管理员的变更同样如此：起点整点、终点 `:50`。 |
-| **学校课表优先级最高** | 管理人员发布的变更，只能占用**课表显示为空**的时间。任何与课重叠的变更会被服务端**直接拒绝**（`400 TIMETABLE_PRIORITY`），而不是默默接受一个不生效的变更。 |
-| **学生影响不了占用** | 学生账号根本不存在写路径。拦截在**服务端**做，不是靠藏按钮：学生 token 调变更接口一律 `403`。 |
-| **我们是去问，不是抄一份** | 学校课表从对方的**只读接口**读取、定期轮询，并用 `last-updated` 时间戳做新鲜度检查。我们不保存副本，绝不写对方系统。原型阶段这个来源仍是样例数据（见"限制"）。 |
+| **它回答** | 接下来这一小时做什么，以及在哪 |
+| **它不做** | 给你一张清单让你自己挑 |
+| **你要做的** | 一天打开一次，然后照着走 |
+| **它不是** | 查找器，也不是日历 |
 
-### 服务端真正执行的规则
+查找器告诉你哪些房间空着。日历存着你已经决定的事。两者都不回答一个学生站在走廊里真正的问题：**现在干什么**。
 
-| 规则 | 实现位置 | 怎么验证的 |
+---
+
+## 问题说清楚
+
+两节课之间，学生不知道三件事：
+
+**能去哪里 · 被允许去哪里 · 做什么**
+
+"哪间房空着"只是第二件事里的一小块，而且是最容易的那块。现有工具回答了这一小块，把另外两件半退回给人。
+
+所以这里的问题比我们最初问的高一层。不是**哪间房**，而是**这个人应该在哪，什么时候该动身**。
+
+---
+
+## 它怎么决定
+
+四层，每层可以单独检查 —— 这种可分离性才是它能被做出来的原因。
+
+```
+1  固定    课表。权威、不可疑。
+2  空出    承诺之间的空隙，扣掉走路和缓冲。
+3  填      每段空隙放什么、放哪，由可用性层给候选。
+4  修复    现实偏离时，尽量少改。
+```
+
+用户一天只做一个动作：揭开这一天。之后计划是只读的，直到有什么偏离了 —— 课拖了、朋友来了、这节课不去了。
+
+### 真正难的地方
+
+不是决定一天。是决定**打乱之后最少改多少**。
+
+只有三件事都没变，两个停靠点才算"同一件事"：目的不变、地点同楼（或在步行容忍范围内）、开始时间相差不超过 ±15 分钟。按这个判据，系统只修被破坏的那一段，其余一概不动 —— 因为一个每次课拖堂就整体重写的计划，跟没有计划是无法区分的。
+
+修复有一个代价顺序，它按这个顺序往上爬：挪动 5–10 分钟 · 换同楼房间 · 换楼 · 取消一站 · **最后才是动出勤**，而出勤是用户自己的决定，不是系统的。
+
+<img src="product/repair.png" width="330" alt="拖堂 20 分钟后：只改了一站，其余不动">
+
+> 查找器回答一个集合。计划回答一个序列。
+
+---
+
+## 现在有什么
+
+| 部分 | 状态 | 位置 |
 |---|---|---|
-| 起点整点、终点 `:50`（查询与管理员变更同规） | `AvailabilityService.requireSearchWindow` / `requireWholeHours` | `from=14:30` → `400`；`to=16:00` → `400` |
-| 管理员不得触碰课表里的课 | `UpdateService.create`（重叠判断） | 对课程时段发 `RELEASE`/`USE` → `400 TIMETABLE_PRIORITY` |
-| 角色分层：`user` < `admin` < `superadmin` | `AuthService.require(token, minRole)` | 学生 token 调 `/updates` → `403`；管理员 token 调 `/accounts` → `403` |
-| 只有 `hku.hk` 邮箱能注册 | `AuthService.isHkuEmail` | `@gmail.com`、`@connect.hku.hk.evil.com` → `400` |
-| 每次变更可追溯、可到期失效 | `room_updates`、`audit_log` | `GET /api/audit` |
+| 概念、功能概要、界面规划 | 已写 | [`product/`](product/) |
+| 可点原型 —— 一天，三个 tab | **浏览器直接打开** | [`product/demo/index.html`](product/demo/index.html) |
+| 可用性引擎 —— 从课表推出空闲房间 | **已实现并测试** | [`backend/`](backend/) · [`mock-school-api/`](mock-school-api/) |
+| 两个客户端（桌面 + 手机）共用一个服务 | 已实现 | [`frontend/`](frontend/) · [`mobile/`](mobile/) |
+| 修复判据与代价顺序 | 已设计，尚未测量 | 报告，进行中 |
 
-## 架构
+可用性引擎不是产品。它回答"我能去哪"，它在这套设计里的职责是：**保证计划不会指向一个不存在的地方**。
 
-数据库结构，含从**跑着的数据库**生成的 ER 图：**[docs/ERD.zh-CN.md](docs/ERD.zh-CN.md)**。
+---
 
-![架构：两个 Vue 前端、一个 Spring Boot 服务、一个数据库，学校课表是只读输入](docs/diagrams/architecture.png)
-
-三个部分，**它们之间的分工就是设计本身**：
-
-1. **两个 Vue 3 前端，一台设备一个。** 桌面端（5173）承载三种账户角色（`user` < `admin` < `superadmin`）：学生页面里不存在任何改占用的控件；管理员多加「更改教室使用时间」与设施编辑；超级管理员再加账号管理。手机端（5174）是学生视角：找空教室、某间教室的课表和评价、照片。两个前端用同一个 token 打同一套接口，**能做什么由服务端决定，不是靠藏按钮**——也就没有第二份规则要跟着改。
-2. **一个 Spring Boot 服务**：计算空闲、执行上面的规则，是系统里**唯一会写数据的部分**。
-3. **一个 PostgreSQL 数据库**：课表、发布的变更、审计日志、账号。
-
-学校课表是**输入，不是我们要造的东西**。我们的服务按计划调用对方的只读接口并比对 `last-updated` 时间戳；数据变旧就说变旧，不假装是当前的。
-
-## 快速开始
-
-**环境要求：** Java 21、Maven、Node 18+、PostgreSQL 17（macOS 上 `brew install maven openjdk@21 postgresql@17 node`）。
-
-逐步部署、端口、账号、常见问题：**[docs/DEPLOY.zh-CN.md](docs/DEPLOY.zh-CN.md)**。
+## 试一下原型
 
 ```bash
-git clone https://github.com/HenryLiu520/hku-empty-classroom.git
-cd hku-empty-classroom
-
-./scripts/start-all.sh      # 依次启动 PostgreSQL(5433) → Spring Boot(8080) → Vite(5173)
-# 首次运行会装依赖并执行 Flyway 迁移，约 3–8 分钟
+open product/demo/index.html       # 不用编译、不用服务、不用安装
 ```
 
-然后打开 **http://localhost:5173/login** 登录：
+三个 tab：**一天 · 规划 · 我的**。全部可点 —— 换饭点、订会议室、跳过一节课、挪动块、手动添加，每一次改动都能撤回。
 
-| 账号 | 角色 | 能看到什么 |
-|---|---|---|
-| `user1` | `user`（学生） | 只有查询与教室页——界面上不存在任何写入口 |
-| `admin1` | `admin` | 同一个应用，外加 *修改教室使用时间*、设施编辑、审计 |
-| `teacher1` | `admin` | 第二个管理员，演示「一个管理员可以管理另一个管理员提交的变更」 |
-| `super1` | `superadmin` | 以上全部，外加「账户管理」：新建、提权降权、重置密码、删除 |
+最值得试的一下：打开「一天」，点右上角**「有变化？说一句」**，选「课拖了 20 分钟」，看它只改**一块**而不是五块。toast 上那个链接会显示：同样的偏离，全部重算会改成什么样。
 
-种子密码在 Flyway 迁移里：最初的三个账号见 `V2__seed.sql`（账号名在 `V5__account_names.sql` 中改过），`super1` 见 `V12__super_admin.sql`。
+原型是一个设计工具，不是实现。数据是固定的一天，背后的规划器是桩。真的是状态机：每个动作都改计划，只传播到必要的地方，而且都能撤回。
 
-停止：`./scripts/stop-all.sh`。单独启停某一层：`scripts/start-db.sh`、`start-backend.sh`、`start-frontend.sh`。
+<img src="product/plan.png" width="330" alt="规划页：一周五列，下面是选中那天的列，空档可点">
 
-命令行自测：
+---
+
+## 跑整套系统
+
+可用性层背后的双客户端应用是可以完整跑起来的。
 
 ```bash
-curl -s "http://localhost:8080/api/availability?date=$(date +%F)&building=Central%20Podium&from=14:00&to=15:50" | python3 -m json.tool | head -30
+git clone https://github.com/HenryLiu520/nextstop
+cd nextstop
+./scripts/start-all.sh     # PostgreSQL 5433 → Spring Boot 8080 → Vite 5173
 ```
 
-## 接口（原型版）
+首次运行会安装依赖并执行 Flyway 迁移，约需 3–8 分钟。然后打开 <http://localhost:5173/login>。种子账号覆盖三种角色，密码在 `backend/src/main/resources/db/migration/` 里。
 
-| 方法 | 路径 | 说明 |
-|---|---|---|
-| `POST` | `/api/auth/register` | 用 `hku.hk` 邮箱注册，返回 token |
-| `POST` | `/api/auth/login` | 返回 token（内存保存 24 小时） |
-| `GET` | `/api/buildings` | 楼栋列表 |
-| `GET` | `/api/rooms?building=Central%20Podium` | 教室列表（含设施与评价均分） |
-| `GET` | `/api/availability?date=&building=&from=&to=` | **主查询**：整段都空着的教室 |
-
-`building` 参数用学校自己的大楼名（见 `/api/buildings`），写**全称、不带校区前缀**：`Central Podium`、`Knowles Building`、`K. K. Leung Building`、`Main Building`。教室编号保持学校原来的简写（`CPD-LG.01`）。
-| `GET` | `/api/rooms/{code}/timeline?date=` | 某教室一天的忙/闲/缓冲片段 |
-| `POST` | `/api/updates` | 发布变更（`USE` / `RELEASE`）——仅管理员 |
-| `GET` | `/api/updates/mine`、`GET`/`DELETE` `/api/updates[/{id}]` | 查看与撤销变更（撤销保留记录，只置为失效） |
-| `PATCH` | `/api/rooms/{code}` | 编辑设施——仅管理员 |
-| `GET` | `/api/rooms/{code}/reviews`、`POST`、`DELETE /api/reviews/{id}` | 评价（一人一房一条） |
-| `GET` | `/api/audit` | 审计日志——仅管理员 |
-| `GET` | `/api/accounts` | 账户列表——**仅超级管理员** |
-| `POST` | `/api/accounts` | 新建账户（可指定角色）——仅超级管理员 |
-| `PATCH` | `/api/accounts/{id}` | 改名、重置密码、提权 / 降权——仅超级管理员 |
-| `DELETE` | `/api/accounts/{id}` | 删除账户——仅超级管理员 |
-
-## 测试
+也支持 Docker：**[docs/DEPLOY.zh-CN.md](docs/DEPLOY.zh-CN.md)**（[EN](docs/DEPLOY.md) · [繁體](docs/DEPLOY.zh-TW.md)）。
 
 ```bash
-./scripts/test.sh        # 需要数据库在跑；脚本会先确保库起来
+./scripts/test.sh          # 27 个自动测试，需要数据库
 ```
 
-**27 个自动化用例全部通过**（9 个区间运算 + 11 个可用性/规则 + 2 个注册规则 + 4 个角色与账户管理 + 1 个评价权限测试）。报告里会引用的边界算例：
+---
 
-| 算例 | 测试方法 | |
-|---|---|---|
-| 两节课之间的大空档可用 | `normalGapIsUsable` | ✓ |
-| 背靠背两节课，中间不给窗口 | `backToBackGivesNoWindow` | ✓ |
-| 间隙小于换场余量，不展示为可用 | `gapShorterThanBufferIsNotOffered` | ✓ |
-| 释放只能撤销管理员自己加的占用 | `releaseOnlyCancelsAnAdminAddition` | ✓ |
-| 释放永远挖不掉课表里的课 | `releaseCannotOverrideTheTimetable` | ✓ |
-| 与课重叠的变更被直接拒绝 | `adminCannotChangeClassTime` | ✓ |
-| 查询时刻正在上课 → 正在使用 | `duringClassIsInUse` | ✓ |
-| 非整点时间被拒绝 | `offHourTimesAreRejected` | ✓ |
-| 两小时的课是一整块（跨两格） | `timelineMergesWholeHourBlocks` | ✓ |
-| 只有 `hku.hk` 邮箱能注册 | `RegistrationRulesTest`（2 例） | ✓ |
-| 只有本人（或超级管理员）能删评价 | `ReviewRulesTest` | ✓ |
-| 角色分层、账户管理有护栏 | `AccountRulesTest`（4 例） | ✓ |
-
-测试用 `@Transactional`，跑完自动回滚，**不会污染演示数据**。
-
-## 性能（实测，2026-10-02）
-
-| 指标 | 数值 |
-|---|---|
-| 查询接口吞吐 | **约 8,500 请求/秒**（并发 50–1000 都稳定） |
-| 单请求延迟 | 5.9 ms @ 50 并发 · 121 ms @ 1000 并发 |
-| 每请求 SQL 条数 | **3 条**（房间列表 + 当天课表 + 当天变更） |
-| 最大压力实测 | 并发 1000 × 10 秒 → 84,713 次请求全部 `200`，0 错误 |
-
-第一版每请求要发 **31 条 SQL**（每间房各查一次课表与变更，典型的 N+1），数据库因此成为瓶颈（约 1,100 请求/秒）。改成批量取回、在内存里按房间分组后降到 3 条，吞吐提升 **7.7 倍**。**没有用 Redis 是有意的**：单实例 + 只读为主 + 数据只有几 KB；Redis 的价值在多实例部署，而不是这个负载。
-
-## 目录结构
+## 仓库结构
 
 ```
-empty-classroom/
-├── backend/                      Spring Boot 4.1.1 · Java 21 · Maven
-│   └── src/main/java/hku/ec/
-│       ├── domain/               Room · ClassSlot · RoomUpdate · AuditEntry · AppUser
-│       ├── repo/                 Spring Data JPA 仓储
-│       ├── service/
-│       │   ├── AvailabilityService.java   ★ 空闲区间计算
-│       │   ├── UpdateService.java         变更、到期失效、课表优先校验
-│       │   └── AuthService.java           角色、注册规则、原型级 token
-│       └── web/                  控制器与 DTO
-│   └── src/main/resources/
-│       ├── application.yml       换场余量、开放时段、数据源
-│       └── db/migration/         Flyway 迁移：建表、种子、角色、评价、设施、注册、整点块、超级管理员
-├── frontend/                     Vue 3 · Vite · Element Plus · Pinia
-│   └── src/views/                Login.vue · FindRoom.vue · AllRooms.vue（含房间详情面板）· AdminUpdates.vue
-├── docs/images/                  上面用到的截图
-├── db/pgdata/                    项目专用的 PostgreSQL 数据目录（可删掉重建）
-├── logs/                         backend.log · frontend.log · pg.log
-└── scripts/                      start-all.sh · stop-all.sh · test.sh · 各层单独脚本
+product/           想法：概念、功能、界面、原型、一页 PDF
+backend/           Spring Boot 服务 —— 课表、可用性、账号、审计
+frontend/          Vue 3 桌面客户端（5173）
+mobile/            Vue 3 手机客户端（5174）
+mock-school-api/   模拟学校课表源，含它的设计记录
+docs/              部署、ER 图、截图、目录约定
+scripts/           启动 / 停止 / 测试
 ```
 
-## 已知限制（报告里要如实写）
+值得点开：
 
-| 限制 | 说明 |
-|---|---|
-| **"空闲"不等于"没人"** | 系统回答的是"这间房有没有被课表或发布的变更占住"，**不测房间里有多少人**。教室是共用的，界面上已明确写出。 |
-| 课表是样例数据 | `V2__seed.sql` 是合理的模拟排布，**不是真实课表**；学校接口尚未接入。报告里任何数字都必须来自真实数据再声称。 |
-| 鉴权是原型级 | token 存内存（重启失效）—— 失效时应用会**自动登出并回到登录页**；口令用 `SHA-256(salt:password)` 而非 bcrypt、无 HTTPS。**不是生产方案**。 |
-| 没有邮箱验证 | 注册只检查后缀，任何人可以填一个形如 `hku.hk` 的地址。 |
-| 评价没有审核队列 | "一人一房一条 + 可自删 + 管理员可删"，没有举报或自动过滤。 |
-| 设施是样例值 | 按房间类型预填的占位值；管理员保存前界面标注 `sample data, not verified yet`。**不要当普查结果写进报告**。 |
-| 单实例 | 无集群；到期检查是单实例 `@Scheduled`。 |
-| CORS 白名单要跟着方法走 | 新增 HTTP 方法时 `WebConfig.allowedMethods` 也要同步——漏掉 `PATCH` 曾导致浏览器侧 `403 Invalid CORS request`，而 `curl`（不带 `Origin`）依然通过。 |
+- [`product/concept.md`](product/concept.md) —— 一页讲完这个想法
+- [`product/features.md`](product/features.md) —— 每个功能，以及怎么看见它在工作
+- [`product/screens.md`](product/screens.md) —— 界面结构、动作，以及背后的规则
+- [`docs/ERD.md`](docs/ERD.md) —— 数据模型，以及它刻意没有的三样东西
+- [`docs/DEPLOY.zh-CN.md`](docs/DEPLOY.zh-CN.md) —— 怎么全部跑起来
+
+---
+
+## 我们守的几条规则
+
+1. **不问任何用户本来不会做的事。** 没有表单、没有评分、没有"这次准吗"。学到的一切都来自用户为自己做的事。
+2. **课表是权威。** 我们不把它建模成"可能会错"的东西。
+3. **没有空着的时间。** 空隙默认被填满；允许"什么都不排"的规划器会退化成课表的复印件。
+4. **给数字，不给参数。** 一张卡、一个时间、一个去向。
+5. **每一次改动都可以撤回** —— 包括翘课。
+
+---
+
+## 我们不声称的事
+
+- **课表是样例数据。** `V2__seed.sql` 是合理的模拟；学校的接口尚未接入。任何数字都要等真实数据之后才能声称。
+- **"空闲"不等于"没人"。** 系统回答的是"这间房有没有课或被占用"，从不回答"里面有多少人"。房间是共享的，界面也这么说。
+- **修复的对比目前还是设计主张。** "改一块 vs 改五块"是示例，不是实测结果。
+- **原型级鉴权。** token 存在内存里，密码是加盐 SHA-256，没有 HTTPS。
+- **学习功能还没做。** 自适应那层只有设计和文字，原型用的是固定默认值。
+
+---
 
 ## 许可与致谢
 
-本仓库是课程作业、不对外分发，因此没有单独的 LICENSE 文件。用到的第三方组件全部是宽松许可——前端栈（Vue 3、Vite、Element Plus、Pinia、axios、vue-i18n）为 MIT，Spring Boot 与 Flyway 为 Apache-2.0，数据库为 PostgreSQL 许可，JDBC 驱动为 BSD-2-Clause——逐项列在 [THIRD-PARTY.md](THIRD-PARTY.md)。界面沿用了 youlai [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)（MIT）带火的侧栏式后台版式；**未复制该项目任何代码**。 界面顶部使用香港大学的校徽与字标，主色取港大视觉规范里的 HKU Green（#024638）；这些标记属于香港大学，此处仅用于标示这份课程作业原型。 页面背景用了两张港大主楼的照片，来自 Wikimedia Commons，CC BY-SA 授权（摄影 Yumeto、Damaskam），见 [THIRD-PARTY.md](THIRD-PARTY.md)。
-
-## 项目背景
-
-COMP1110 Group Project，第 08 组 —— 香港大学，2026。按课程《Group Project Guidelines》，代码与原型可选、不计分：这个原型存在的意义是证明我们 Project Plan 里的设计**确实能跑起来**。
+课程作业，不对外分发，因此没有独立的 licence 文件。第三方组件均按宽松许可使用（前端栈 MIT、Spring Boot 与 Flyway Apache-2.0、PostgreSQL 许可、JDBC 驱动 BSD-2），逐项记录在 [THIRD-PARTY.md](THIRD-PARTY.md)。布局受 [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin)（MIT）启发，**未复制其代码**。页首使用学校校徽、字标与 HKU Green（#024638），仅用于标识这份课程原型。
