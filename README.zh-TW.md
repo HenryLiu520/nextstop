@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="product/web-day.png" width="290" alt="一張卡，一疊塊">
-</p>
-
 <h1 align="center">Following It Is All You Need.</h1>
 
 <p align="center">
@@ -28,6 +24,11 @@
   <img alt="27 個測試" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
   <img alt="原型" src="https://img.shields.io/badge/status-prototype-C8452D">
 </p>
+
+<p align="center">
+  <img src="product/web-day.png" width="230" alt="一張卡，一疊塊">
+</p>
+
 
 ---
 
