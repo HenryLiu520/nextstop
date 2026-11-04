@@ -1,0 +1,362 @@
+import { computed, ref } from 'vue'
+
+/* 三种语言，一套字符串。没有 vue-i18n —— 这点量不值得多一个依赖。 */
+
+export const LOCALES = [
+  { id: 'en', label: 'EN' },
+  { id: 'zh', label: '简' },
+  { id: 'tw', label: '繁' },
+]
+
+const dict = {
+  zh: {
+    'app.name': 'NextStop',
+    'nav.day': '一天',
+    'nav.plan': '规划',
+    'nav.me': '我的',
+
+    'wd.1': '周一',
+    'wd.2': '周二',
+    'wd.3': '周三',
+    'wd.4': '周四',
+    'wd.5': '周五',
+    'wdShort.1': '一',
+    'wdShort.2': '二',
+    'wdShort.3': '三',
+    'wdShort.4': '四',
+    'wdShort.5': '五',
+    'date.zh': '{wd} · {m} 月 {d} 日',
+    'date.en': '{wd} · {mon} {d}',
+
+    'type.class': '课',
+    'type.study': '自习',
+    'type.meal': '吃饭',
+    'type.meeting': '见面',
+
+    'day.here': '你在这',
+    'day.walk': '走 {n} 分钟',
+    'day.stay': '多坐 {n} 分钟也行',
+    'day.end': '结束这一天',
+    'day.extend': '再待一会儿',
+    'day.open': '点这一块，看它能做什么',
+    'day.left': '今天还剩 {n} 站',
+
+    'act.skip': '不去',
+    'act.here': '我到了',
+    'act.swap': '换一个',
+    'act.late': '我晚了',
+    'act.book': '一键预约',
+    'act.booked': '已预约',
+    'act.close': '关闭',
+    'act.undo': '撤回',
+    'act.add': '添加',
+    'act.cancel': '算了',
+
+    'sheet.block': '{type} · {place}',
+    'sheet.what': '这一站能做什么',
+    'sheet.swap.title': '换一个',
+    'sheet.swap.sub': '一次三个，点选即生效',
+    'sheet.swap.more': '换一批',
+    'sheet.swap.leaveBy': '最晚 {t} 必须走',
+    'sheet.swap.empty': '附近就这些了，要不换个时间？',
+    'sheet.add.title': '手动添加一站',
+    'sheet.add.name': '名称',
+    'sheet.add.namePh': '自习 · LIB 2/F',
+    'sheet.add.start': '开始',
+    'sheet.add.end': '结束',
+
+    'toast.swapped': '已换到 {place}',
+    'toast.added': '加了一站 · {name}',
+    'toast.saved': '已保存',
+    'toast.changed': '改了这一站',
+    'toast.closed': '今天到这儿',
+    'toast.extended': '往后延 30 分钟',
+    'toast.skip': '这节课不去了',
+    'toast.booked': '已订 LIB 3/F 讨论室 2',
+    'toast.needLine': '先说一句想怎么改',
+
+    'plan.week': '这一周',
+    'plan.thisDay': '这一天',
+    'plan.free': '空档 {a}–{b}',
+    'plan.freeHint': '点这里填',
+    'plan.addManual': '手动添加',
+    'plan.say': '说一句',
+    'plan.sayPh': '明天下午三点后想自习两小时',
+    'plan.preview': '预览',
+    'plan.apply': '应用',
+    'plan.previewTitle': '会这么改',
+    'plan.previewLine': '把 {a}–{b} 排成自习 · LIB 3/F',
+    'plan.previewImpact': '影响 2 站，其余一个像素都不动',
+    'plan.busy': '这一天 {n} 站',
+    'plan.previewEmpty': '先说一句，再预览',
+
+    'me.prefs': '偏好',
+    'me.walk': '走路速度',
+    'me.walkUnit': '米 / 秒',
+    'me.walkHint': '走廊里你比估计的快一点',
+    'me.thu': '周四结束时间',
+    'me.thuHint': '满 3 次会默认改成 {t}',
+    'me.learn': '它在学你的参数',
+    'me.learnWalk': '走路系数',
+    'me.learnSpot': '常去的点',
+    'me.learnAttend': '出勤倾向',
+    'me.learnSpotValue': '智华馆 B1',
+    'me.learnAttendValue': '周五 10 点 · 常不去',
+    'me.save': '保存',
+    'me.about': '关于',
+    'me.version': '版本',
+    'me.group': '小组',
+    'me.localNote': '只存本地，不评价，不汇总',
+  },
+
+  tw: {
+    'app.name': 'NextStop',
+    'nav.day': '一天',
+    'nav.plan': '規劃',
+    'nav.me': '我的',
+
+    'wd.1': '週一',
+    'wd.2': '週二',
+    'wd.3': '週三',
+    'wd.4': '週四',
+    'wd.5': '週五',
+    'wdShort.1': '一',
+    'wdShort.2': '二',
+    'wdShort.3': '三',
+    'wdShort.4': '四',
+    'wdShort.5': '五',
+    'date.zh': '{wd} · {m} 月 {d} 日',
+    'date.en': '{wd} · {mon} {d}',
+
+    'type.class': '課',
+    'type.study': '自習',
+    'type.meal': '吃飯',
+    'type.meeting': '見面',
+
+    'day.here': '你在這',
+    'day.walk': '走 {n} 分鐘',
+    'day.stay': '多坐 {n} 分鐘也行',
+    'day.end': '結束這一天',
+    'day.extend': '再待一會兒',
+    'day.open': '點這一塊，看它能做什麼',
+    'day.left': '今天還剩 {n} 站',
+
+    'act.skip': '不去',
+    'act.here': '我到了',
+    'act.swap': '換一個',
+    'act.late': '我晚了',
+    'act.book': '一鍵預約',
+    'act.booked': '已預約',
+    'act.close': '關閉',
+    'act.undo': '撤回',
+    'act.add': '新增',
+    'act.cancel': '算了',
+
+    'sheet.block': '{type} · {place}',
+    'sheet.what': '這一站能做什麼',
+    'sheet.swap.title': '換一個',
+    'sheet.swap.sub': '一次三個，點選即生效',
+    'sheet.swap.more': '換一批',
+    'sheet.swap.leaveBy': '最晚 {t} 必須走',
+    'sheet.swap.empty': '附近就這些了，要不換個時間？',
+    'sheet.add.title': '手動新增一站',
+    'sheet.add.name': '名稱',
+    'sheet.add.namePh': '自習 · LIB 2/F',
+    'sheet.add.start': '開始',
+    'sheet.add.end': '結束',
+
+    'toast.swapped': '已換到 {place}',
+    'toast.added': '加了一站 · {name}',
+    'toast.saved': '已儲存',
+    'toast.changed': '改了這一站',
+    'toast.closed': '今天到這兒',
+    'toast.extended': '往後延 30 分鐘',
+    'toast.skip': '這節課不去了',
+    'toast.booked': '已訂 LIB 3/F 討論室 2',
+    'toast.needLine': '先說一句想怎麼改',
+
+    'plan.week': '這一週',
+    'plan.thisDay': '這一天',
+    'plan.free': '空檔 {a}–{b}',
+    'plan.freeHint': '點這裡填',
+    'plan.addManual': '手動新增',
+    'plan.say': '說一句',
+    'plan.sayPh': '明天下午三點後想自習兩小時',
+    'plan.preview': '預覽',
+    'plan.apply': '套用',
+    'plan.previewTitle': '會這麼改',
+    'plan.previewLine': '把 {a}–{b} 排成自習 · LIB 3/F',
+    'plan.previewImpact': '影響 2 站，其餘一個像素都不動',
+    'plan.busy': '這一天 {n} 站',
+    'plan.previewEmpty': '先說一句，再預覽',
+
+    'me.prefs': '偏好',
+    'me.walk': '走路速度',
+    'me.walkUnit': '公尺 / 秒',
+    'me.walkHint': '走廊裡你比估計的快一點',
+    'me.thu': '週四結束時間',
+    'me.thuHint': '滿 3 次會預設改成 {t}',
+    'me.learn': '它在學你的參數',
+    'me.learnWalk': '走路係數',
+    'me.learnSpot': '常去的點',
+    'me.learnAttend': '出勤傾向',
+    'me.learnSpotValue': '智華館 B1',
+    'me.learnAttendValue': '週五 10 點 · 常不去',
+    'me.save': '儲存',
+    'me.about': '關於',
+    'me.version': '版本',
+    'me.group': '小組',
+    'me.localNote': '只存本地，不評價，不彙總',
+  },
+
+  en: {
+    'app.name': 'NextStop',
+    'nav.day': 'Day',
+    'nav.plan': 'Plan',
+    'nav.me': 'Me',
+
+    'wd.1': 'Mon',
+    'wd.2': 'Tue',
+    'wd.3': 'Wed',
+    'wd.4': 'Thu',
+    'wd.5': 'Fri',
+    'wdShort.1': 'M',
+    'wdShort.2': 'T',
+    'wdShort.3': 'W',
+    'wdShort.4': 'T',
+    'wdShort.5': 'F',
+    'date.zh': '{wd} · {m} 月 {d} 日',
+    'date.en': '{wd} · {mon} {d}',
+
+    'type.class': 'Class',
+    'type.study': 'Study',
+    'type.meal': 'Meal',
+    'type.meeting': 'Meeting',
+
+    'day.here': 'You are here',
+    'day.walk': 'walk {n} min',
+    'day.stay': 'staying {n} min also works',
+    'day.end': 'End the day',
+    'day.extend': 'Stay a bit',
+    'day.open': 'Tap this block to see what it can do',
+    'day.left': '{n} stops left today',
+
+    'act.skip': 'Skip',
+    'act.here': "I'm here",
+    'act.swap': 'Swap',
+    'act.late': "I'm late",
+    'act.book': 'Book once',
+    'act.booked': 'Booked',
+    'act.close': 'Close',
+    'act.undo': 'Undo',
+    'act.add': 'Add',
+    'act.cancel': 'Never mind',
+
+    'sheet.block': '{type} · {place}',
+    'sheet.what': 'What this stop can do',
+    'sheet.swap.title': 'Swap this stop',
+    'sheet.swap.sub': 'Three at a time. Tap one and it is done.',
+    'sheet.swap.more': 'Three more',
+    'sheet.swap.leaveBy': 'leave by {t}',
+    'sheet.swap.empty': 'That is all nearby. Change the time instead?',
+    'sheet.add.title': 'Add a stop',
+    'sheet.add.name': 'Name',
+    'sheet.add.namePh': 'Study · LIB 2/F',
+    'sheet.add.start': 'Start',
+    'sheet.add.end': 'End',
+
+    'toast.swapped': 'Moved to {place}',
+    'toast.added': 'Added · {name}',
+    'toast.saved': 'Saved',
+    'toast.changed': 'Changed this stop',
+    'toast.closed': 'Done for today',
+    'toast.extended': 'Thirty more minutes',
+    'toast.skip': 'Skipping this class',
+    'toast.booked': 'Booked LIB 3/F room 2',
+    'toast.needLine': 'Say one line first',
+
+    'plan.week': 'This week',
+    'plan.thisDay': 'This day',
+    'plan.free': 'Free {a}–{b}',
+    'plan.freeHint': 'tap to fill',
+    'plan.addManual': 'Add manually',
+    'plan.say': 'Say one line',
+    'plan.sayPh': 'Two hours of study after 3pm tomorrow',
+    'plan.preview': 'Preview',
+    'plan.apply': 'Apply',
+    'plan.previewTitle': 'This is what changes',
+    'plan.previewLine': 'Make {a}–{b} study · LIB 3/F',
+    'plan.previewImpact': '2 stops affected. Nothing else moves a pixel.',
+    'plan.busy': '{n} stops',
+    'plan.previewEmpty': 'Say one line, then preview',
+
+    'me.prefs': 'Preferences',
+    'me.walk': 'Walking speed',
+    'me.walkUnit': 'm / s',
+    'me.walkHint': 'You are a little faster than estimated',
+    'me.thu': 'Thursday end time',
+    'me.thuHint': 'After 3 times it defaults to {t}',
+    'me.learn': 'What it is learning',
+    'me.learnWalk': 'Walk factor',
+    'me.learnSpot': 'Go-to spot',
+    'me.learnAttend': 'Attendance',
+    'me.learnSpotValue': 'Chi Wah B1',
+    'me.learnAttendValue': 'Fri 10:00 · often skipped',
+    'me.save': 'Save',
+    'me.about': 'About',
+    'me.version': 'Version',
+    'me.group': 'Group',
+    'me.localNote': 'Local only. Not scored, not aggregated.',
+  },
+}
+
+const MONTHS = {
+  en: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+}
+
+const browserLang = (typeof navigator !== 'undefined' && navigator.language) || 'zh-Hans'
+
+function guess() {
+  const l = browserLang.toLowerCase()
+  if (l.startsWith('en')) return 'en'
+  if (l.startsWith('zh-tw') || l.startsWith('zh-hk') || l.startsWith('zh-hant')) return 'tw'
+  return 'zh'
+}
+
+export const locale = ref(guess())
+
+export function setLocale(id) {
+  if (LOCALES.some((l) => l.id === id)) {
+    locale.value = id
+    if (typeof document !== 'undefined') {
+      document.documentElement.lang = id === 'tw' ? 'zh-Hant' : id === 'zh' ? 'zh-Hans' : 'en'
+    }
+  }
+}
+
+export function t(key, vars) {
+  const table = dict[locale.value] || dict.zh
+  let s = table[key] ?? dict.zh[key] ?? key
+  if (vars) {
+    for (const k of Object.keys(vars)) {
+      s = s.split(`{${k}}`).join(String(vars[k]))
+    }
+  }
+  return s
+}
+
+/* 日期行：周四 · 10 月 30 日 / Thu · Oct 30 */
+export function fmtDate(day) {
+  if (!day) return ''
+  const wd = t('wd.' + day.weekday)
+  if (locale.value === 'en') {
+    return t('date.en', { wd, mon: MONTHS.en[day.month - 1], d: day.day })
+  }
+  return t('date.zh', { wd, m: day.month, d: day.day })
+}
+
+export function useI18n() {
+  return { locale, setLocale, t: (k, v) => t(k, v), LOCALES, fmtDate }
+}
+
+export const langReady = computed(() => locale.value)

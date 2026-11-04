@@ -1,0 +1,108 @@
+# Empty Classroom — one command, no local PostgreSQL, no local Node, no local Maven.
+#
+#   docker compose up -d --build      →  http://localhost:5173  (desktop)
+#                                        http://localhost:5174  (phone)
+#
+# Two things this file exists to solve:
+#   1. the database. It is a container with a named volume, not a cluster someone has to
+#      initdb on their own machine, and it starts on 5432 inside the compose network.
+#   2. the front end / back end split. The browser never calls the backend directly: nginx
+#      serves the built files and forwards /api to the backend container (see nginx.conf).
+#
+# Everything can be overridden in a .env file next to this one — see .env.example.
+
+name: empty-classroom
+
+services:
+  # ---------------------------------------------------------------- database
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: emptyclassroom
+      POSTGRES_USER: ec
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ec_dev_password}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ec -d emptyclassroom"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+    restart: unless-stopped
+    # Deliberately not published to the host: only the backend needs to reach it.
+
+  # ---------------------------------------------------------------- backend
+  backend:
+    build: ./backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/emptyclassroom
+      SPRING_DATASOURCE_USERNAME: ec
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ec_dev_password}
+      APP_UPLOAD_DIR: /app/uploads/review-photos
+      # Only matters if someone opens the API from another origin; the two web
+      # containers talk to the backend through their own proxy, so they are same-origin.
+      APP_CORS_ALLOWED_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:5173}
+    volumes:
+      - uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- desktop client
+  web:
+    build: ./frontend
+    ports:
+      - "${WEB_PORT:-5173}:80"
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- phone client
+  mobile:
+    build: ./mobile
+    ports:
+      - "${MOBILE_PORT:-5174}:80"
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- simulated feed (optional)
+  # Not started by default: `docker compose --profile mock up -d`
+  mockdb:
+    image: postgres:17-alpine
+    profiles: ["mock"]
+    environment:
+      POSTGRES_DB: mockschool
+      POSTGRES_USER: ec
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ec_dev_password}
+    volumes:
+      - mock-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ec -d mockschool"]
+      interval: 5s
+      timeout: 3s
+      retries: 24
+    restart: unless-stopped
+
+  mock:
+    build: ./mock-school-api
+    profiles: ["mock"]
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://mockdb:5432/mockschool
+      SPRING_DATASOURCE_USERNAME: ec
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-ec_dev_password}
+      # The service is bound to 127.0.0.1 inside its own container, which is the right
+      # default on a laptop and the wrong one in a container. The published port is the
+      # only way in, so it has to listen on all interfaces.
+      SERVER_ADDRESS: 0.0.0.0
+      MOCK_API_KEY: ${MOCK_API_KEY:-hku-demo-key}
+    depends_on:
+      mockdb:
+        condition: service_healthy
+    ports:
+      - "${MOCK_PORT:-9000}:9000"
+    restart: unless-stopped
+
+volumes:
+  db-data:
+  mock-db-data:
+  uploads:

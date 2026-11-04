@@ -2,13 +2,15 @@
 
 **English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
 
-> A student walks out of a lecture with seventy minutes in front of them. The campus is full of
-> rooms. What they do not know is **where to go**. NextStop decides that for them, and keeps the
-> decision standing when the day moves.
+> Following It Is All You Need.
+
+A student walks out of a lecture with seventy minutes in front of them. The campus is full of
+rooms. What they do not know is **where to go**. NextStop decides that for them, and keeps the
+decision standing when the day moves.
 
 COMP1110 Group 08 · HKU · built by **LIU Haoran (u3686264)**
 
-<img src="product/day.png" width="330" alt="The day as a stack of blocks: 09:00 class, 11:00 study, 12:10 lunch, 14:00 class, 16:00 meeting, 17:00 study">
+<img src="product/web-day.png" width="330" alt="One card, a stack of blocks, seams of walking time between them">
 
 ---
 
@@ -18,31 +20,40 @@ COMP1110 Group 08 · HKU · built by **LIU Haoran (u3686264)**
 |---|---|
 | **It answers** | what to do with the next hour, and where |
 | **It does not** | hand you a list and let you choose |
-| **You do** | open it once a day, and follow it |
+| **You do** | open it once a day, then follow it |
 | **It is not** | a room finder, and not a calendar |
 
 A room finder tells you which rooms are empty. A calendar stores what you have already decided.
-Neither answers the question a student actually has, standing in a corridor: *what now?*
+Neither answers the question a student actually has in a corridor, which is *what now*.
+
+Three things a student does not know between two classes: **where they can go, where they are
+allowed to go, what to do**. The room is one small step inside that.
+
+📄 **[One page PDF](product/NextStop.pdf)** · 🧭 **[Why this exists](docs/why.md)** · ✨ **[What it does that others do not](docs/highlights.md)**
 
 ---
 
-## The problem, stated properly
+## The interface
 
-Between two classes a student does not know three things:
+One card. Below it, the day as a stack of blocks. Between the blocks, only the walking time.
+Nothing is ever empty: a gap defaults to study.
 
-**where to go · where they are allowed to go · what to do**
+<img src="product/web-desktop.png" width="640" alt="On a desktop the same interface sits in a phone frame, because it is the same interface">
 
-"Which room is empty" is a small part of the middle one, and the easiest part. Every existing tool
-answers that part and hands the other two back.
+Three tabs, three jobs, no toolbar:
 
-So the question here is one level up from the one we started with. Not *which room*, but *where
-should this person be, and when should they move*.
+| Tab | Job |
+|---|---|
+| **Day** | one card, a stack of blocks, four actions |
+| **Plan** | the week as five columns, one day below it, one sentence to change it |
+| **Me** | the numbers it learned, editable |
+
+Deeper: **[screens](docs/screens.md)** (block specification, action matrix, tokens) and
+**[features](docs/features.md)** (every feature by user journey).
 
 ---
 
 ## How it decides
-
-Four layers, each checkable on its own. That separability is what makes the thing buildable.
 
 ```
 1  Anchors     the timetable. Fixed, authoritative, never questioned.
@@ -51,106 +62,95 @@ Four layers, each checkable on its own. That separability is what makes the thin
 4  Repair      when reality deviates, change as little as possible.
 ```
 
-The user makes one gesture a day: reveal the day. After that the plan is read-only until something
-deviates — a class overruns, a friend appears, a lecture is skipped.
-
-### The part that is actually hard
-
-Not deciding a day. Deciding **how little to change** when the day moves.
-
-Two stops count as *the same thing* only if the purpose is unchanged, the place is the same
-building (or within walking tolerance), and the start time is within ±15 minutes. On that criterion
-the system repairs the broken window and leaves everything else alone, because a plan that rewrites
-itself every time a class overruns is indistinguishable from having no plan at all.
-
-Repair has a cost order, and it climbs it in this sequence: move a stop 5–10 minutes · change room
-in the same building · change building · drop a stop · and only then touch attendance, which is the
-user's decision and never the system's.
-
-<img src="product/repair.png" width="330" alt="After a 20-minute overrun: one block changed, the rest untouched">
+The hard part is not deciding a day. It is deciding **how little to change** when the day moves.
+Two stops are the same stop only if the purpose, the building and the start time still line up.
+Repair then climbs a cost order: move a few minutes, change room in the same building, change
+building, drop a stop, and only then touch attendance, which is the user's decision.
 
 > A finder answers a set. A plan answers a sequence.
 
----
-
-## What exists today
-
-| Part | State | Where |
-|---|---|---|
-| Concept, feature map, screen plan | written | [`product/`](product/) |
-| Clickable prototype — one day, three tabs | **runs in a browser** | [`product/demo/index.html`](product/demo/index.html) |
-| Availability engine — free rooms derived from the timetable | **built and tested** | [`backend/`](backend/) · [`mock-school-api/`](mock-school-api/) |
-| Two clients (desktop + phone) on one service | built | [`frontend/`](frontend/) · [`mobile/`](mobile/) |
-| Repair criterion and its cost order | designed; not yet measured | report, in progress |
-
-The availability engine is not the product. It answers *where can I be*, and its job in this design
-is to keep the plan from pointing at a place that does not exist.
+**[algorithm.md](docs/algorithm.md)** has the criterion, the procedure, the complexity and one
+worked example.
 
 ---
 
-## Try the prototype
+## Architecture in one screen
 
-**Live:** <https://henryliu520.github.io/nextstop/> — or open `product/demo/index.html` locally, no build and no server.
-Language switch (EN / 简 / 繁) is in the header.
+```
+web/            Vue 3 + Vite, one build, four containers
+                browser · PWA · Android shell · iOS shell
+     |
+     |  REST + JSON  (/api, proxied in dev)
+     v
+backend/        Spring Boot 4.1.1, Java 21, PostgreSQL 17
+                timetable · rooms · availability · room updates · audit · accounts
+     |
+     v
+mock-school-api/ simulated school feed (the real endpoint is not connected)
+```
 
-Three tabs: **day · plan · mine**. Everything is clickable — swap a meal, book a meeting room, skip
-a class, move a block, add something by hand. Every change can be undone.
+The backend stopped being the product. It is the layer that answers *where can I be*, and it
+exists so the plan never points at a place that does not exist. The plan lives in the client,
+which is why the corridor case works with no signal.
 
-The one worth trying: open the day, click **"something changed?"** top right, pick *the class ran 20
-minutes late*, and watch it change **one** block rather than five. The link in the toast shows what
-full recomputation would have done to the same day.
-
-The prototype is a design instrument, not an implementation. The data is a fixed day and the
-planner behind it is a stub. What is real is the state machine: every action changes the plan,
-propagates only as far as it must, and can be reversed.
-
-<img src="product/plan.png" width="330" alt="The plan tab: the week as five columns, the selected day below, free slots tappable">
+**[architecture.md](docs/architecture.md)** · decisions in **[adr/](docs/adr/)**
+(0001 data layer, 0002 plan in the client, 0003 repair instead of recompute, 0004 one UI four
+targets)
 
 ---
 
-## Run the whole system
-
-The two-client application behind the availability layer is fully runnable.
+## Run it
 
 ```bash
 git clone https://github.com/HenryLiu520/nextstop
 cd nextstop
-./scripts/start-all.sh     # PostgreSQL 5433 → Spring Boot 8080 → Vite 5173
+
+# data layer
+./scripts/start-all.sh          # PostgreSQL 5433 → Spring Boot 8080 → first client 5173
+
+# the interface
+cd web && npm install && npm run dev     # http://127.0.0.1:5175
 ```
 
-First run installs dependencies and applies the Flyway migrations — allow 3–8 minutes. Then open
-<http://localhost:5173/login>. Seeded accounts cover all three roles; passwords are in the Flyway
-migrations under `backend/src/main/resources/db/migration/`.
+`web/` proxies `/api` to 8080, so the day you see is built from real availability answers. The
+planning rules behind it are still a stub, which the interface does not hide.
 
-Docker is supported too: **[docs/DEPLOY.md](docs/DEPLOY.md)** ([简体](docs/DEPLOY.zh-CN.md) ·
-[繁體](docs/DEPLOY.zh-TW.md)).
+There is also a **single file prototype** with no build step: open
+[`product/demo/index.html`](product/demo/index.html), or use the hosted copy at
+<https://henryliu520.github.io/nextstop/>. English, 简体, 繁體 switch in the header.
 
-```bash
-./scripts/test.sh          # 27 automated tests, needs the database
-```
+---
+
+## What is built, and what is not
+
+| Part | State |
+|---|---|
+| Availability engine, rules, roles, audit, 27 tests | **built and tested** |
+| Web interface, three tabs, three languages, real availability | **built** |
+| Single file prototype, clickable end to end | **built** |
+| Planner and repair ladder | **specified, not implemented** |
+| Learning layer | **specified, not implemented** |
+| PWA manifest, Android and iOS shells | **chosen, not built** |
+
+Read **[features.md](docs/features.md)** for the same table per feature, and
+[architecture.md section 8](docs/architecture.md) for what is missing and why.
 
 ---
 
 ## Repo map
 
 ```
-product/           the idea: concept, features, screens, prototype, one-page PDF
-backend/           Spring Boot service — timetable, availability, accounts, audit
-frontend/          Vue 3 desktop client (5173)
-mobile/            Vue 3 phone client (5174)
-mock-school-api/   simulated school timetable feed, plus its design log
-docs/              deployment, ER diagrams, screenshots, folder conventions
+web/               the interface: Vue 3 + Vite, one codebase for phone and desktop
+backend/           Spring Boot service: timetable, availability, accounts, audit
+frontend/          earlier desktop client, kept because the availability work lives here
+mobile/            earlier phone client, same reason
+mock-school-api/   simulated school timetable feed, with its design log
+docs/              start at docs/README.md
+product/           prototype, screenshots, one page PDF
 scripts/           start / stop / test
 ```
 
-Worth opening:
-
-- **[`product/core.md`](product/core.md)** — the core logic and the highlights, written down
-- [`product/concept.md`](product/concept.md) — the idea in one page
-- [`product/features.md`](product/features.md) — every feature, and how to see it working
-- [`product/screens.md`](product/screens.md) — screen structure, actions, and the rules behind them
-- [`docs/ERD.md`](docs/ERD.md) — the data model, and three things it deliberately lacks
-- [`docs/DEPLOY.md`](docs/DEPLOY.md) — how to run all of it
+Old clients are not showcased. New interface work happens in `web/`.
 
 ---
 
@@ -159,32 +159,29 @@ Worth opening:
 1. **Never ask what the user would not have done anyway.** No forms, no ratings, no "was this
    helpful". Everything learned comes from actions taken for the user's own reasons.
 2. **The timetable is authoritative.** We do not model it as something that might be wrong.
-3. **No empty time.** Gaps are filled by default; a planner that permits "nothing" degrades into a
-   copy of the timetable.
-4. **Show the number, not the parameter.** One card, one time, one destination.
-5. **Every change is reversible** — including a skipped class.
+3. **No empty time.** Gaps are filled by default, because a planner that permits "nothing"
+   degrades into a copy of the timetable.
+4. **Actions belong to blocks, not to pages.** No toolbar.
+5. **Every change is reversible**, including a skipped class.
 
 ---
 
 ## What we do not claim
 
-- **The timetable is sample data.** `V2__seed.sql` is a plausible mock; the University's endpoint
-  is not connected. Figures must come from real data before anyone claims them.
-- **"Free" is not "empty".** The system answers *is this room taken by a class or a posted change*,
-  never *how many people are in it*. Rooms are shared, and the interface says so.
-- **The repair comparison is still a design claim.** The one-block-versus-five-block example is
-  illustrative, not a measured result.
-- **Prototype-grade auth.** Tokens live in memory, passwords use salted SHA-256, no HTTPS.
-- **No learning yet.** The self-learning layer is designed and written up, not implemented; the
-  prototype uses fixed defaults.
+- The timetable is sample data. `V2__seed.sql` is a plausible mock and the University endpoint is
+  not connected.
+- "Free" is not "empty". The system answers *is this room taken*, never *how many people are in it*.
+- The one-block-versus-five-block comparison is illustrative, not a measured result.
+- Authentication is prototype grade. Tokens in memory, salted SHA-256, no HTTPS.
+- The learning layer exists as a specification. The interface uses fixed defaults.
 
 ---
 
 ## Licence and credits
 
-Coursework, not distributed; no licence file. Third-party components are used under permissive
-licences (MIT front-end stack, Apache-2.0 Spring Boot and Flyway, PostgreSQL licence, BSD-2 JDBC
-driver) and credited in [THIRD-PARTY.md](THIRD-PARTY.md). No code is copied from the
+Coursework, not distributed. Third party components are used under permissive licences (MIT for
+the front end stack, Apache-2.0 for Spring Boot and Flyway, the PostgreSQL licence, BSD-2 for the
+JDBC driver) and credited in [THIRD-PARTY.md](THIRD-PARTY.md). No code is copied from the
 [vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) template (MIT) that inspired
-the layout. The header uses the University's shield, wordmark and HKU Green (#024638) only to
-identify this coursework prototype.
+the earlier client layout. The header uses the University shield, wordmark and HKU Green (#024638)
+only to identify this coursework prototype.
