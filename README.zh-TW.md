@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="product/web-day.png" width="240" alt="一張卡，一疊塊">
+  <img src="product/web-day.png" width="340" alt="一張卡，一疊塊">
 </p>
 
 <p align="center"><sub>一張卡、一個時間、一個去向。剩下的一天在下面。</sub></p>
@@ -71,12 +71,10 @@ NextStop 把它決定掉。
 ## 它長什麼樣
 
 <p align="center">
-  <img src="product/day.png" width="240" alt="一天">
-  <img src="product/repair.png" width="240" alt="拖堂 20 分鐘之後">
-  <img src="product/plan.png" width="240" alt="規劃頁">
+  <img src="product/triptych.png" width="620" alt="一天、拖堂 20 分鐘後修好、規劃頁">
 </p>
 
-<p align="center"><sub>左：一天是一疊塊。中：拖堂 20 分鐘。右：一週、一天、一句話。</sub></p>
+<p align="center"><sub>左：一天是一疊塊 · 中：拖堂 20 分鐘，修好，只動了一站 · 右：一週、一天、一句話。</sub></p>
 
 課給"不去"，吃飯給"換一個"，見面給"一鍵預約"。沒有空著的時間，空隙預設是自習。
 

@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="product/web-day.png" width="240" alt="One card, a stack of blocks">
+  <img src="product/web-day.png" width="340" alt="One card, a stack of blocks">
 </p>
 
 <p align="center"><sub>One card, one time, one destination. The rest of the day is underneath.</sub></p>
@@ -72,12 +72,10 @@ What is learned is always a default, never a control taken away. The buttons sta
 ## What it looks like
 
 <p align="center">
-  <img src="product/day.png" width="240" alt="Day">
-  <img src="product/repair.png" width="240" alt="After a 20 minute overrun">
-  <img src="product/plan.png" width="240" alt="Plan tab">
+  <img src="product/triptych.png" width="620" alt="Day, a 20 minute overrun repaired, and the plan tab">
 </p>
 
-<p align="center"><sub>Left: the day as a stack. Middle: a 20 minute overrun. Right: the week, one day, one sentence.</sub></p>
+<p align="center"><sub>Left: the day as a stack · middle: a 20 minute overrun, repaired, one block moved · right: the week, one day, one sentence.</sub></p>
 
 A class offers skip, a meal offers change, a meeting offers booking. Nothing is ever empty, a gap
 defaults to study.
