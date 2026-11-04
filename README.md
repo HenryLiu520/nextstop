@@ -2,14 +2,14 @@
 
 <p align="center">
   <b>NextStop</b><br>
-  Decides where a student should go between classes, and keeps that decision standing when the day moves.
+  Decides where a student should go between classes,<br>
+  and keeps that decision standing when the day moves.
 </p>
 
 <p align="center">
   <a href="https://henryliu520.github.io/nextstop/"><b>▶ Try the prototype</b></a> &nbsp;·&nbsp;
   <a href="docs/why.md">Why it exists</a> &nbsp;·&nbsp;
-  <a href="docs/architecture.md">Architecture</a> &nbsp;·&nbsp;
-  <a href="docs/algorithm.md">Algorithm</a> &nbsp;·&nbsp;
+  <a href="docs/algorithm.md">The hard part</a> &nbsp;·&nbsp;
   <a href="product/NextStop.pdf">One page PDF</a>
 </p>
 
@@ -29,110 +29,140 @@
   <img src="product/web-day.png" width="230" alt="One card, a stack of blocks">
 </p>
 
-
 ---
 
-<p align="center">
-  <img src="product/web-desktop.png" width="620" alt="The same interface on a desktop, inside a phone frame">
-</p>
+## 09:47, Thursday
 
-<p align="center"><sub>One interface. On a wide screen it sits in a phone frame, because it is the same interface.</sub></p>
-
-A student leaves a lecture with seventy minutes in front of them. The campus is full of rooms.
-What they do not know is **where to go**. A room finder answers *which rooms are empty*, a
-calendar stores *what you already decided*, and neither answers the question the student actually
-has, which is **what now**.
-
-NextStop answers it. One card, one time, one destination. When the day moves it changes as little
-as it can.
-
----
-
-## What it is
-
-| | |
-|---|---|
-| **It answers** | what to do with the next hour, and where |
-| **It does not** | hand you a list and let you choose |
-| **You do** | open it once a day, then follow it |
-| **It is not** | a room finder, and not a calendar |
-
-Three things a student does not know between two classes: **where they can go, where they are
-allowed to go, what to do**. The room is one small step inside that.
-
----
-
-## How it decides
+The lecture in KB ends early. The next one starts at 11:00 in CPD.
 
 ```
-1  Anchors     the timetable. Fixed, authoritative, never questioned.
-2  Free time   gaps between commitments, minus walking and a buffer.
-3  Fill        what goes in each gap, and where, from the availability layer.
-4  Repair      when reality deviates, change as little as possible.
+09:47  KB      you are here, holding a laptop and seventy minutes
+10:50          the next class starts, in a different building
+        ?
 ```
 
-The hard part is not deciding a day. It is deciding **how little to change** when the day moves.
-Two stops are the same stop only if the purpose, the building and the start time still line up.
-Repair then climbs a cost order: move a few minutes, change room in the same building, change
-building, drop a stop, and only then touch attendance, which is the user's decision.
+You know the campus has empty rooms. You know there is a library. You know you have a deadline.
+What you do not know is **which of those things to do, in the next hour, in this building or the
+one next door**.
 
-> A finder answers a set. A plan answers a sequence.
+So you stand in the corridor and decide. You do this three to five times a day, every day, and you
+are usually fine with it. That is the part nobody has built for.
 
 ---
 
-## The interface
+## What the room finder says, and what you needed
 
-<p align="center">
-  <img src="product/day.png" width="240" alt="Day">
-  <img src="product/repair.png" width="240" alt="Repair after a 20 minute overrun">
-  <img src="product/plan.png" width="240" alt="Plan tab">
-</p>
+```
+ROOM FINDER                     YOU
+────────────────────────────    ────────────────────────────
+"14:00 to 15:50, 12 rooms       "I have 70 minutes, my laptop
+ free in this building."         is dying, and I have 2 hours
+                                 of reading to do."
+   ↑ an answer to a question       ↑ a decision about a day
+     you did not ask
+```
 
-<p align="center"><sub>Left: one card and the day as a stack. Middle: a 20 minute overrun changes one block, not five. Right: the week, one day, one sentence.</sub></p>
-
-Three tabs, three jobs, no toolbar. Blocks carry their own actions: a class offers skip, a meal
-offers change, a meeting offers booking. Nothing is ever empty, a gap defaults to study.
+A finder returns a **set**. A day is a **sequence**, and the choice you make now changes what is
+possible later. That is why more availability data never fixed this.
 
 ---
 
-## Architecture in one screen
+## What it does instead
+
+One card. A stack of blocks. Walking time in the seams. Nothing is ever empty.
 
 ```
-web/            Vue 3 + Vite, one build, four containers
+┌────────────────────────────────┐
+│  ✓ 09:00–10:50  Class   COMP1110 · KB      │   past, folded flat
+│      ┊ walk 5 min                          │
+│  ▎ 11:00–12:00  Study   KB 227        ●    │   now, enlarged
+│      ┊ walk 10 min                         │
+│  ┆ 12:10–12:40  Lunch   CYM G/F      ┆     │   dotted: not booked yet
+│      ┊ walk 10 min                         │
+│  ▎ 14:00–15:50  Class   CPD · LG05         │
+└────────────────────────────────┘
+     End the day      Stay a bit longer
+```
+
+Block states are the whole legend: **solid** means solved, **dashed** means an external fact such
+as a booked room, **dotted** means still to book. A block that has passed folds into a thin line,
+because it should not keep asking for attention.
+
+---
+
+## It changes one block, not five
+
+A class overruns by twenty minutes. Two ways to respond:
+
+```
+RECOMPUTE EVERYTHING            REPAIR
+────────────────────────        ────────────────────────
+11:00–12:00  Study   →  11:00–11:40 Study      ← changed
+12:10–12:40  Lunch   →  11:50–12:20 Lunch      ← changed
+14:00–15:50  Class   →  14:00–15:50 Class        same
+16:00–16:50  Meeting →  15:40–16:30 Meeting    ← changed
+17:00–18:20  Study   →  16:40–18:00 Study      ← changed
+
+5 blocks moved                  1 block moved
+```
+
+A plan that rewrites itself every time something moves is indistinguishable from having no plan.
+So repair asks a narrower question than "what is the best new day". It asks **which stops are
+actually broken**, and touches only those. Two stops count as the same stop when the purpose, the
+building and the start time all still line up. Tolerances are parameters, not laws of nature.
+
+👉 **[algorithm.md](docs/algorithm.md)** for the criterion, the procedure and the cost order.
+
+---
+
+## Four actions, no toolbar
+
+| Where you are | What you can do | What you cannot |
+|---|---|---|
+| a class | skip it | move it, cancel it, reschedule it |
+| a study block | change it | split it into two |
+| lunch | change it | order for you |
+| a meeting | book it, change it | book a room the university does not let you book |
+
+That last row matters. **The system does not pretend to allocate rooms it cannot allocate.** For an
+ordinary classroom it makes a retractable claim. For anything with a real booking process it says
+when to book, and then treats the outcome as a fact on the plan.
+
+---
+
+## Why the backend is not the product
+
+```
+web/            Vue 3 + Vite. One build, four containers:
                 browser · PWA · Android shell · iOS shell
      |
-     |  REST + JSON  (/api, proxied in dev)
+     |  REST + JSON
      v
-backend/        Spring Boot 4.1.1, Java 21, PostgreSQL 17
+backend/        Spring Boot + PostgreSQL
                 timetable · rooms · availability · room updates · audit · accounts
      |
      v
-mock-school-api/ simulated school feed (the real endpoint is not connected)
+mock-school-api/ a simulated school feed (the real endpoint is not connected)
 ```
 
-The backend stopped being the product. It answers *where can I be*, and it exists so the plan
-never points at a place that does not exist. The plan lives in the client, which is why the
-corridor case works with no signal.
+The backend answers **where can I be**. That is one of the three things a student does not know,
+and it is the easiest. The plan lives in the client, which is why the corridor case works with no
+signal at all, and why a second device cannot see your plan yet. Both consequences are honest.
 
 ---
 
-## Documentation
-
-Twelve documents, three languages each. Start with the first row.
+## Documentation, in three languages
 
 | | English | 简体 | 繁體 |
 |---|---|---|---|
 | **Why this exists** | [`why.md`](docs/why.md) | [`zh-CN`](docs/why.zh-CN.md) | [`zh-TW`](docs/why.zh-TW.md) |
-| **What it does that others do not** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
-| **Every feature, by journey** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
+| **What others cannot do** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
+| **Every feature** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **Architecture** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-CN.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
-| **The algorithm** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **The hard part** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
 | **Screens and rules** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-CN.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **Decision records** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-CN.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
-| **All of it, indexed** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
-
-Four decisions are recorded as ADRs: the backend is the data layer, the plan lives in the client,
-a deviation repairs instead of recomputing, and one build serves four containers.
+| **Everything, indexed** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
 
 ---
 
@@ -146,11 +176,21 @@ cd nextstop
 cd web && npm install && npm run dev    # http://127.0.0.1:5175
 ```
 
-`web/` proxies `/api` to 8080, so the day you see is built from real availability answers. The
-planning rules behind it are still a stub, which the interface does not hide.
+`web/` proxies `/api` to 8080, so the day on screen is built from real availability answers. The
+planner behind it is still a stub, and the interface does not pretend otherwise.
 
-No build step wanted? Open [`product/demo/index.html`](product/demo/index.html), one file, or use
-the hosted copy: <https://henryliu520.github.io/nextstop/>.
+No build step wanted? Open [`product/demo/index.html`](product/demo/index.html). One file, no
+server, works offline, switches between English, 简体 and 繁體 in the header.
+
+---
+
+## What it will never do
+
+1. Ask you a question it could have answered by watching.
+2. Show you an empty block and call it a plan.
+3. Move three blocks when one would have done, without telling you.
+4. Pretend a room is yours when it is not.
+5. Pass judgement on whether you went to class.
 
 ---
 
@@ -165,9 +205,9 @@ the hosted copy: <https://henryliu520.github.io/nextstop/>.
 | Learning layer | **specified, not implemented** |
 | PWA manifest, Android and iOS shells | **chosen, not built** |
 
-We do not claim more than that. The timetable is sample data. "Free" is not "empty". The
-one-block-versus-five-block comparison is illustrative, not a measured result. Authentication is
-prototype grade.
+The timetable is sample data. "Free" is not "empty". The one-block-versus-five-block comparison is
+illustrative, not a measured result. Authentication is prototype grade. Nothing here is a claim it
+cannot back.
 
 ---
 
@@ -179,7 +219,7 @@ backend/           Spring Boot service: timetable, availability, accounts, audit
 frontend/          earlier desktop client, kept because the availability work lives here
 mobile/            earlier phone client, same reason
 mock-school-api/   simulated school timetable feed, with its design log
-docs/              twelve documents, start at docs/README.md
+docs/              twelve documents, three languages each
 product/           prototype, screenshots, one page PDF
 scripts/           start / stop / test
 ```
@@ -188,5 +228,5 @@ scripts/           start / stop / test
 
 <p align="center"><sub>
 COMP1110 Group 08 · The University of Hong Kong · LIU Haoran (u3686264)<br>
-Coursework. Third party components are credited in <a href="THIRD-PARTY.md">THIRD-PARTY.md</a>.
+The name is a pun on a paper about attention. The paper is about what to attend to. So is this.
 </sub></p>

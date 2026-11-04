@@ -2,14 +2,14 @@
 
 <p align="center">
   <b>NextStop</b><br>
-  替一個學生決定兩節課之間該去哪，並且在一天被打亂時守住這個決定。
+  替一個學生決定兩節課之間該去哪，<br>
+  並且在一天被打亂時守住這個決定。
 </p>
 
 <p align="center">
   <a href="https://henryliu520.github.io/nextstop/"><b>▶ 試一下原型</b></a> &nbsp;·&nbsp;
   <a href="docs/why.zh-TW.md">為什麼有這個專案</a> &nbsp;·&nbsp;
-  <a href="docs/architecture.zh-TW.md">技術架構</a> &nbsp;·&nbsp;
-  <a href="docs/algorithm.zh-TW.md">核心演算法</a> &nbsp;·&nbsp;
+  <a href="docs/algorithm.zh-TW.md">真正難的部分</a> &nbsp;·&nbsp;
   <a href="product/NextStop.pdf">一頁 PDF</a>
 </p>
 
@@ -29,99 +29,127 @@
   <img src="product/web-day.png" width="230" alt="一張卡，一疊塊">
 </p>
 
-
 ---
 
-<p align="center">
-  <img src="product/web-desktop.png" width="620" alt="桌面寬度下，同一套介面裝在一個手機框裡">
-</p>
+## 週四 09:47
 
-<p align="center"><sub>一套介面。桌面寬度下它裝在一個手機框裡，因為它就是同一套介面。</sub></p>
-
-學生上完一節課走出來，手上還有七十分鐘。校園裡到處是空房間。
-他不知道的是**能去哪裡**。查詢器回答"哪間房空著"，日曆存"你已經決定了什麼"，兩者都不回答學生真正的問題：**現在幹什麼**。
-
-NextStop 回答這個。一張卡、一個時間、一個去向。一天動起來的時候，它改得儘量少。
-
----
-
-## 它是什麼
-
-| | |
-|---|---|
-| **它回答** | 接下來這一小時做什麼，以及在哪 |
-| **它不做** | 給你一張清單讓你自己挑 |
-| **你要做的** | 一天開啟一次，然後照著走 |
-| **它不是** | 查詢器，也不是日曆 |
-
-兩節課之間，學生不知道三件事：**能去哪裡、被允許去哪裡、做什麼**。房間只是其中一小步。
-
----
-
-## 它怎麼決定
+KB 的課提前下了。下一節 11:00 在 CPD。
 
 ```
-1  固定    課表。權威、不可疑。
-2  空出    承諾之間的空隙，扣掉走路和緩衝。
-3  填      每段空隙放什麼、放哪，由可用性層給候選。
-4  修復    現實偏離時，儘量少改。
+09:47  KB      you are here, holding a laptop and seventy minutes
+10:50          the next class starts, in a different building
+        ?
 ```
 
-真正難的不是決定一天，是決定**打亂之後最少改多少**。兩個停靠點算同一件事，必須目的、樓棟、開始時間都還對得上。修復按代價順序往上爬：挪幾分鐘、換同樓房間、換樓、取消一站，**最後才動出勤**，而出勤是人自己的決定。
+你知道學校有空房間，你知道有圖書館，你知道自己欠著一篇報告。你不知道的是 **接下來這一小時，在這棟樓還是隔壁樓，該做哪一件事**。
 
-> 查詢器回答一個集合。計劃回答一個序列。
+於是你站在走廊裡自己決定。一天三次到五次，每天都這樣，你其實也習慣了。**而這就是沒人做的那部分。**
 
 ---
 
-## 介面
+## 查詢器回答的，和你需要的
 
-<p align="center">
-  <img src="product/day.png" width="240" alt="一天">
-  <img src="product/repair.png" width="240" alt="拖堂 20 分鐘後的修復">
-  <img src="product/plan.png" width="240" alt="規劃頁">
-</p>
+```
+ROOM FINDER                     YOU
+────────────────────────────    ────────────────────────────
+"14:00 to 15:50, 12 rooms       "I have 70 minutes, my laptop
+ free in this building."         is dying, and I have 2 hours
+                                 of reading to do."
+   ↑ an answer to a question       ↑ a decision about a day
+     you did not ask
+```
 
-<p align="center"><sub>左：一張卡，一天是一疊塊。中：拖堂 20 分鐘只改一塊，不是五塊。右：一週、一天、一句話。</sub></p>
-
-三個 tab，三件事，沒有工具欄。塊自己帶著它的動作：課給"不去"，吃飯給"換一個"，見面給"一鍵預約"。**沒有空著的時間**，空隙預設是自習。
+查詢器返回一個**集合**。而一天是一條**序列**，你現在做的選擇會改變後面能做什麼。這就是為什麼再多可用性資料也修不好這件事。
 
 ---
 
-## 一張圖說清架構
+## 它給的是什麼
+
+一張卡。一疊塊。塊與塊之間只寫走路時間。**沒有空著的時間。**
 
 ```
-web/            Vue 3 + Vite，一套構建，四個容器
-                網頁 · PWA · Android 殼 · iOS 殼
+┌────────────────────────────────┐
+│  ✓ 09:00–10:50  Class   COMP1110 · KB      │   past, folded flat
+│      ┊ walk 5 min                          │
+│  ▎ 11:00–12:00  Study   KB 227        ●    │   now, enlarged
+│      ┊ walk 10 min                         │
+│  ┆ 12:10–12:40  Lunch   CYM G/F      ┆     │   dotted: not booked yet
+│      ┊ walk 10 min                         │
+│  ▎ 14:00–15:50  Class   CPD · LG05         │
+└────────────────────────────────┘
+     End the day      Stay a bit longer
+```
+
+圖例就是全部：**實心**是已經解出來的，**虛線**是外部事實（比如已經訂到的房間），**點線**是還待訂。已經過去的塊壓成一條細線，因為它不該繼續搶注意力。
+
+---
+
+## 打亂時，它只改一塊，不是五塊
+
+一節課拖堂二十分鐘，兩種反應：
+
+```
+RECOMPUTE EVERYTHING            REPAIR
+────────────────────────        ────────────────────────
+11:00–12:00  Study   →  11:00–11:40 Study      ← changed
+12:10–12:40  Lunch   →  11:50–12:20 Lunch      ← changed
+14:00–15:50  Class   →  14:00–15:50 Class        same
+16:00–16:50  Meeting →  15:40–16:30 Meeting    ← changed
+17:00–18:20  Study   →  16:40–18:00 Study      ← changed
+
+5 blocks moved                  1 block moved
+```
+
+一個每次被打斷就整體重寫的計劃，跟沒有計劃是無法區分的。所以修復問的不是"最好的一天長什麼樣"，而是一個更窄的問題：**哪幾站真的壞了**，然後只動那幾站。兩個停靠點算同一站，條件還是那三條：目的、樓棟、開始時間都還對得上。容忍度是引數，不是天條。
+
+👉 判據、過程與代價順序都在 **[algorithm.zh-TW.md](docs/algorithm.zh-TW.md)**。
+
+---
+
+## 四個動作，沒有工具欄
+
+| 你在哪 | 你能做什麼 | 你不能做什麼 |
+|---|---|---|
+| 一節課 | 不去 | 改時間、取消、重排 |
+| 一段自習 | 換一個 | 拆成兩段 |
+| 吃飯 | 換一個 | 替你點單 |
+| 一個見面 | 預約、換地方 | 訂一間學校不允許你訂的房 |
+
+最後一行很重要。**系統不假裝能分配它分配不了的房間。** 普通教室給一個可撤回的認領，真有預約流程的場地，它只說什麼時候該訂，然後把結果當成事實貼回計劃。
+
+---
+
+## 為什麼後端不再是產品
+
+```
+web/            Vue 3 + Vite. One build, four containers:
+                browser · PWA · Android shell · iOS shell
      |
-     |  REST + JSON（開發時由 Vite 代理 /api）
+     |  REST + JSON
      v
-backend/        Spring Boot 4.1.1、Java 21、PostgreSQL 17
-                課表 · 房間 · 可用性 · 佔用變更 · 審計 · 帳號
+backend/        Spring Boot + PostgreSQL
+                timetable · rooms · availability · room updates · audit · accounts
      |
      v
-mock-school-api/ 模擬學校課表源（真實介面尚未接入）
+mock-school-api/ a simulated school feed (the real endpoint is not connected)
 ```
 
-後端不再是產品。它回答"我能去哪"，存在的意義是保證計劃不會指向一個不存在的地方。計劃在客戶端，所以走廊裡沒訊號也能用。
+後端回答的是**我能去哪**。那是學生不知道的三件事之一，而且是最容易的那件。計劃在客戶端，所以走廊裡沒訊號也能用，也所以換一臺裝置看不到你的計劃。兩個後果都如實寫在這裡。
 
 ---
 
-## 文件
-
-十二份文件，每份三語。從第一行開始讀。
+## 文件，每份三語
 
 | | English | 簡體 | 繁體 |
 |---|---|---|---|
 | **為什麼有這個專案** | [`why.md`](docs/why.md) | [`zh-CN`](docs/why.zh-TW.md) | [`zh-TW`](docs/why.zh-TW.md) |
 | **別人做不到的地方** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-TW.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
-| **按使用者旅程的功能** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-TW.md) | [`zh-TW`](docs/features.zh-TW.md) |
+| **按旅程列的功能** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-TW.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **技術架構** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-TW.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
-| **核心演算法** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-TW.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **真正難的部分** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-TW.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
 | **介面與規則** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-TW.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **決策記錄** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-TW.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
 | **全部索引** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-TW.md) | [`zh-TW`](docs/README.zh-TW.md) |
-
-四條決策寫成了 ADR：後端是資料層、計劃在客戶端、偏離時修復而非重算、一套構建服務四個容器。
 
 ---
 
@@ -135,10 +163,19 @@ cd nextstop
 cd web && npm install && npm run dev    # http://127.0.0.1:5175
 ```
 
-`web/` 把 `/api` 代理到 8080，所以你看到的一天是用真實可用性資料拼出來的。背後的規劃規則仍是樁，介面不掩飾這一點。
+`web/` 把 `/api` 代理到 8080，所以你看到的一天是用真實可用性資料拼出來的。背後的規劃器仍是樁，介面不掩飾。
 
-不想構建？開啟 [`product/demo/index.html`](product/demo/index.html)，單檔案，或者直接看線上版
-<https://henryliu520.github.io/nextstop/>。
+不想構建？開啟 [`product/demo/index.html`](product/demo/index.html)，單檔案、不用服務、能離線，右上角切 English / 簡體 / 繁體。
+
+---
+
+## 它永遠不會做的事
+
+1. 問一個它自己看兩眼就能知道答案的問題。
+2. 給你一塊空白，然後管它叫計劃。
+3. 一改就改三塊，還不告訴你。
+4. 假裝那間房是你的。
+5. 評價你去沒去上課。
 
 ---
 
@@ -153,7 +190,7 @@ cd web && npm install && npm run dev    # http://127.0.0.1:5175
 | 學習層 | **已設計，未實現** |
 | PWA manifest、Android 與 iOS 殼 | **已選定，未構建** |
 
-我們不聲稱更多。課表是樣例資料。"空閒"不等於"沒人"。"改一塊 vs 改五塊"是示例，不是實測結果。鑑權是原型級。
+課表是樣例資料。"空閒"不等於"沒人"。"改一塊 vs 改五塊"是示例，不是實測結果。鑑權是原型級。這裡沒有一句撐不起的話。
 
 ---
 
@@ -165,7 +202,7 @@ backend/           Spring Boot 服務：課表、可用性、帳號、審計
 frontend/          早期桌面客戶端，保留因為可用性相關工作在這裡
 mobile/            早期手機客戶端，原因同上
 mock-school-api/   模擬學校課表源，含設計記錄
-docs/              十二份文件，從 docs/README.md 開始
+docs/              十二份文件，每份三語
 product/           原型、截圖、一頁 PDF
 scripts/           啟動 / 停止 / 測試
 ```
@@ -174,5 +211,5 @@ scripts/           啟動 / 停止 / 測試
 
 <p align="center"><sub>
 COMP1110 第 08 組 · 香港大學 · LIU Haoran (u3686264)<br>
-課程作業。第三方元件在 <a href="THIRD-PARTY.md">THIRD-PARTY.md</a> 裡逐項致謝。
+名字是拿一篇講 attention 的論文開的玩笑。那篇講該注意什麼，這個也講該注意什麼。
 </sub></p>
