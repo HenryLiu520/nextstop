@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="product/web-day.png" width="230" alt="一张卡，一叠块">
+  <img src="product/web-day.png" width="240" alt="一张卡，一叠块">
 </p>
 
 <p align="center"><sub>一张卡、一个时间、一个去向。剩下的一天在下面。</sub></p>

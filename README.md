@@ -26,7 +26,7 @@
 </p>
 
 <p align="center">
-  <img src="product/web-day.png" width="230" alt="One card, a stack of blocks">
+  <img src="product/web-day.png" width="240" alt="One card, a stack of blocks">
 </p>
 
 <p align="center"><sub>One card, one time, one destination. The rest of the day is underneath.</sub></p>
