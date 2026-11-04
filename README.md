@@ -2,14 +2,14 @@
 
 <p align="center">
   <b>NextStop</b><br>
-  Decides where a student should go between classes,<br>
-  and keeps that decision standing when the day moves.
+  You have 73 minutes and no plan.<br>
+  It writes one, then defends it when the day moves.
 </p>
 
 <p align="center">
   <a href="https://henryliu520.github.io/nextstop/"><b>▶ Try the prototype</b></a> &nbsp;·&nbsp;
   <a href="docs/why.md">Why it exists</a> &nbsp;·&nbsp;
-  <a href="docs/algorithm.md">The hard part</a> &nbsp;·&nbsp;
+  <a href="docs/highlights.md">What makes it different</a> &nbsp;·&nbsp;
   <a href="product/NextStop.pdf">One page PDF</a>
 </p>
 
@@ -22,7 +22,7 @@
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
   <img alt="27 tests" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
-  <img alt="prototype" src="https://img.shields.io/badge/status-prototype-C8452D">
+  <img alt="planner still a stub" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
 <p align="center">
@@ -33,42 +33,60 @@
 
 ---
 
-A room finder tells you which rooms are empty. A calendar stores what you already decided. Neither
-answers the question a student actually has in a corridor at 09:47, which is **what now**.
+It is 09:47 on a Thursday. A lecture has just ended in KB. The next one is in CPD at 11:00.
 
-NextStop answers it, and when the day moves it changes as little as it can.
+You will spend eleven minutes not deciding, then walk to CPD and sit outside the classroom for
+another forty, because sitting somewhere you are definitely allowed to sit asks nothing of you.
 
----
+That hour was not wasted on purpose. It just never got decided.
 
-## Who this happens to
-
-- **The first-year who finished gaokao** and no longer has anyone telling them where to go and grind.
-- **The exchange student** with two hours between classes and nowhere legal to nap.
-- **The one standing in the lift lobby** who has been deciding for eleven minutes.
-- **The one eating lunch at 15:40** because at 12:00 the decision was too big.
-- **Five people who all say "wherever you want"** and then spend twenty minutes not going anywhere.
-
-None of them lack information. All of them lack a next step.
+NextStop decides it.
 
 ---
 
-## What it does
+## Who this keeps happening to
+
+- The **international student** who moved countries and still cannot work out where to sit for ninety minutes.
+- The **first-year after gaokao**, now that nobody is telling them where to go and grind.
+- The one in the **lift lobby**, eleven minutes into a decision about which floor to press.
+- The one **eating lunch at 15:40**, because at 12:00 the decision was too big.
+- **Five people who all say "wherever you want"**, then spend twenty minutes not going anywhere.
+
+All five own a phone that knows exactly which rooms are empty.
+
+---
+
+## Four things it does that the usual tools do not
+
+| | | |
+|---|---|---|
+| **It decides, instead of listing** | A finder answers a set, a plan answers a sequence | [why](docs/why.md) |
+| **It gets better the longer you use it** | Learns how fast you really walk, when your day really ends, which places you actually go. Three observations before a parameter replaces its default | [highlights](docs/highlights.md) |
+| **It is almost effortless** | One gesture a day, then follow it. The number of actions needed goes down over time, not up | [screens](docs/screens.md) |
+| **It never speaks first** | No push, no chat bubble, no "need anything?". When something changes it says what changed and offers undo | [highlights](docs/highlights.md) |
+
+What is learned is always a default, never a control taken away. The buttons stay.
+
+---
+
+## What it looks like
 
 <p align="center">
   <img src="product/day.png" width="240" alt="Day">
-  <img src="product/repair.png" width="240" alt="Repair after a 20 minute overrun">
+  <img src="product/repair.png" width="240" alt="After a 20 minute overrun">
   <img src="product/plan.png" width="240" alt="Plan tab">
 </p>
 
-<p align="center"><sub>Left: the day as a stack. Middle: a 20 minute overrun changes one block, not five. Right: the week, one day, one sentence.</sub></p>
+<p align="center"><sub>Left: the day as a stack. Middle: a 20 minute overrun. Right: the week, one day, one sentence.</sub></p>
 
-Three tabs, no toolbar. Blocks carry their own actions, and nothing is ever empty.
+A class offers skip, a meal offers change, a meeting offers booking. Nothing is ever empty, a gap
+defaults to study.
 
 ---
 
-## The part that is actually hard
+## When the day moves
 
-Not deciding a day. Deciding **how little to change** when the day moves.
+A class overruns by twenty minutes. Two ways to answer:
 
 ```
 RECOMPUTE EVERYTHING            REPAIR
@@ -82,29 +100,29 @@ RECOMPUTE EVERYTHING            REPAIR
 5 blocks moved                  1 block moved
 ```
 
-A plan that rewrites itself every time something moves is indistinguishable from having no plan.
-Two stops count as the same stop when the purpose, the building and the start time still line up.
-👉 **[algorithm.md](docs/algorithm.md)**
+Five blocks moving is how a plan loses your trust. So repair asks a narrower question than
+"what is the best new day". It asks which stops are actually broken, and touches only those. Two
+stops count as the same stop when the purpose, the building and the start time all still line up.
+
+👉 **[algorithm.md](docs/algorithm.md)** for the criterion, the procedure and the cost order.
 
 ---
 
-## Why the backend is not the product
+## How it is built
 
 ```
-web/            Vue 3 + Vite. One build, four containers:
-                browser · PWA · Android shell · iOS shell
-     |
-     |  REST + JSON
-     v
-backend/        Spring Boot + PostgreSQL  (timetable, rooms, availability, audit)
-     |
-     v
-mock-school-api/ a simulated school feed
+web/     Vue 3 + Vite, one build, four containers
+         browser · PWA · Android shell · iOS shell
+   |
+   |  REST + JSON
+   v
+backend  Spring Boot + PostgreSQL
+         timetable · rooms · availability · audit · accounts
 ```
 
-The backend answers **where can I be**, which is one of the three things a student does not know,
-and the easiest one. The plan lives in the client, so the corridor case works with no signal, and
-a second device still cannot see your plan. Both consequences are honest.
+The planning, the repair and the interface all run in the client, which is why the corridor case
+works with no signal. The service underneath was built earlier in the project and answers one
+question well, **which rooms are free**, so the plan never points at a place that does not exist.
 
 ---
 
@@ -113,10 +131,10 @@ a second device still cannot see your plan. Both consequences are honest.
 | | English | 简体 | 繁體 |
 |---|---|---|---|
 | **Why this exists** | [`why.md`](docs/why.md) | [`zh-CN`](docs/why.zh-CN.md) | [`zh-TW`](docs/why.zh-TW.md) |
-| **What others cannot do** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
+| **What makes it different** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
 | **Every feature** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **Architecture** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-CN.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
-| **The hard part** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **The repair criterion** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
 | **Screens and rules** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-CN.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **Decision records** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-CN.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
 | **Everything, indexed** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
@@ -133,23 +151,22 @@ cd nextstop
 cd web && npm install && npm run dev    # http://127.0.0.1:5175
 ```
 
-`web/` proxies `/api` to 8080, so the day on screen is built from real availability answers. The
-planner behind it is still a stub, and the interface does not pretend otherwise.
+`web/` proxies `/api` to 8080, so the day on screen is built from real availability answers.
 
 No build step? Open [`product/demo/index.html`](product/demo/index.html). One file, no server,
 works offline, three languages in the header.
 
 ---
 
-## Built, specified, not built
+## What is real and what is not
 
 | Part | State |
 |---|---|
 | Availability engine, rules, roles, audit, 27 tests | **built and tested** |
 | Web interface, three tabs, three languages, real availability | **built** |
 | Single file prototype, clickable end to end | **built** |
-| Planner and repair ladder | **specified, not implemented** |
-| Learning layer | **specified, not implemented** |
+| The planner and the repair ladder | **specified, not implemented** |
+| The learning layer | **specified, not implemented** |
 | PWA manifest, Android and iOS shells | **chosen, not built** |
 
 The timetable is sample data. "Free" is not "empty". The one-block-versus-five-block comparison is

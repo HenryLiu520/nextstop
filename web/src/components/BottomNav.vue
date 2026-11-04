@@ -42,8 +42,8 @@ const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'me' }]
   justify-content: center;
   gap: 5px;
   color: var(--ink-2);
-  font-size: 13px;
-  letter-spacing: 0.03em;
+  font-size: 15px;
+  letter-spacing: 0.02em;
   transition: color 180ms var(--ease);
 }
 

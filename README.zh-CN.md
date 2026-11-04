@@ -2,14 +2,14 @@
 
 <p align="center">
   <b>NextStop</b><br>
-  替一个学生决定两节课之间该去哪，<br>
-  并且在一天被打乱时守住这个决定。
+  你有 73 分钟，和一张空白。<br>
+  它写一张，并且在一天动起来的时候守住它。
 </p>
 
 <p align="center">
   <a href="https://henryliu520.github.io/nextstop/"><b>▶ 试一下原型</b></a> &nbsp;·&nbsp;
   <a href="docs/why.zh-CN.md">为什么有这个项目</a> &nbsp;·&nbsp;
-  <a href="docs/algorithm.zh-CN.md">真正难的部分</a> &nbsp;·&nbsp;
+  <a href="docs/highlights.zh-CN.md">它凭什么不一样</a> &nbsp;·&nbsp;
   <a href="product/NextStop.pdf">一页 PDF</a>
 </p>
 
@@ -22,7 +22,7 @@
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
   <img alt="27 个测试" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
-  <img alt="原型" src="https://img.shields.io/badge/status-prototype-C8452D">
+  <img alt="规划器仍是桩" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
 <p align="center">
@@ -33,41 +33,58 @@
 
 ---
 
-查找器告诉你哪些房间空着，日历存着你已经决定的事。两者都不回答一个学生 09:47 站在走廊里真正的问题：**现在干什么**。
+周四 09:47。KB 的课刚下，下一节 11:00 在 CPD。
 
-NextStop 回答这个，而且在一天动起来的时候，改得尽量少。
+你会先花十一分钟不决定，然后走到 CPD，在教室外面再坐四十分钟 —— 因为坐在一个你确定被允许坐的地方，不需要做任何决定。
+
+那一个小时不是被浪费掉的，它只是从来没被决定过。
+
+NextStop 把它决定掉。
 
 ---
 
-## 这事发生在谁身上
+## 这事总在谁身上发生
 
+- **国际生**，换了个国家读书，还是搞不清九十分钟该坐哪。
 - **高考完的第一年**，再没人告诉你该去哪接着卷。
-- **交换生**，两节课之间两小时，找不到一个能正大光明打盹的地方。
-- **站在电梯口那位**，已经"决定"了十一分钟。
+- **电梯口那位**，已经在"按哪一层"上决定了十一分钟。
 - **下午三点四十才吃午饭那位**，因为中午那个决定太大了。
 - **五个人都说"随便"**，然后二十分钟哪也没去。
 
-他们都不缺信息。都缺下一步。
+这五个人手里那台手机，都知道哪些房间空着。
 
 ---
 
-## 它给什么
+## 它做到的、那些工具做不到的四件事
+
+| | | |
+|---|---|---|
+| **它替你决定，而不是给你清单** | 查找器回答一个集合，计划回答一个序列 | [为什么](docs/why.zh-CN.md) |
+| **越用越聪明** | 学你实际走多快、你的一天实际几点结束、你实际会去哪。同一个参数满三次观测，才替换默认值 | [闪光点](docs/highlights.zh-CN.md) |
+| **极度便捷** | 一天一个动作，然后照着走。需要的操作数只会越来越少，不会越来越多 | [界面](docs/screens.zh-CN.md) |
+| **它从不先开口** | 没有推送、没有对话气泡、没有"需要帮忙吗"。真有事时，只说什么变了，并给一个撤回 | [闪光点](docs/highlights.zh-CN.md) |
+
+学到的永远是默认值，不是被拿走的按钮。按钮一直留在原位。
+
+---
+
+## 它长什么样
 
 <p align="center">
   <img src="product/day.png" width="240" alt="一天">
-  <img src="product/repair.png" width="240" alt="拖堂 20 分钟后的修复">
+  <img src="product/repair.png" width="240" alt="拖堂 20 分钟之后">
   <img src="product/plan.png" width="240" alt="规划页">
 </p>
 
-<p align="center"><sub>左：一天是一叠块。中：拖堂 20 分钟只改一块，不是五块。右：一周、一天、一句话。</sub></p>
+<p align="center"><sub>左：一天是一叠块。中：拖堂 20 分钟。右：一周、一天、一句话。</sub></p>
 
-三个 tab，没有工具栏。块自己带着动作，而且没有空着的时间。
+课给"不去"，吃饭给"换一个"，见面给"一键预约"。没有空着的时间，空隙默认是自习。
 
 ---
 
-## 真正难的部分
+## 一天动起来的时候
 
-不是决定一天，是决定**打乱之后最少改多少**。
+一节课拖堂二十分钟，两种答法：
 
 ```
 RECOMPUTE EVERYTHING            REPAIR
@@ -81,26 +98,25 @@ RECOMPUTE EVERYTHING            REPAIR
 5 blocks moved                  1 block moved
 ```
 
-一个每次被打断就整体重写的计划，跟没有计划无法区分。两个停靠点算同一站，条件是目的、楼栋、开始时间都还对得上。
-👉 **[algorithm.zh-CN.md](docs/algorithm.zh-CN.md)**
+一次改五块，是计划开始不被信任的方式。所以这里问的不是"最好的一天长什么样"，而是一个更窄的问题：哪几站真的坏了，然后只动那几站。两个停靠点算同一站，条件是目的、楼栋、开始时间都还对得上。
+
+👉 判据、过程与代价顺序：**[algorithm.zh-CN.md](docs/algorithm.zh-CN.md)**
 
 ---
 
-## 为什么后端不再是产品
+## 它是怎么搭起来的
 
 ```
-web/            Vue 3 + Vite. One build, four containers:
-                browser · PWA · Android shell · iOS shell
-     |
-     |  REST + JSON
-     v
-backend/        Spring Boot + PostgreSQL  (timetable, rooms, availability, audit)
-     |
-     v
-mock-school-api/ a simulated school feed
+web/     Vue 3 + Vite，一套构建，四个容器
+         网页 · PWA · Android 壳 · iOS 壳
+   |
+   |  REST + JSON
+   v
+backend  Spring Boot + PostgreSQL
+         课表 · 房间 · 可用性 · 审计 · 账号
 ```
 
-后端回答的是**我能去哪**，那是学生不知道的三件事之一，也是最容易的那件。计划在客户端，所以走廊里没信号也能用，也所以换一台设备看不到你的计划。两个后果都如实写在这里。
+规划、修复、界面都在客户端，所以走廊里没信号也能用。底下那个服务是项目早前做完的，它把一件事答得很准：**哪些房间现在空着**，于是计划不会指向一个不存在的地方。
 
 ---
 
@@ -109,10 +125,10 @@ mock-school-api/ a simulated school feed
 | | English | 简体 | 繁體 |
 |---|---|---|---|
 | **为什么有这个项目** | [`why.md`](docs/why.md) | [`zh-CN`](docs/why.zh-CN.md) | [`zh-TW`](docs/why.zh-TW.md) |
-| **别人做不到的地方** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
+| **它凭什么不一样** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
 | **按旅程列的功能** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **技术架构** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-CN.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
-| **真正难的部分** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **修复判据** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
 | **界面与规则** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-CN.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **决策记录** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-CN.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
 | **全部索引** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
@@ -129,13 +145,13 @@ cd nextstop
 cd web && npm install && npm run dev    # http://127.0.0.1:5175
 ```
 
-`web/` 把 `/api` 代理到 8080，所以你看到的一天是用真实可用性数据拼出来的。背后的规划器仍是桩，界面不掩饰。
+`web/` 把 `/api` 代理到 8080，所以你看到的一天是用真实可用性数据拼出来的。
 
 不想构建？打开 [`product/demo/index.html`](product/demo/index.html)，单文件、不用服务、能离线，右上角切三种语言。
 
 ---
 
-## 做了、设计了、没做
+## 哪些是真的，哪些不是
 
 | 部分 | 状态 |
 |---|---|
