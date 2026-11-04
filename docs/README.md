@@ -1,5 +1,7 @@
 # Documentation
 
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
+
 One map of the project. Everything below is English except where a file name says otherwise.
 
 The short version, if you only read one thing:

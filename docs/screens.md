@@ -1,5 +1,7 @@
 # Screens and Interaction Rules
 
+**English** · [简体中文](screens.zh-CN.md) · [繁體中文](screens.zh-TW.md)
+
 NextStop is one page with three tabs. A day is a column of blocks with walking
 time in the seams between them. Every action lives inside the block it changes.
 

@@ -1,5 +1,7 @@
 # NextStop: four highlights, and how each one is built
 
+**English** · [简体中文](highlights.zh-CN.md) · [繁體中文](highlights.zh-TW.md)
+
 > A highlight is only worth keeping if you can point at the mechanism.
 
 [`why.md`](why.md) argues that the problem a student has is a missing decision rather than a

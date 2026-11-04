@@ -1,5 +1,7 @@
 # NextStop: features, in the order a student meets them
 
+**English** · [简体中文](features.zh-CN.md) · [繁體中文](features.zh-TW.md)
+
 NextStop is one screen with six moments in it. This document walks the moments in
 the order a student hits them: the day is revealed, read as one card, followed
 through four actions, repaired when reality moves, edited a day ahead, and tuned

@@ -1,5 +1,7 @@
 # 0002. The plan lives in the client
 
+**English** · [简体中文](0002-plan-lives-in-the-client.zh-CN.md) · [繁體中文](0002-plan-lives-in-the-client.zh-TW.md)
+
 - Status: Accepted
 - Date: 2026-11-04
 - Scope: `frontend/`, `mobile/`, `product/demo/index.html`

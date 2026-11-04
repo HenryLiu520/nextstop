@@ -1,5 +1,7 @@
 # 0004. One UI, four delivery targets
 
+**English** · [简体中文](0004-one-ui-four-targets.zh-CN.md) · [繁體中文](0004-one-ui-four-targets.zh-TW.md)
+
 - Status: Accepted
 - Date: 2026-11-04
 - Scope: `web/`, `capacitor/`, `docs/architecture.md`

@@ -1,5 +1,7 @@
 # Architecture decision records
 
+**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
+
 | # | Decision | Status |
 |---|---|---|
 | [0001](0001-backend-is-the-data-layer.md) | The backend is a data layer, not the product | Accepted |

@@ -1,5 +1,7 @@
 # 0003. Repair instead of recompute
 
+**English** · [简体中文](0003-repair-instead-of-recompute.zh-CN.md) · [繁體中文](0003-repair-instead-of-recompute.zh-TW.md)
+
 - Status: Accepted
 - Date: 2026-11-04
 - Scope: plan layer, `docs/algorithm.md`, `product/demo/index.html`

@@ -1,5 +1,7 @@
 # Architecture
 
+**English** · [简体中文](architecture.zh-CN.md) · [繁體中文](architecture.zh-TW.md)
+
 NextStop answers one question: *where should this person be, and when should they move.*
 The system that answers it is split in two halves that never trade places.
 

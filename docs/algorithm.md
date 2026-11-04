@@ -1,5 +1,7 @@
 # NextStop: planning and repair algorithm
 
+**English** · [简体中文](algorithm.zh-CN.md) · [繁體中文](algorithm.zh-TW.md)
+
 How a day is planned from a fixed timetable, and how that plan is repaired when reality moves. This is a design document. The prototype planner is a stub (section 9), so nothing here is a
 measured result. The claim it exists to support is one sentence: when something deviates, the system changes the fewest stops it can, and fewer than a full recompute would.
 

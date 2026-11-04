@@ -1,5 +1,7 @@
 # 0001. The backend is a data layer
 
+**English** · [简体中文](0001-backend-is-the-data-layer.zh-CN.md) · [繁體中文](0001-backend-is-the-data-layer.zh-TW.md)
+
 - Status: Accepted
 - Date: 2026-11-04
 - Scope: `backend/`, `db/`, both clients' API surface

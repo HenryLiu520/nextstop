@@ -1,16 +1,49 @@
-# NextStop
+<p align="center">
+  <img src="product/web-day.png" width="290" alt="One card, a stack of blocks">
+</p>
 
-**English** · [简体中文](README.zh-CN.md) · [繁體中文](README.zh-TW.md)
+<h1 align="center">Following It Is All You Need.</h1>
 
-> Following It Is All You Need.
+<p align="center">
+  <b>NextStop</b><br>
+  Decides where a student should go between classes, and keeps that decision standing when the day moves.
+</p>
 
-A student walks out of a lecture with seventy minutes in front of them. The campus is full of
-rooms. What they do not know is **where to go**. NextStop decides that for them, and keeps the
-decision standing when the day moves.
+<p align="center">
+  <a href="https://henryliu520.github.io/nextstop/"><b>▶ Try the prototype</b></a> &nbsp;·&nbsp;
+  <a href="docs/why.md">Why it exists</a> &nbsp;·&nbsp;
+  <a href="docs/architecture.md">Architecture</a> &nbsp;·&nbsp;
+  <a href="docs/algorithm.md">Algorithm</a> &nbsp;·&nbsp;
+  <a href="product/NextStop.pdf">One page PDF</a>
+</p>
 
-COMP1110 Group 08 · HKU · built by **LIU Haoran (u3686264)**
+<p align="center">
+  <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.zh-TW.md">繁體中文</a>
+</p>
 
-<img src="product/web-day.png" width="330" alt="One card, a stack of blocks, seams of walking time between them">
+<p align="center">
+  <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
+  <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
+  <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
+  <img alt="27 tests" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
+  <img alt="prototype" src="https://img.shields.io/badge/status-prototype-C8452D">
+</p>
+
+---
+
+<p align="center">
+  <img src="product/web-desktop.png" width="620" alt="The same interface on a desktop, inside a phone frame">
+</p>
+
+<p align="center"><sub>One interface. On a wide screen it sits in a phone frame, because it is the same interface.</sub></p>
+
+A student leaves a lecture with seventy minutes in front of them. The campus is full of rooms.
+What they do not know is **where to go**. A room finder answers *which rooms are empty*, a
+calendar stores *what you already decided*, and neither answers the question the student actually
+has, which is **what now**.
+
+NextStop answers it. One card, one time, one destination. When the day moves it changes as little
+as it can.
 
 ---
 
@@ -23,33 +56,8 @@ COMP1110 Group 08 · HKU · built by **LIU Haoran (u3686264)**
 | **You do** | open it once a day, then follow it |
 | **It is not** | a room finder, and not a calendar |
 
-A room finder tells you which rooms are empty. A calendar stores what you have already decided.
-Neither answers the question a student actually has in a corridor, which is *what now*.
-
 Three things a student does not know between two classes: **where they can go, where they are
 allowed to go, what to do**. The room is one small step inside that.
-
-📄 **[One page PDF](product/NextStop.pdf)** · 🧭 **[Why this exists](docs/why.md)** · ✨ **[What it does that others do not](docs/highlights.md)**
-
----
-
-## The interface
-
-One card. Below it, the day as a stack of blocks. Between the blocks, only the walking time.
-Nothing is ever empty: a gap defaults to study.
-
-<img src="product/web-desktop.png" width="640" alt="On a desktop the same interface sits in a phone frame, because it is the same interface">
-
-Three tabs, three jobs, no toolbar:
-
-| Tab | Job |
-|---|---|
-| **Day** | one card, a stack of blocks, four actions |
-| **Plan** | the week as five columns, one day below it, one sentence to change it |
-| **Me** | the numbers it learned, editable |
-
-Deeper: **[screens](docs/screens.md)** (block specification, action matrix, tokens) and
-**[features](docs/features.md)** (every feature by user journey).
 
 ---
 
@@ -69,8 +77,20 @@ building, drop a stop, and only then touch attendance, which is the user's decis
 
 > A finder answers a set. A plan answers a sequence.
 
-**[algorithm.md](docs/algorithm.md)** has the criterion, the procedure, the complexity and one
-worked example.
+---
+
+## The interface
+
+<p align="center">
+  <img src="product/day.png" width="240" alt="Day">
+  <img src="product/repair.png" width="240" alt="Repair after a 20 minute overrun">
+  <img src="product/plan.png" width="240" alt="Plan tab">
+</p>
+
+<p align="center"><sub>Left: one card and the day as a stack. Middle: a 20 minute overrun changes one block, not five. Right: the week, one day, one sentence.</sub></p>
+
+Three tabs, three jobs, no toolbar. Blocks carry their own actions: a class offers skip, a meal
+offers change, a meeting offers booking. Nothing is ever empty, a gap defaults to study.
 
 ---
 
@@ -89,13 +109,29 @@ backend/        Spring Boot 4.1.1, Java 21, PostgreSQL 17
 mock-school-api/ simulated school feed (the real endpoint is not connected)
 ```
 
-The backend stopped being the product. It is the layer that answers *where can I be*, and it
-exists so the plan never points at a place that does not exist. The plan lives in the client,
-which is why the corridor case works with no signal.
+The backend stopped being the product. It answers *where can I be*, and it exists so the plan
+never points at a place that does not exist. The plan lives in the client, which is why the
+corridor case works with no signal.
 
-**[architecture.md](docs/architecture.md)** · decisions in **[adr/](docs/adr/)**
-(0001 data layer, 0002 plan in the client, 0003 repair instead of recompute, 0004 one UI four
-targets)
+---
+
+## Documentation
+
+Twelve documents, three languages each. Start with the first row.
+
+| | English | 简体 | 繁體 |
+|---|---|---|---|
+| **Why this exists** | [`why.md`](docs/why.md) | [`zh-CN`](docs/why.zh-CN.md) | [`zh-TW`](docs/why.zh-TW.md) |
+| **What it does that others do not** | [`highlights.md`](docs/highlights.md) | [`zh-CN`](docs/highlights.zh-CN.md) | [`zh-TW`](docs/highlights.zh-TW.md) |
+| **Every feature, by journey** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
+| **Architecture** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-CN.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
+| **The algorithm** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **Screens and rules** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-CN.md) | [`zh-TW`](docs/screens.zh-TW.md) |
+| **Decision records** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-CN.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
+| **All of it, indexed** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
+
+Four decisions are recorded as ADRs: the backend is the data layer, the plan lives in the client,
+a deviation repairs instead of recomputing, and one build serves four containers.
 
 ---
 
@@ -105,23 +141,19 @@ targets)
 git clone https://github.com/HenryLiu520/nextstop
 cd nextstop
 
-# data layer
-./scripts/start-all.sh          # PostgreSQL 5433 → Spring Boot 8080 → first client 5173
-
-# the interface
-cd web && npm install && npm run dev     # http://127.0.0.1:5175
+./scripts/start-all.sh                  # PostgreSQL 5433 → Spring Boot 8080
+cd web && npm install && npm run dev    # http://127.0.0.1:5175
 ```
 
 `web/` proxies `/api` to 8080, so the day you see is built from real availability answers. The
 planning rules behind it are still a stub, which the interface does not hide.
 
-There is also a **single file prototype** with no build step: open
-[`product/demo/index.html`](product/demo/index.html), or use the hosted copy at
-<https://henryliu520.github.io/nextstop/>. English, 简体, 繁體 switch in the header.
+No build step wanted? Open [`product/demo/index.html`](product/demo/index.html), one file, or use
+the hosted copy: <https://henryliu520.github.io/nextstop/>.
 
 ---
 
-## What is built, and what is not
+## Built, specified, not built
 
 | Part | State |
 |---|---|
@@ -132,8 +164,9 @@ There is also a **single file prototype** with no build step: open
 | Learning layer | **specified, not implemented** |
 | PWA manifest, Android and iOS shells | **chosen, not built** |
 
-Read **[features.md](docs/features.md)** for the same table per feature, and
-[architecture.md section 8](docs/architecture.md) for what is missing and why.
+We do not claim more than that. The timetable is sample data. "Free" is not "empty". The
+one-block-versus-five-block comparison is illustrative, not a measured result. Authentication is
+prototype grade.
 
 ---
 
@@ -145,43 +178,14 @@ backend/           Spring Boot service: timetable, availability, accounts, audit
 frontend/          earlier desktop client, kept because the availability work lives here
 mobile/            earlier phone client, same reason
 mock-school-api/   simulated school timetable feed, with its design log
-docs/              start at docs/README.md
+docs/              twelve documents, start at docs/README.md
 product/           prototype, screenshots, one page PDF
 scripts/           start / stop / test
 ```
 
-Old clients are not showcased. New interface work happens in `web/`.
-
 ---
 
-## Design rules we hold to
-
-1. **Never ask what the user would not have done anyway.** No forms, no ratings, no "was this
-   helpful". Everything learned comes from actions taken for the user's own reasons.
-2. **The timetable is authoritative.** We do not model it as something that might be wrong.
-3. **No empty time.** Gaps are filled by default, because a planner that permits "nothing"
-   degrades into a copy of the timetable.
-4. **Actions belong to blocks, not to pages.** No toolbar.
-5. **Every change is reversible**, including a skipped class.
-
----
-
-## What we do not claim
-
-- The timetable is sample data. `V2__seed.sql` is a plausible mock and the University endpoint is
-  not connected.
-- "Free" is not "empty". The system answers *is this room taken*, never *how many people are in it*.
-- The one-block-versus-five-block comparison is illustrative, not a measured result.
-- Authentication is prototype grade. Tokens in memory, salted SHA-256, no HTTPS.
-- The learning layer exists as a specification. The interface uses fixed defaults.
-
----
-
-## Licence and credits
-
-Coursework, not distributed. Third party components are used under permissive licences (MIT for
-the front end stack, Apache-2.0 for Spring Boot and Flyway, the PostgreSQL licence, BSD-2 for the
-JDBC driver) and credited in [THIRD-PARTY.md](THIRD-PARTY.md). No code is copied from the
-[vue3-element-admin](https://github.com/youlaitech/vue3-element-admin) template (MIT) that inspired
-the earlier client layout. The header uses the University shield, wordmark and HKU Green (#024638)
-only to identify this coursework prototype.
+<p align="center"><sub>
+COMP1110 Group 08 · The University of Hong Kong · LIU Haoran (u3686264)<br>
+Coursework. Third party components are credited in <a href="THIRD-PARTY.md">THIRD-PARTY.md</a>.
+</sub></p>

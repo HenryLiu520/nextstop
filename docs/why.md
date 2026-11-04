@@ -1,5 +1,7 @@
 # Why NextStop Exists
 
+**English** · [简体中文](why.zh-CN.md) · [繁體中文](why.zh-TW.md)
+
 > Following It Is All You Need.
 
 This document explains the problem the project answers and why the tools that
