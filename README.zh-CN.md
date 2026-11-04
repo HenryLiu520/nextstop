@@ -127,6 +127,7 @@ scripts/           启动 / 停止 / 测试
 
 值得点开：
 
+- **[`product/core.zh-CN.md`](product/core.zh-CN.md)** —— 核心逻辑与闪光点，写死的版本
 - [`product/concept.md`](product/concept.md) —— 一页讲完这个想法
 - [`product/features.md`](product/features.md) —— 每个功能，以及怎么看见它在工作
 - [`product/screens.md`](product/screens.md) —— 界面结构、动作，以及背后的规则

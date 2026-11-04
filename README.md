@@ -146,6 +146,7 @@ scripts/           start / stop / test
 
 Worth opening:
 
+- **[`product/core.md`](product/core.md)** — the core logic and the highlights, written down
 - [`product/concept.md`](product/concept.md) — the idea in one page
 - [`product/features.md`](product/features.md) — every feature, and how to see it working
 - [`product/screens.md`](product/screens.md) — screen structure, actions, and the rules behind them

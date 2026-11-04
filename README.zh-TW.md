@@ -127,7 +127,8 @@ scripts/           啟動 / 停止 / 測試
 
 值得點開：
 
-- [`product/concept.md`](product/concept.md) —— 一頁講完這個想法
+- **[`product/core.zh-TW.md`](product/core.zh-TW.md)** —— 核心邏輯與閃光點，寫死的版本
+- [`product/concept.md`](product/concept.md) —— 一頁講完整個想法
 - [`product/features.md`](product/features.md) —— 每個功能，以及怎麼看見它在工作
 - [`product/screens.md`](product/screens.md) —— 介面結構、動作，以及背後的規則
 - [`docs/ERD.md`](docs/ERD.md) —— 資料模型，以及它刻意沒有的三樣東西
