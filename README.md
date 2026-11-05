@@ -112,6 +112,33 @@ a gap defaults to study.
 
 ---
 
+## Planning pipeline
+
+Five steps, in order, every time.
+
+1. **Read.** The timetable arrives from the school feed, the pipeline reads it straight off the wire, and it takes every entry as correct.
+2. **Sync.** A calendar subscription merges in, and data flows one way, from the calendar into the app.
+3. **Add.** The one-off things you enter yourself, a dentist appointment, a parcel to collect. Same weight as a class, and you can delete yours at any time.
+4. **Union.** The three become one list of committed time. Overlaps merge, and neighbours closer than fifteen minutes merge too, because a ten minute gap counts as a corridor.
+5. **Subtract.** Walking time and a buffer come off every gap, and walking is multiplied by your
+own factor, 1.00 until it learns otherwise.
+
+What is left is a set of windows. Each one gets a purpose and a place. A meal gets a latest
+departure time, and study fills whatever remains, so every window stays full. Then the room,
+where the hard filters run first, free for the whole window, enough seats, you are allowed in,
+the building you just left drops off the list, and a cost picks among the survivors.
+
+```
+cost = 1.0 x walk minutes
+     + 0.3 x |floor - the floor you prefer|
+     + 0.2 x (1 - visits / 10)
+     + 0.5 x noise
+```
+
+A failed filter ends that candidate. The weights only choose between rooms that already passed.
+
+---
+
 ## Deviation and repair
 
 A class overruns by twenty minutes. Two ways to answer:
@@ -149,33 +176,6 @@ backend  Spring Boot + PostgreSQL
 ```
 
 Planning, repair and the interface all run in the client, so the corridor case keeps working with no signal in the corridor. The availability service underneath was built earlier in the project and answers one question well, which rooms are free, so the plan points only at places the service lists as free.
-
----
-
-## Planning pipeline
-
-Five steps, in order, every time.
-
-1. **Read.** The timetable arrives from the school feed, the pipeline reads it straight off the wire, and it takes every entry as correct.
-2. **Sync.** A calendar subscription merges in, and data flows one way, from the calendar into the app.
-3. **Add.** The one-off things you enter yourself, a dentist appointment, a parcel to collect. Same weight as a class, and you can delete yours at any time.
-4. **Union.** The three become one list of committed time. Overlaps merge, and neighbours closer than fifteen minutes merge too, because a ten minute gap counts as a corridor.
-5. **Subtract.** Walking time and a buffer come off every gap, and walking is multiplied by your
-own factor, 1.00 until it learns otherwise.
-
-What is left is a set of windows. Each one gets a purpose and a place. A meal gets a latest
-departure time, and study fills whatever remains, so every window stays full. Then the room,
-where the hard filters run first, free for the whole window, enough seats, you are allowed in,
-the building you just left drops off the list, and a cost picks among the survivors.
-
-```
-cost = 1.0 x walk minutes
-     + 0.3 x |floor - the floor you prefer|
-     + 0.2 x (1 - visits / 10)
-     + 0.5 x noise
-```
-
-A failed filter ends that candidate. The weights only choose between rooms that already passed.
 
 ---
 
