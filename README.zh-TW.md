@@ -122,13 +122,16 @@ NextStop 把它決定掉。
 剩下的是一串視窗。每個視窗給一個目的和一個地點，吃飯的時長來自「最晚幾點必須走」這條截止線，剩下的全填自習，每個視窗都裝滿內容。最後一件事是房間：先過硬條件（整段都空、座位夠、你能進、你剛離開的那棟直接出局），再用代價在活下來的幾間裡挑。
 
 ```
-代價 = 1.0 × 步行分鐘
-     + 0.3 × |樓層 − 你偏好的樓層|
-     + 0.2 × (1 − 去過次數 / 10)
-     + 0.5 × 噪音
+F = wS × S'  +  wD × D
+
+S'  房间本身，七个因子，扣过拒绝折扣
+D   走过去要多久，能坐多久
+wD  0.40 到 0.65，窗口越长越看 S'
 ```
 
 任何一間房撞上一條硬條件，它就出局。權重只負責在已經合格的房間裡挑一間。
+
+房間怎麼選有一套自己的打分，七個固態因子加一個拒絕折扣，見 **[room-scoring.zh-TW.md](docs/room-scoring.zh-TW.md)**。
 
 ---
 
@@ -185,6 +188,7 @@ backend  Spring Boot + PostgreSQL
 | **按旅程列的功能** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-TW.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **技術架構** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-TW.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
 | **修復判據** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-TW.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **房間評分** | [`room-scoring.md`](docs/room-scoring.md) | [`zh-CN`](docs/room-scoring.zh-CN.md) | [`zh-TW`](docs/room-scoring.zh-TW.md) |
 | **介面與規則** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-TW.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **決策記錄** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-TW.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
 | **全部索引** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-TW.md) | [`zh-TW`](docs/README.zh-TW.md) |

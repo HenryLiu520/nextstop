@@ -21,7 +21,7 @@
 |---|---|
 | [`architecture.md`](architecture.zh-TW.md) | 資料層和計劃層之間的那條分界落在哪裡，兩層怎麼接上，以及交付目標。 |
 | [`algorithm.md`](algorithm.zh-TW.md) | 四個層，相同的判據，修復的流程，成本的次序，複雜度，和一個走通了的例子。 |
-| [`room-scoring.md`](room-scoring.md) | 固態分和動態分怎麼合成一個選房決定，含權重和一個走通了的例子。簡體中文工作稿。 |
+| [`room-scoring.md`](room-scoring.zh-TW.md) | 固態分和動態分怎麼合成一個選房決定，含七個因子、拒絕折扣、融合權重和一個走通了的例子。也見 [English](room-scoring.md) 和 [簡體中文](room-scoring.zh-CN.md)。 |
 | [`screens.md`](screens.zh-TW.md) | 三個標籤頁，塊的規格，動作矩陣，設計 token，和三條介面規則。 |
 
 ## 決定

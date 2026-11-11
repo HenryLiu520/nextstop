@@ -1,60 +1,116 @@
-# 自习室推荐：两套评分怎么合成一个决定
+# Room scoring
 
-状态：设计，未实现。规划器仍是桩，本文是评分层的规格说明。
+**English** · [简体中文](room-scoring.zh-CN.md) · [繁體中文](room-scoring.zh-TW.md)
 
----
+How a room is chosen for one window in the day. This is a design document. The planner in the
+prototype is still a stub. Every number below is a design value or an illustration from the worked
+example.
 
-## 输入与输出
+## Introduction
 
-**输入**
+Room scoring answers one question, which room for this window and this student. The planning layer
+decides what the window holds and how long it lasts. Scoring reads the window, the walk from the
+stop before it and the walk to the stop after it.
 
-- 候选集 `R`：全部自习室，前端本地持有，约 200 间
-- 窗口 `W = [t0, t1]`
-- 前一个锚点 `p`：结束时刻、地点（前面没有课则为空）
-- 后一个锚点 `n`：开始时刻、地点（后面没有课则为空）
-- 用户画像 `u`：偏好、到访历史、拒绝记录
-- 可用性快照：每间房在 `W` 内的空闲情况，带抓取时间戳
+**Inputs.**
 
-**输出**
+| Symbol | Input | Content |
+|---|---|---|
+| `R` | candidate set | every study room, about 200, held on the device |
+| `W` | window | `t0` and `t1`, in minutes |
+| `p` | previous anchor | end time and building, empty when no class precedes |
+| `n` | next anchor | start time and building, empty when no class follows |
+| `u` | profile | preferences, visit history, rejection log |
+| snapshot | availability | free intervals per room inside `W`, plus a fetch timestamp |
 
-- 选中的房间
-- 备选前三名，各带一条理由
-- 每个候选的分项得分（用于调试与解释）
+**Outputs.** One chosen room, the next three with one reason each, and a per-factor score for every
+candidate. The card text and the debug view both read the per-factor score.
 
----
+### Filters
 
-## 0. 固态表 S：这个人长期喜欢什么
+Four tests run before any score is computed, and the filter stops there.
 
-七个因子，全部站在「一个人走进一间房坐下来」的角度。权重合计 1.00。
+```
+free(r, W)         free for the whole window
+allowed(u, r)      this account may enter
+r != last_room     a different room from the one just left
+reachable(r, W)    the walk fits, see Travel time
+```
 
-| 因子 | 衡量什么 | 打分方式 | 权重 |
+Seat count stays outside the filter, because one student always finds a seat somewhere in the
+building. The open question is whether this room earns the walk.
+
+## Static table
+
+Seven factors, each read from the point of view of one person sitting down in one room. Their
+weights sum to 1.00.
+
+| Factor | Measures | Score | Weight |
 |---|---|---|---|
-| 熟悉度 | 常去的那栋楼、那几间房 | `min(该楼到访次数 / 10, 1)` | 0.20 |
-| 安静程度 | 这间房本身吵不吵 | 静音区 1.0，普通 0.65，讨论区 0.35，再按实时占用率下调 | 0.20 |
-| 桌面与座位 | 摊得开电脑和书 | 桌面宽 ≥ 90cm 得 1，逐级减 | 0.15 |
-| 插座 | 桌边有没有电 | 每座都有 1.0，沿墙有 0.5，无 0 | 0.15 |
-| 空调 | 香港的夏天 | 有 1.0，无 0 | 0.10 |
-| 空间大小 | 太挤难受，太空也不安 | 40–80 座满分，两端各减半 | 0.10 |
-| 采光 | 有窗，白天不用开灯 | 外窗 1.0，天井窗 0.5，无窗 0 | 0.10 |
-
-熟悉度与常去楼栋是同一件事，合并成一项；到访次数封顶 10 次，防止只去老地方。
-
-### 去掉的三项
-
-- **用途匹配**：学生找自习室要的就是能安静坐下，这件事由安静程度回答
-- **容量贴合**：一个人不需要算座位够不够，容量只作为宽敞度的代理，出现在空间大小里
-- **楼层偏好**：楼层真正影响的是等电梯时间，并进下一步的行程时间里更诚实
-
-### 0.1 拒绝：每拒一次，永久降一点
-
-拒绝不进因子表，单独做一个长期折扣，挂在固态分上。
+| Familiarity | the building and the rooms this student keeps returning to | `min(visits to the building / 10, 1)` | 0.20 |
+| Quiet | how loud the room is on its own | silent zone 1.0, open floor 0.65, discussion area 0.35, then lowered by live occupancy | 0.20 |
+| Desk and seat | whether a laptop and a book fit side by side | desk 90 cm wide or more scores 1, smaller sizes step down | 0.15 |
+| Sockets | power at the seat | a socket at every seat 1.0, sockets along the wall 0.5, none 0 | 0.15 |
+| Air conditioning | a Hong Kong summer | present 1.0, absent 0 | 0.10 |
+| Spaciousness | crowded rooms tire, empty rooms unsettle | 40 to 80 seats scores 1.0, half at either end | 0.10 |
+| Daylight | a window, so the lights stay off at noon | external window 1.0, window onto a light well 0.5, no window 0 | 0.10 |
 
 ```
-n_eff = Σ_j exp(−Δt_j / 21天)          每次拒绝计一次数，21 天衰到 37%
-S'    = S × (1 − 0.12)^n_eff           每次有效拒绝打 0.88 折
+S = Σ_i w_i × f_i
 ```
 
-| 有效拒绝次数 | 剩余比例 |
+Familiarity and building history are the same fact, so they merge into a single factor. The visit
+count caps at ten, which stops one building from absorbing the whole score.
+
+### Three factors outside the table
+
+**Purpose fit.** A student looking for a study room wants a quiet place to sit. The quiet factor
+answers that question already.
+
+**Capacity fit.** One person does not check whether a room holds enough seats. Capacity enters as a
+proxy for roominess inside the spaciousness factor.
+
+**Floor preference.** A floor changes the lift wait, and the lift wait is walking time. Travel time
+prices it with more accuracy than a separate preference would.
+
+### The table stays on the device
+
+200 rows, about twenty KB, in IndexedDB, keyed by a preference hash and a room revision number.
+Three events write to it, and nothing else does.
+
+- A preference change recomputes `base` across the whole table and leaves `n_eff` untouched, which
+  costs one `O(200)` pass.
+- A rejection writes one row. `n_eff += w_kind`, `nat = now`.
+- A room attribute update recomputes the rows that changed.
+
+```js
+staticTable = {
+  prefHash: "9f2c…",
+  roomVersion: 14,
+  rows: {
+    kb227: { base: 0.58, visits: 7, n_eff: 1.8, nat: 1793 },
+    lib3f: { base: 0.82, visits: 3, n_eff: 0.0, nat: 0 }
+  }
+}
+```
+
+Decay is lazy. A read computes `n_eff_now = n_eff × e^(−(now − nat) / 21 days)`. The value goes
+back to disk at the next save. No timer runs in the background.
+
+A published plan keeps the room it already chose. The table updates at once. The plan reads the new
+values at the next reveal, which keeps the read-only rule in [`algorithm.md`](algorithm.md).
+
+## Rejection
+
+Rejection sits outside the factor table as a long-term discount on the static score. The discount
+applies when the score is read.
+
+```
+n_eff = Σ_j exp(−Δt_j / 21 days)      each rejection counts once, 21 days decays it to 37%
+S'    = S × (1 − 0.12)^n_eff          each effective rejection multiplies by 0.88
+```
+
+| Effective rejections | Score kept |
 |---|---|
 | 1 | 88% |
 | 2 | 77% |
@@ -62,116 +118,79 @@ S'    = S × (1 − 0.12)^n_eff           每次有效拒绝打 0.88 折
 | 5 | 52% |
 | 8 | 36% |
 
-乘法折扣有三个好处：每一次都降一点，符合直觉；越拒越狠，永远降不到 0；撤销一次恢复一档，用户改主意不必清空历史。
+The multiplication gives three properties, and each one carries weight in use. Each rejection
+lowers the score a little, which is what a student means by the gesture. A room rejected many times
+sinks without reaching zero, so a renovated room can return. An undo lifts the score one step, so a
+change of mind costs no history reset.
 
-主动点「不喜欢」记 1.0 次，换走记 0.5 次，到了又离开记 0.3 次。三十天内重复拒绝自然叠加，不需要额外加成系数。
+A tap on **Dislike** counts 1.0 and moving to another room counts 0.5. Arriving then leaving soon
+after counts 0.3. Repeats inside thirty days accumulate on their own, so no extra multiplier is
+needed.
 
-### 0.2 固态表是一张常驻表
+## Dynamic score
 
-前端长期持有，200 行，二十多 KB，存 IndexedDB。
+Two factors, with weights that sum to 1.00, and both read the window and the two anchors.
 
-```js
-staticTable = {
-  prefHash: "9f2c…",
-  roomVersion: 14,
-  rows: {
-    kb227: { base: 0.58, visits: 7, n_eff: 1.8, nat: 1793… },
-    lib3f: { base: 0.82, visits: 3, n_eff: 0.0, nat: 0 }
-  }
-}
-```
+### Travel time
 
-**只在三个时刻写入**
-
-- 偏好变化：全表重算 `base`，`n_eff` 原封不动，一次 `O(200)`
-- 拒绝发生：只写那一行，`n_eff += w_kind`，`nat = now`
-- 房间属性更新：只重算变动的那批
-
-**衰减懒计算**：读取时算 `n_eff_now = n_eff × e^(−(now − nat)/21天)`，不需要后台计时器，落盘时顺手写回。
-
-**与已发布计划的关系**：改偏好、拒房间都不动今天已经发布的计划。表立刻更新，计划在下一个揭开时刻才用新表，守住「发布之后只读」。
-
----
-
-## 1. 硬过滤
+`t_prev` is the walk from the previous anchor to the room. `t_next` is the walk from the room to the
+next anchor. A missing anchor contributes 0.
 
 ```
-free(r, W)        整段空闲
-allowed(u, r)     这个身份能进
-r != last_room    不是刚离开的那间
-reachable(r, W)   走得过去，判据见 §2
-```
-
-四条之外不加门槛。座位数不进过滤，一个人总能找到位置，真正的问题是这间房值不值得去，那交给分数。
-
----
-
-## 2. 动态分 D：走过去多久，能坐多久
-
-两个因子，合计 1.00。
-
-### 2.1 行程时间 T
-
-只看地理，不算绕路。
-
-```
-t_prev = 前一个锚点走到这里的时间，前面没有课则为 0
-t_next = 这里走到后一个锚点的时间，后面没有课则为 0
-total  = t_prev + t_next
-```
-
-窗口前面剩多少缓冲，决定这个「多久」算长算短：
-
-```
-slack = t0 − 前一个锚点的结束时刻 − 2 分钟缓冲
+total = t_prev + t_next
+slack = t0 − previous anchor end − 2 minutes buffer
 κ     = clamp(0.6 × slack, 3, 12)
 T     = exp(−total / κ)
 ```
 
-`slack` 只有 5 分钟时 `κ = 3`，走 3 分钟就掉到 0.37。`slack` 有 40 分钟时 `κ = 12`，走 5 分钟仍是 0.66。
+Slack sets the price of a minute of walking. With five minutes of slack, `κ = 3` and three minutes
+of walking scores 0.37. With forty minutes of slack, `κ = 12` and five minutes of walking still
+scores 0.66.
 
-**时间余量藏在这里**：缓冲越少，同样的距离扣得越狠。不必再单列余量因子。
+Time tolerance lives inside this factor. A tight window punishes the same walk harder, so a second
+factor for it would repeat the first.
 
-窗口后面那节课只用来看走不走得到，即 `t_next ≤ next_start − t1 − 2`，不过就淘汰。
+The next class only gates feasibility, through `t_next ≤ next_start − t1 − 2`. A candidate that
+fails the test leaves the set at once.
 
-### 2.2 连续可用 C
+### Contiguous availability
 
 ```
-horizon = 从 t0 起连续空闲的分钟数
-C = min(horizon / 120, 1)
+horizon = free minutes from t0 with no booking
+C       = min(horizon / 120, 1)
 ```
 
-`horizon ≥ 120` 分钟给满分，半小时给 0.25。相邻窗口落在同一间房 `+0.1`，封顶 1。
+120 free minutes score 1.0 and half an hour scores 0.25. A neighbouring window in the same room adds
+0.1, capped at 1.0.
 
 ```
 D = 0.65·T + 0.35·C
 ```
 
-时间占大头，因为走过去多久是学生当下唯一真实的成本；连续可用决定这一次坐下来值不值。
+Walking carries the larger weight, because it is the one cost the student pays at that moment.
+Contiguous availability decides whether sitting down pays off.
 
----
-
-## 3. 融合
+## Fusion
 
 ```
-wD = clamp(0.40 + 0.25 × (1 − 窗口分钟 / 120), 0.40, 0.65)
+wD = clamp(0.40 + 0.25 × (1 − window minutes / 120), 0.40, 0.65)
 wS = 1 − wD
 F  = wS × S' + wD × D
 ```
 
-| 窗口 | wS（房间本身） | wD（当下远近） |
+| Window | wS (the room) | wD (the walk) |
 |---|---|---|
-| 20 分钟课间 | 0.35 | 0.65 |
-| 60 分钟 | 0.475 | 0.525 |
-| 120 分钟以上 | 0.60 | 0.40 |
+| 20 minute break | 0.35 | 0.65 |
+| 60 minutes | 0.475 | 0.525 |
+| 120 minutes and above | 0.60 | 0.40 |
 
-短窗口先解决来不来得及，长窗口才开始挑剔房间。
+A short window settles reachability first. A long window starts to be picky about the room.
 
-**排序与并列**：按 `F` 降序取第一，相同则比 `S'`，再相同按房间编号升序，保证同样输入永远同样输出。
+**Order.** Sort by `F` descending, break ties on `S'`, break remaining ties on room id ascending.
+Identical input returns identical output, so a disagreement traces to the profile or to the
+snapshot.
 
----
-
-## 4. 伪代码
+### The procedure
 
 ```
 function pickStudyRoom(W, p, n, u, rooms, snapshot):
@@ -181,7 +200,7 @@ function pickStudyRoom(W, p, n, u, rooms, snapshot):
         if not passesFilters(r, W, p, n, u, snapshot): continue
         row   = table.rows[r.id]
         S2    = row.base * pow(1 - 0.12, effReject(row, now))
-        total = walk(p, r) + walk(r, n)          # 缺一边按 0
+        total = walk(p, r) + walk(r, n)          # a missing side counts 0
         k     = clamp(0.6 * slack(W, p), 3, 12)
         T     = exp(-total / k)
         C     = min(contiguousFree(r, W.t0) / 120, 1)
@@ -194,55 +213,64 @@ function pickStudyRoom(W, p, n, u, rooms, snapshot):
     return cands[0], cands[1..3]
 ```
 
-每个窗口 `O(|R|)`，200 间房、一天 8 个窗口，约 1600 次评估，手机端毫秒级。
+Each window costs `O(|R|)`, which is one pass over the candidate set. Eight windows over 200 rooms
+is about 1600 evaluations, and that fits in a millisecond budget on a phone.
 
----
+## Worked example
 
-## 5. 一个算例
+Window 11:00 to 12:00, with the previous class ending at 10:45 in KB 223. That leaves `slack = 13`
+and `κ = 7.8`. The next class starts at 14:00 in CPD and only gates reachability.
 
-窗口 11:00–12:00。前一节 10:45 在 KB 223 下课（`slack = 13`，`κ = 7.8`），后一节 14:00 在 CPD，只要走得到。
-
-| 房间 | S | 有效拒绝 | S' | total | T | C | D | F |
+| Room | S | Effective rejections | S' | total | T | C | D | F |
 |---|---|---|---|---|---|---|---|---|
-| KB 227 | 0.58 | 2.0 | 0.45 | 7 分钟 | 0.41 | 0.50 | 0.44 | 0.46 |
-| LIB 3F | 0.82 | 0 | 0.82 | 21 分钟 | 0.07 | 0.67 | 0.28 | **0.54** |
-| RHT 302 | 0.69 | 0 | 0.69 | 14 分钟 | 0.17 | 0.50 | 0.29 | 0.48 |
+| KB 227 | 0.58 | 2.0 | 0.45 | 7 minutes | 0.41 | 0.50 | 0.44 | 0.46 |
+| LIB 3F | 0.82 | 0 | 0.82 | 21 minutes | 0.07 | 0.67 | 0.28 | **0.54** |
+| RHT 302 | 0.69 | 0 | 0.69 | 14 minutes | 0.17 | 0.50 | 0.29 | 0.48 |
 
-条件最好的 LIB 3F 胜出，代价是走 21 分钟。KB 227 就在楼下，被拒过两次、房间本身也一般，排第二。
+LIB 3F has the best room and takes first place, at a price of 21 minutes of walking. KB 227 sits
+downstairs, carries two rejections and offers an ordinary room, so it lands second.
 
-这个结果是一个取舍：窗口够长（这里前后各留十几分钟），好房间能赢过近房间。窗口只有 20 分钟时 `wD` 涨到 0.65、`κ` 掉到 3，KB 227 会翻上来。同一批房间、同一个人，两个窗口给出两个答案，这正是分权重该解决的事。
+That outcome is a trade between the room and the walk. With a long window, a good room beats a near
+room. Shrink the window to 20 minutes and `wD` rises to 0.65 while `κ` falls to 3, so KB 227 moves
+to first place. Same rooms, same student, two windows, two answers. The weighting exists to produce
+exactly this.
 
----
+## Parameters
 
-## 6. 参数表
-
-| 参数 | 默认 | 范围 | 作用 |
+| Parameter | Default | Range | Effect |
 |---|---|---|---|
-| 拒绝折扣 | 每次 0.88 | 0.82–0.94 | 被拒一次永久降多少 |
-| 拒绝半衰 | 21 天 | 7–60 | 旧拒绝多久淡掉 |
-| `κ` 系数 | 0.6 × slack | 3–12 | 时间惩罚的陡峭程度 |
-| `C` 满分段 | 120 分钟 | 60–180 | 多长算坐得下去 |
-| `wD` 区间 | 0.40–0.65 | — | 远近与房间本身的相对分量 |
-| 熟悉度封顶 | 10 次 | 5–20 | 防止只去老地方 |
+| Rejection discount | 0.88 per rejection | 0.82 to 0.94 | how far one rejection lowers the score |
+| Rejection half-life | 21 days | 7 to 60 | how fast an old rejection fades |
+| `κ` coefficient | 0.6 × slack | 3 to 12 | steepness of the walk penalty |
+| `C` full score | 120 minutes | 60 to 180 | how long counts as long enough to sit |
+| `wD` range | 0.40 to 0.65 | set by the window | split between the walk and the room |
+| Familiarity cap | 10 visits | 5 to 20 | keeps a student from settling in one building |
 
-全部符合「一个参数 + 一个计数器」的形态，满三次观测才替换默认值，用户手动改过就清零重来。
+Every row has the shape of one parameter plus one counter. A default is replaced after three
+observations, and a manual edit clears the counter so learning restarts.
 
----
+## Failure modes
 
-## 7. 会出错的地方
+**Lock-in on one building.** Familiarity caps at 10 visits and carries weight 0.20. Habit lifts one
+room by at most 0.2 over the whole score. Location and quiet outweigh it.
 
-**老地方锁死。** 熟悉度封顶 10 次、权重 0.20，最多把一间房托起来 0.2，压不过位置与安静。
+**A rejection that buries a room.** The product stays above zero, and eight effective rejections
+leave 36%. A renovated room can return to the shortlist.
 
-**拒绝把房间打死。** 乘法折扣永远大于 0，八次有效拒绝后仍留 36%，还能被重新推出来。
+**A window too short to fill.** Below 25 minutes the window produces no study stop. The planner
+merges it into a neighbour or skips it.
 
-**短窗口塞不下。** 窗口小于 25 分钟不排自习，交给相邻窗口合并或跳过。
+**A stale snapshot.** `contiguousFree` reads the snapshot, which carries a fetch time. After ten
+minutes without a refresh, `C` drops to 0.5 and the card marks the room unverified.
 
-**快照过期。** `contiguousFree` 依赖快照，超过 10 分钟未刷新就把 `C` 置 0.5，卡片标「未核实」。
+**Missing air conditioning or daylight data.** A missing value scores the neutral 0.5. That keeps a
+new room free of a systematic penalty.
 
-**空调与采光数据缺失。** 缺失按 0.5 中性分，不按 0，避免新房间被系统性压分。
+## Relationship to the planning layer
 
----
+Scoring answers one question for one window, which room. The planning layer decides what the window
+holds, how long it lasts and when the student leaves. A room change keeps the time, a time change
+keeps the room, and each action carries its own undo record.
 
-## 8. 与计划层的关系
-
-评分层只回答「这个窗口放哪间房」。放什么、放多久、几点该走，由计划层决定。换房不动时间，改时间不动房，两个动作各自独立可撤销。
+The static table belongs to the room. [`adr/0005`](adr/0005-room-attributes-are-scored-on-the-server.md)
+places the six attributes it reads on the server and caches them on the device by revision.

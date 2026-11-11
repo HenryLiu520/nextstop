@@ -129,13 +129,17 @@ where the hard filters run first, free for the whole window, enough seats, you a
 the building you just left drops off the list, and a cost picks among the survivors.
 
 ```
-cost = 1.0 x walk minutes
-     + 0.3 x |floor - the floor you prefer|
-     + 0.2 x (1 - visits / 10)
-     + 0.5 x noise
+F = wS x S'  +  wD x D
+
+S'  the room itself, seven factors, after the rejection discount
+D   the walk in, and how long the room stays free
+wD  0.40 to 0.65, a longer window leans harder on S'
 ```
 
 A failed filter ends that candidate. The weights only choose between rooms that already passed.
+
+The room choice behind that last step has its own score, seven static factors plus a rejection
+discount, written up in **[room-scoring.md](docs/room-scoring.md)**.
 
 ---
 
@@ -194,6 +198,7 @@ Planning, repair and the interface all run in the client, so the corridor case k
 | **Every feature** | [`features.md`](docs/features.md) | [`zh-CN`](docs/features.zh-CN.md) | [`zh-TW`](docs/features.zh-TW.md) |
 | **Architecture** | [`architecture.md`](docs/architecture.md) | [`zh-CN`](docs/architecture.zh-CN.md) | [`zh-TW`](docs/architecture.zh-TW.md) |
 | **The repair criterion** | [`algorithm.md`](docs/algorithm.md) | [`zh-CN`](docs/algorithm.zh-CN.md) | [`zh-TW`](docs/algorithm.zh-TW.md) |
+| **Room scoring** | [`room-scoring.md`](docs/room-scoring.md) | [`zh-CN`](docs/room-scoring.zh-CN.md) | [`zh-TW`](docs/room-scoring.zh-TW.md) |
 | **Screens and rules** | [`screens.md`](docs/screens.md) | [`zh-CN`](docs/screens.zh-CN.md) | [`zh-TW`](docs/screens.zh-TW.md) |
 | **Decision records** | [`adr/`](docs/adr/README.md) | [`zh-CN`](docs/adr/README.zh-CN.md) | [`zh-TW`](docs/adr/README.zh-TW.md) |
 | **Everything, indexed** | [`docs/README.md`](docs/README.md) | [`zh-CN`](docs/README.zh-CN.md) | [`zh-TW`](docs/README.zh-TW.md) |
