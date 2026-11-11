@@ -21,6 +21,7 @@
 |---|---|
 | [`architecture.md`](architecture.zh-TW.md) | 資料層和計劃層之間的那條分界落在哪裡，兩層怎麼接上，以及交付目標。 |
 | [`algorithm.md`](algorithm.zh-TW.md) | 四個層，相同的判據，修復的流程，成本的次序，複雜度，和一個走通了的例子。 |
+| [`room-scoring.md`](room-scoring.md) | 固態分和動態分怎麼合成一個選房決定，含權重和一個走通了的例子。簡體中文工作稿。 |
 | [`screens.md`](screens.zh-TW.md) | 三個標籤頁，塊的規格，動作矩陣，設計 token，和三條介面規則。 |
 
 ## 決定
@@ -29,11 +30,12 @@
 
 | 記錄 | 主題 |
 |---|---|
-| [`adr/README.md`](adr/README.zh-TW.md) | 四份記錄的索引 |
+| [`adr/README.md`](adr/README.zh-TW.md) | 五份記錄的索引 |
 | [`adr/0001`](adr/0001-backend-is-the-data-layer.zh-TW.md) | 後端提供課表，它不持有計劃。 |
 | [`adr/0002`](adr/0002-plan-lives-in-the-client.zh-TW.md) | 計劃是客戶端狀態。 |
 | [`adr/0003`](adr/0003-repair-instead-of-recompute.zh-TW.md) | 一個偏離去修計劃，而不是重算計劃。 |
 | [`adr/0004`](adr/0004-one-ui-four-targets.zh-TW.md) | 一次構建，四個交付目標：瀏覽器、PWA、Android 殼、iOS 殼。 |
+| [`adr/0005`](adr/0005-room-attributes-are-scored-on-the-server.zh-TW.md) | 房間屬性在服務端打分，客戶端按修訂號快取。 |
 
 ## 跑起來
 

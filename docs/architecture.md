@@ -120,6 +120,36 @@ ground truth, and an admin note is an annotation.
 Updates carry a reason and an expiry so they read as a claim about the world rather than a
 permanent edit. When the expiry passes the block stops counting, so nothing is cleaned up later.
 
+### Room attributes
+
+Room quality comes from one dataset on the server, so two clients rank the same room the same way.
+The static score is computed on the device from these values and the weights in
+[`room-scoring.md`](room-scoring.md).
+
+```
+GET /v1/rooms/attributes
+{ "rev": 14,
+  "updatedAt": "2026-11-11T09:00:00Z",
+  "rooms": [ { "code": "KB227", "quiet": 4, "desk": 3, "sockets": 3,
+               "ac": 5, "spaciousness": 4, "daylight": 3 } ] }
+```
+
+Six dimensions per room, each an integer from 0 to 5: `quiet`, `desk`, `sockets`, `ac`,
+`spaciousness`, `daylight`. The anchors at 0, 3 and 5 sit in
+[`adr/0005-room-attributes-are-scored-on-the-server.md`](adr/0005-room-attributes-are-scored-on-the-server.md).
+
+**Cache semantics.** `rev` is the cache key. The client stores the document in IndexedDB under the
+revision it arrived with, compares that revision at startup, and refetches when the server reports
+a different one. A matching revision costs one conditional request and no download.
+
+**Refresh cadence.** A full audit runs once a semester. A renovation, a replaced desk or a new
+socket strip increments `rev` on the day the change is recorded. `updatedAt` carries the date, so a
+client can age its copy.
+
+**Degradation.** A failed fetch falls back to the copy in IndexedDB. A device that holds no copy
+scores every dimension at 0.5, the neutral value, and marks the affected cards 未核实 (unverified).
+A room with no record takes 0.5 the same way.
+
 ## 4. The plan layer
 
 The plan layer is client code. In the prototype it is a single HTML file and the planner behind

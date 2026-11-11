@@ -24,6 +24,7 @@ interface does about it.
 |---|---|
 | [`architecture.md`](architecture.md) | Where the split between the data layer and the plan layer sits, how the two connect, and the delivery targets. |
 | [`algorithm.md`](algorithm.md) | The four layers, the sameness criterion, the repair procedure, the cost order, the complexity and one worked example. |
+| [`room-scoring.md`](room-scoring.md) | How the static score and the dynamic score combine into one room choice, with the weights and one worked example. Simplified Chinese working draft. |
 | [`screens.md`](screens.md) | The three tabs, the block specification, the action matrix, the design tokens and the three interface rules. |
 
 ## Decisions
@@ -33,11 +34,12 @@ costs, and what was rejected.
 
 | Record | Subject |
 |---|---|
-| [`adr/README.md`](adr/README.md) | Index of the four records |
+| [`adr/README.md`](adr/README.md) | Index of the five records |
 | [`adr/0001`](adr/0001-backend-is-the-data-layer.md) | The backend serves the schedule. It does not hold a plan. |
 | [`adr/0002`](adr/0002-plan-lives-in-the-client.md) | The plan is client state. |
 | [`adr/0003`](adr/0003-repair-instead-of-recompute.md) | A deviation repairs the plan instead of recomputing it. |
 | [`adr/0004`](adr/0004-one-ui-four-targets.md) | One build, four delivery targets: browser, PWA, Android shell, iOS shell. |
+| [`adr/0005`](adr/0005-room-attributes-are-scored-on-the-server.md) | Room attributes are scored on the server. The client caches them by revision. |
 
 ## Run it
 

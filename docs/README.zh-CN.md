@@ -23,6 +23,7 @@
 |---|---|
 | [`architecture.md`](architecture.zh-CN.md) | 数据层和计划层之间的那条分界落在哪里，两层怎么接上，以及交付目标。 |
 | [`algorithm.md`](algorithm.zh-CN.md) | 四个层，相同的判据，修复的流程，成本的次序，复杂度，和一个走通了的例子。 |
+| [`room-scoring.md`](room-scoring.md) | 固态分和动态分怎么合成一个选房决定，含权重和一个走通了的例子。简体中文工作稿。 |
 | [`screens.md`](screens.zh-CN.md) | 三个标签页，块的规格，动作矩阵，设计 token，和三条界面规则。 |
 
 ## 决定
@@ -31,11 +32,12 @@
 
 | 记录 | 主题 |
 |---|---|
-| [`adr/README.md`](adr/README.zh-CN.md) | 四份记录的索引 |
+| [`adr/README.md`](adr/README.zh-CN.md) | 五份记录的索引 |
 | [`adr/0001`](adr/0001-backend-is-the-data-layer.zh-CN.md) | 后端提供课表，它不持有计划。 |
 | [`adr/0002`](adr/0002-plan-lives-in-the-client.zh-CN.md) | 计划是客户端状态。 |
 | [`adr/0003`](adr/0003-repair-instead-of-recompute.zh-CN.md) | 一个偏离去修计划，而不是重算计划。 |
 | [`adr/0004`](adr/0004-one-ui-four-targets.zh-CN.md) | 一次构建，四个交付目标：浏览器、PWA、Android 壳、iOS 壳。 |
+| [`adr/0005`](adr/0005-room-attributes-are-scored-on-the-server.zh-CN.md) | 房间属性在服务端打分，客户端按修订号缓存。 |
 
 ## 跑起来
 

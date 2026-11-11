@@ -116,6 +116,26 @@ free(room, date) = blocks(room, date) - blocks taken by a class
 更新帶原因和到期時間，所以讀起來像關於世界的一個主張，而不是一次永久修改。到期之後那個區塊
 就不再計數，因此後面不需要清理任何東西。
 
+### 房間屬性
+
+房間質量來自服務端的一份資料集，兩個客戶端因此把同一間房排到同一個位置。固態分在裝置上用這些數值和 [`room-scoring.md`](room-scoring.md) 裡的權重算出。
+
+```
+GET /v1/rooms/attributes
+{ "rev": 14,
+  "updatedAt": "2026-11-11T09:00:00Z",
+  "rooms": [ { "code": "KB227", "quiet": 4, "desk": 3, "sockets": 3,
+               "ac": 5, "spaciousness": 4, "daylight": 3 } ] }
+```
+
+每間房六個維度，每條是 0 到 5 的整數：`quiet`、`desk`、`sockets`、`ac`、`spaciousness`、`daylight`。0、3、5 三檔的錨點寫在 [`adr/0005-room-attributes-are-scored-on-the-server.zh-TW.md`](adr/0005-room-attributes-are-scored-on-the-server.zh-TW.md)。
+
+**快取語義。** `rev` 就是快取鍵。客戶端把文件連同到達時的修訂號存進 IndexedDB，啟動時比對本地修訂號，服務端報的修訂號不同才重拉。修訂號一致時只有一次條件請求，沒有下載。
+
+**更新節奏。** 每學期做一次全量審計。裝修、換桌子、一層樓加插座條，在記錄變更的當天遞增 `rev`。`updatedAt` 帶日期，客戶端據此判斷本地那份有多舊。
+
+**降級。** 拉不到就用 IndexedDB 裡那份。裝置上也沒有，每個維度按 0.5 中性分算，受影響的卡片標「未核實」。沒有屬性記錄的房間同樣按 0.5 算。
+
 ## 4. 計劃層
 
 計劃層是客戶端程式碼。在原型裡它是一個單獨的 HTML 檔案，它背後的規劃器還是個樁。真實的是它

@@ -116,6 +116,26 @@ free(room, date) = blocks(room, date) - blocks taken by a class
 更新带原因和到期时间，所以读起来像关于世界的一个主张，而不是一次永久修改。到期之后那个区块
 就不再计数，因此后面不需要清理任何东西。
 
+### 房间属性
+
+房间质量来自服务端的一份数据集，两个客户端因此把同一间房排到同一个位置。固态分在设备上用这些数值和 [`room-scoring.md`](room-scoring.md) 里的权重算出。
+
+```
+GET /v1/rooms/attributes
+{ "rev": 14,
+  "updatedAt": "2026-11-11T09:00:00Z",
+  "rooms": [ { "code": "KB227", "quiet": 4, "desk": 3, "sockets": 3,
+               "ac": 5, "spaciousness": 4, "daylight": 3 } ] }
+```
+
+每间房六个维度，每条是 0 到 5 的整数：`quiet`、`desk`、`sockets`、`ac`、`spaciousness`、`daylight`。0、3、5 三档的锚点写在 [`adr/0005-room-attributes-are-scored-on-the-server.zh-CN.md`](adr/0005-room-attributes-are-scored-on-the-server.zh-CN.md)。
+
+**缓存语义。** `rev` 就是缓存键。客户端把文档连同到达时的修订号存进 IndexedDB，启动时比对本地修订号，服务端报的修订号不同才重拉。修订号一致时只有一次条件请求，没有下载。
+
+**刷新节奏。** 每学期做一次全量审计。装修、换桌子、一层楼加插座条，在记录变更的当天递增 `rev`。`updatedAt` 带日期，客户端据此判断本地那份有多旧。
+
+**降级。** 拉不到就用 IndexedDB 里那份。设备上也没有，每个维度按 0.5 中性分算，受影响的卡片标「未核实」。没有属性记录的房间同样按 0.5 算。
+
 ## 4. 计划层
 
 计划层是客户端代码。在原型里它是一个单独的 HTML 文件，它背后的规划器还是个桩。真实的是它

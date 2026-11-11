@@ -8,3 +8,4 @@
 | [0002](0002-plan-lives-in-the-client.zh-TW.md) | 計劃活在客戶端裡 | Accepted |
 | [0003](0003-repair-instead-of-recompute.zh-TW.md) | 修壞掉的那個停留點，不重算這一天 | Accepted |
 | [0004](0004-one-ui-four-targets.zh-TW.md) | 一個介面，四個交付目標 | Accepted |
+| [0005](0005-room-attributes-are-scored-on-the-server.zh-TW.md) | 房間屬性在服務端打分 | Accepted |

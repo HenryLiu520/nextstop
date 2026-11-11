@@ -8,3 +8,4 @@
 | [0002](0002-plan-lives-in-the-client.md) | The plan lives in the client | Accepted |
 | [0003](0003-repair-instead-of-recompute.md) | Repair the broken stop instead of recomputing the day | Accepted |
 | [0004](0004-one-ui-four-targets.md) | One UI, four delivery targets | Accepted |
+| [0005](0005-room-attributes-are-scored-on-the-server.md) | Room attributes are scored on the server | Accepted |
