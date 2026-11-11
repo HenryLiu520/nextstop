@@ -80,7 +80,7 @@ main.pad{padding-bottom:16px}
 .focus .dots:active .dico{background:rgba(255,255,255,.16)}
 
 /* ---------- 一天：260px 焦点卡（压短：整张一日清单留在第一屏） ---------- */
-.focus{flex:0 0 280px;height:280px;width:100%;border-radius:var(--rl);overflow:hidden;position:relative;
+.focus{flex:0 0 320px;height:320px;width:100%;border-radius:var(--rl);overflow:hidden;position:relative;
        background-color:var(--deep);background-size:cover;background-position:center 35%;
        background-repeat:no-repeat;cursor:pointer}
 .focus:before{content:"";position:absolute;inset:0;z-index:1;
@@ -91,12 +91,13 @@ main.pad{padding-bottom:16px}
 .fstat{position:absolute;top:12px;left:16px;z-index:2;font-size:8.5px;line-height:1;
        letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r);font-weight:600}
 .doneTag{color:#9AA6A0 !important}
+.curTag{color:#00664F !important;font-weight:600}
 .fstat.now{background:var(--green);color:#fff}
 .fstat.next{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.9);font-weight:500}
 .fbot{position:absolute;left:16px;bottom:16px;right:120px;z-index:2}
 .fwhen{font-size:11px;letter-spacing:.02em;color:#fff;margin-top:6px}
 .fwalk{font-size:8.5px;letter-spacing:.06em;color:rgba(255,255,255,.72);margin-top:4px}
-.froom{font-family:var(--serif);font-size:22px;line-height:1;color:#fff;letter-spacing:.01em}
+.froom{font-family:var(--serif);font-size:28px;line-height:1;color:#fff;letter-spacing:.01em}
 .fsub{font-size:11px;line-height:1.2;color:rgba(255,255,255,.78);margin-top:4px;letter-spacing:.04em}
 .ftm{font-size:11px;line-height:1.2;color:#fff;margin-top:4px;letter-spacing:.02em;
      font-variant-numeric:tabular-nums}
@@ -146,9 +147,10 @@ main.pad{padding-bottom:16px}
 .bkit.doneb{color:var(--faint);border-color:var(--line);border-style:dashed}
 
 /* ---------- 底部固定区 ---------- */
-.dock{flex:0 0 auto;display:none;border-top:1px solid var(--line);background:var(--paper);
+.dock{position:relative;flex:0 0 auto;display:none;border-top:1px solid var(--line);background:var(--paper);
       border-radius:var(--rl) var(--rl) 0 0;box-shadow:none;
       padding:8px 20px 12px;position:relative;z-index:3}
+.dock:before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px;background:linear-gradient(180deg,rgba(247,244,236,0),rgba(247,244,236,.95));pointer-events:none}
 .dockrow{display:flex;gap:10px}
 .dbtn{flex:1;height:40px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);
       font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;user-select:none;
@@ -560,8 +562,10 @@ function block(s,ctx){
   const dn=s.status==='done'?' done':'';
   const grp=ctx.grp?' grp':'';
   const tm=s.start+'&ndash;'+s.end;
+  const cur = (typeof focusPick==='function' && focusPick() && focusPick().s.id===s.id);
   const tag = s.status==='done'
     ? '<span class="tag doneTag">DONE</span>'
+    : cur ? '<span class="tag curTag">CURRENT</span>'
     : '<span class="tag">'+typeName(s)+'</span>';
   const wl=ctx.wl?'<span class="w">'+ctx.wl+'</span>':'';
   if(s.status==='skipped'){
@@ -607,7 +611,7 @@ function renderDay(){
           '<div class="fbot"><div class="froom">'+t('noStudy')+'</div></div></div>';
   h+='<div class="todaybar"><span>'+t('todayLabel')+'</span>'+
       '<span class="hint" id="hintBtn" onclick="openHint()">'+t('changed')+'</span></div>';
-  const rest=live.filter(s=>!f || s.id!==f.s.id);
+  const rest=live;   /* 当天全部站都留在列表里，当前那一站标 CURRENT */
   let used=0, prevGap=0;
   rest.forEach((s,i)=>{
     const nx=rest[i+1], L=lvlOf(s);
