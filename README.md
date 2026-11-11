@@ -139,7 +139,9 @@ wD  0.40 to 0.65, a longer window leans harder on S'
 A failed filter ends that candidate. The weights only choose between rooms that already passed.
 
 The room choice behind that last step has its own score, seven static factors plus a rejection
-discount, written up in **[room-scoring.md](docs/room-scoring.md)**.
+discount, written up in **[room-scoring.md](docs/room-scoring.md)**. The chain that runs before it,
+from the three sources through the union, the buffer arithmetic and the three windows of a worked
+Thursday to one published sequence, is walked step by step in **[day.md](docs/day.md)**.
 
 ---
 

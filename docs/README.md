@@ -25,6 +25,7 @@ interface does about it.
 | [`architecture.md`](architecture.md) | Where the split between the data layer and the plan layer sits, how the two connect, and the delivery targets. |
 | [`algorithm.md`](algorithm.md) | The four layers, the sameness criterion, the repair procedure, the cost order, the complexity and one worked example. |
 | [`room-scoring.md`](room-scoring.md) | How the static score and the dynamic score combine into one room choice, with the seven factors, the rejection discount, the fusion weights and one worked example. Also in [简体中文](room-scoring.zh-CN.md) and [繁體中文](room-scoring.zh-TW.md). |
+| [`day.md`](day.md) | One day end to end: three input sources, the union, the walk and buffer arithmetic, the three windows of a worked Thursday, the four room filters, publish, repair and the four learned quantities. Also in [简体中文](day.zh-CN.md) and [繁體中文](day.zh-TW.md). |
 | [`screens.md`](screens.md) | The three tabs, the block specification, the action matrix, the design tokens and the three interface rules. |
 
 ## Decisions

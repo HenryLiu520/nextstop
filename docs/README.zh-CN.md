@@ -24,6 +24,7 @@
 | [`architecture.md`](architecture.zh-CN.md) | 数据层和计划层之间的那条分界落在哪里，两层怎么接上，以及交付目标。 |
 | [`algorithm.md`](algorithm.zh-CN.md) | 四个层，相同的判据，修复的流程，成本的次序，复杂度，和一个走通了的例子。 |
 | [`room-scoring.md`](room-scoring.zh-CN.md) | 固态分和动态分怎么合成一个选房决定，含七个因子、拒绝折扣、融合权重和一个走通了的例子。也见 [English](room-scoring.md) 和 [繁體中文](room-scoring.zh-TW.md)。 |
+| [`day.md`](day.zh-CN.md) | 一天走到底：三个输入来源、并集、走路与缓冲的算术、一个走通的周四剩下的三个窗口、选房的四道硬过滤、发布、修复，和四个学到的量。也见 [English](day.md) 和 [繁體中文](day.zh-TW.md)。 |
 | [`screens.md`](screens.zh-CN.md) | 三个标签页，块的规格，动作矩阵，设计 token，和三条界面规则。 |
 
 ## 决定
