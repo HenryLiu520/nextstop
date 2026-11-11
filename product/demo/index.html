@@ -615,8 +615,7 @@ function renderDay(){
   if(f) h+=focusCard(f);
   else h+='<div class="focus empty"><span class="fstat next">'+t('nextTag')+'</span>'+
           '<div class="fbot"><div class="froom">'+t('noStudy')+'</div></div></div>';
-  h+='<div class="todaybar"><span>'+t('todayLabel')+'</span>'+
-      '<span class="hint" id="hintBtn" onclick="openHint()">'+t('changed')+'</span></div>';
+  h+='<div class="todaybar"><span>'+t('todayLabel')+'</span></div>';
   const rest=live;   /* 当天全部站都留在列表里，当前那一站标 CURRENT */
   let used=0, prevGap=0;
   rest.forEach((s,i)=>{
@@ -772,9 +771,8 @@ function blockSheet(id,ev){
       [[-15,'moveEarlier15'],[15,'moveLater15']].map(([d,k])=>
         '<div class="trow" onclick="moveStop('+id+','+d+')">'+t(k)+'<span class="tw">'+shift(s.start,d)+'</span></div>').join('');
   } else {
-    rows='<div class="trow" onclick="swapStop('+id+')">'+t('swap')+'<span class="tw">'+P(s.place)+'</span></div>'+
-      [[-15,'moveEarlier15'],[15,'moveLater15']].map(([d,k])=>
-        '<div class="trow" onclick="moveStop('+id+','+d+')">'+t(k)+'<span class="tw">'+shift(s.start,d)+'</span></div>').join('');
+    /* 见面的时间由对方定，这里只保留一步：删掉 */
+    rows='';
   }
   rows+='<div class="trow" onclick="dropStop('+id+')">'+t('removeItem')+'</div>';
   showSheet('<h3>'+s.start+'–'+s.end+' &middot; '+typeName(s)+'</h3><div class="tlist">'+rows+'</div>'+
