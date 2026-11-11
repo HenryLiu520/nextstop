@@ -30,17 +30,17 @@ body{background:var(--mint);font-family:var(--sans);font-size:11px;color:var(--i
 
 /* ---------- 头部：72px 短头部（米白，无照片） ----------
    【一致性】头部只有一层：校徽 + 品牌 + 日期 + 三语，字号只用 15 / 8.5 两档 */
-header{flex:0 0 72px;height:72px;display:flex;align-items:center;justify-content:space-between;
+header{flex:0 0 64px;height:64px;display:flex;align-items:center;justify-content:space-between;
        padding:0 20px;border-bottom:1px solid var(--gold);background:var(--paper);
        position:relative;z-index:2}
 .hleft{display:flex;align-items:center;gap:12px;min-width:0}
 .crestchip{display:block;background:transparent;border:none;flex:0 0 auto;padding:0}
 img.crest{display:block;width:26px;height:29px;object-fit:contain}
 /* 【接近性】品牌与日期是同一组信息：横排、基线对齐、固定 10px 级距 */
-.hnames{display:flex;align-items:baseline;gap:10px;min-width:0}
-.brand{font-family:var(--serif);font-size:15px;line-height:1;color:var(--deep);letter-spacing:.01em;
+.hnames{display:flex;flex-direction:column;align-items:flex-start;gap:3px;min-width:0}
+.brand{font-family:var(--serif);font-size:20px;line-height:1;color:var(--deep);letter-spacing:.01em;
        white-space:nowrap}
-.date{font-size:8.5px;line-height:1;color:var(--faint);letter-spacing:.06em;
+.date{font-size:10px;line-height:1;color:var(--faint);letter-spacing:.06em;
       font-variant-numeric:tabular-nums;white-space:nowrap}
 .langs{display:flex;gap:4px;flex:0 0 auto}
 /* 【可供性】三语是三个有边框的方块，看得出能点 */
@@ -151,6 +151,10 @@ main.pad{padding-bottom:16px}
       border-radius:var(--rl) var(--rl) 0 0;box-shadow:none;
       padding:8px 20px 12px;position:relative;z-index:3}
 .dock:before{content:"";position:absolute;left:0;right:0;top:-14px;height:14px;background:linear-gradient(180deg,rgba(247,244,236,0),rgba(247,244,236,.95));pointer-events:none}
+.gaprow{display:flex;align-items:center;gap:8px;padding:5px 0 5px 10px}
+.gaprow i{width:1px;height:12px;background:#D8DFD9;flex:0 0 auto}
+.gaprow i:last-child{flex:1;height:1px;background:repeating-linear-gradient(90deg,#D8DFD9 0 3px,transparent 3px 6px)}
+.gaprow span{font-size:8.5px;letter-spacing:.1em;color:#8E9993;text-transform:uppercase}
 .dockrow{display:flex;gap:10px}
 .dbtn{flex:1;height:40px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);
       font-size:11px;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;user-select:none;
@@ -273,7 +277,7 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
         <div class="date" id="dateLine"></div>
       </div>
     </div>
-    <div class="langs" id="langs"></div>
+    <!-- 语言移到 Mine 页 -->
   </header>
   <main id="main"></main>
   <div class="dock" id="dock">
@@ -316,6 +320,8 @@ const STR = {
   leftMin:{en:'{n} min left',zh:'还剩 {n} 分钟',tw:'還剩 {n} 分鐘'},
   inMin:{en:'starts in {n} min',zh:'{n} 分钟后开始',tw:'{n} 分鐘後開始'},
   noStudy:{en:'No study left today',zh:'今天没有自习了',tw:'今天沒有自習了'},
+  walkGap:{en:'walk {n} min',zh:'走 {n} 分钟',tw:'走 {n} 分鐘'},
+  language:{en:'Language',zh:'语言',tw:'語言'},
   day:{en:'Day',zh:'一天',tw:'一天'},
   plan:{en:'Plan',zh:'规划',tw:'規劃'},
   mine:{en:'Mine',zh:'我的',tw:'我的'},
@@ -549,7 +555,7 @@ function focusCard(f){
       '<div class="fwhen">'+(f.isNow
         ? t('leftMin',{n:Math.max(0,mins(f.s.end)-NOWMIN)})
         : t('inMin',{n:Math.max(0,mins(f.s.start)-NOWMIN)}))+'</div>'+
-      (w!=null?'<div class="fwalk">'+t('walk',{n:w})+'</div>':'')+
+
     '</div>'+
     '<span class="fswap" onclick="event.stopPropagation();swapStop('+s.id+')">'+t('swap')+'</span>'+
   '</div>';
@@ -621,10 +627,11 @@ function renderDay(){
     /* 接近性：40/36px 的单行条只留 类型·地点·时间；"leave · walk" 留给有第二行的高块，
        否则 8.5px 的小字会贴到右上角的三点按钮上 */
     const hasLine2 = s.type!=='eat' && s.type!=='meet' && s.status!=='skipped';
-    if(hasLine2 && walk && walk<=20 && L>=2 && L<=4 && used<3){
-      ctx.wl=t('leaveWalk',{t:shift(nx.start,-walk),n:walk}); used++;
-    }
     h+=block(s,ctx);
+    if(nx && gap>0 && gap<=20){
+      const w = Math.max(5, Math.round(gap/5)*5);
+      h+='<div class="gaprow"><i></i><span>'+t('walkGap',{n:w})+'</span><i></i></div>';
+    }
     prevGap=gap;
   });
   if(rest.length) h+='<div class="note" style="margin-top:4px">'+t('nothingAfter',{t:rest[rest.length-1].end})+'</div>';
@@ -689,7 +696,11 @@ function renderMine(){
     <div class="row2"><span>${t('thuEnds')}</span><span class="v"><input id="pend" value="${L.endThu}"></span></div>
     <div class="row2"><span>${t('favPlace')}</span><span class="v">${P('cym')}</span></div>
     <div class="learned">walk × ${L.walk.toFixed(2)} · 3 observations before it replaces the default</div>
+    <div class="row2"><span>${t('language')}</span><span class="langs" id="langs2"></span></div>
     <div class="sheetrow"><span class="btn" onclick="saveParams()">${t('save')}</span></div>`;
+  const l2=document.getElementById('langs2');
+  if(l2) l2.innerHTML=['en','zh','tw'].map(l=>
+    `<span class="${l===LANG?'on':''}" onclick="setLang('${l}')">${{en:'EN',zh:'简',tw:'繁'}[l]}</span>`).join('');
 }
 
 function render(){
@@ -697,7 +708,8 @@ function render(){
   document.querySelector('#tab-day .lab').textContent=t('day');
   document.querySelector('#tab-plan .lab').textContent=t('plan');
   document.querySelector('#tab-mine .lab').textContent=t('mine');
-  document.getElementById('langs').innerHTML=['en','zh','tw'].map(l=>
+  const box=document.getElementById('langs2')||document.getElementById('langs');
+  if(box) box.innerHTML=['en','zh','tw'].map(l=>
     `<span class="${l===LANG?'on':''}" onclick="setLang('${l}')">${{en:'EN',zh:'简',tw:'繁'}[l]}</span>`).join('');
   document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.dataset.tab===S.tab));
   /* hint 现在画在 main 里的 TODAY 行（renderDay 负责），这里不再触碰 */
