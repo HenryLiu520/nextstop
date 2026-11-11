@@ -90,6 +90,10 @@ main.pad{padding-bottom:16px}
 .focus.empty .froom{color:var(--ink);font-size:17px}
 .fstat{position:absolute;top:12px;left:16px;z-index:2;font-size:8.5px;line-height:1;
        letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r);font-weight:600}
+.inTag{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px;font-family:var(--sans)}
+.inTag.cur{color:#00664F;font-weight:600}
+.inTag.nx{color:#8E9993}
+.curbox{outline:1px solid #00664F;outline-offset:-1px;border-radius:6px}
 .doneTag{color:#9AA6A0 !important}
 .curTag{color:#00664F !important;font-weight:600}
 .fstat.now{background:var(--green);color:#fff}
@@ -456,7 +460,7 @@ const S = {
     {id:2,type:'study',start:'11:00',end:'12:00',place:'kb227',status:'now',src:'self'},
     {id:3,type:'eat',start:'12:10',end:'12:40',place:'cym',status:'todo',src:'self'},
     {id:4,type:'class',start:'14:00',end:'15:50',place:'cpdlg05',status:'planned',src:'cal'},
-    {id:5,type:'meet',start:'16:00',end:'16:50',place:'rht302',status:'planned',booking:'none',src:'self'},
+    {id:5,type:'meet',start:'16:00',end:'16:50',place:'kb221',status:'planned',booking:'none',src:'self'},
     {id:6,type:'study',start:'17:00',end:'18:20',place:'lib3f',status:'planned',src:'self'}
   ],
   gaps:['walk:5','walk:10','walk:10','walk:10']
@@ -560,6 +564,16 @@ function focusCard(f){
     '<span class="fswap" onclick="event.stopPropagation();swapStop('+s.id+')">'+t('swap')+'</span>'+
   '</div>';
 }
+/* 下一间自习：当前那间之后的第一间，用来标 NEXT */
+function studyNextId(){
+  const f=focusPick();
+  if(f && f.isNow) {
+    const after=S.stops.filter(s=>s.type==='study' && s.status!=='dropped' && s.status!=='done' && s.start>f.s.end)
+                       .sort((a,b)=>a.start.localeCompare(b.start))[0];
+    return after? after.id : null;
+  }
+  return f ? f.s.id : null;
+}
 function block(s,ctx){
   ctx=ctx||{};
   const oc='onclick="blockSheet('+s.id+',event)"';
@@ -597,8 +611,11 @@ function block(s,ctx){
       '<div class="bl"><span class="bt">'+typeName(s)+'</span><span class="bn">'+P(s.place)+'</span></div>'+
       '<div class="br"><span class="tt">'+tm+'</span>'+wl+bk+'</div>'+dots+'</div>';
   }
-  return '<div class="blk'+dn+grp+'" '+oc+'>'+bar+dots+tag+
-    '<div class="b1">'+P(s.place)+'</div>'+
+  const nxId = studyNextId();
+  const inline = cur ? '<span class="inTag cur">CURRENT</span>'
+               : s.id===nxId ? '<span class="inTag nx">NEXT</span>' : '';
+  return '<div class="blk'+(cur?' curbox':'')+dn+grp+'" '+oc+'>'+bar+dots+
+    '<div class="b1">'+P(s.place)+inline+'</div>'+
     '<div class="b2"><span class="t">'+tm+'</span>'+wl+'</div></div>';
 }
 function renderDay(){
@@ -609,7 +626,8 @@ function renderDay(){
       <span class="btn" onclick="unEnd()">${t('keepGoing')}</span></div>`;
     return;
   }
-  const live=S.stops.filter(s=>s.status!=='dropped');
+  /* 已经过去的块不再显示，列表只留还剩的 */
+  const live=S.stops.filter(s=>s.status!=='dropped' && s.status!=='done' && mins(s.end)>NOWMIN);
   const f=focusPick();
   let h='';
   if(f) h+=focusCard(f);
@@ -817,7 +835,7 @@ function bookStop(id){
   const s=S.stops.find(x=>x.id===id);
   s.booking='booking'; render();
   setTimeout(()=>{ s.booking='done'; s.place='room2'; s.status='planned'; render();
-    toast(t('bookedToast'),()=>{s.booking='none';s.place='rht302';render();hideToast();}); },800);
+    toast(t('bookedToast'),()=>{s.booking='none';s.place='kb221';render();hideToast();}); },800);
 }
 /* 【防错与可恢复】取消预约也能撤回：恢复成"已预约 / LIB 3/F R2" */
 function unbook(id){
