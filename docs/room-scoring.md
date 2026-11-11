@@ -138,20 +138,20 @@ next anchor. A missing anchor contributes 0.
 
 ```
 total = t_prev + t_next
-slack = t0 − previous anchor end − 2 minutes buffer
-κ     = clamp(0.6 × slack, 3, 12)
+κ     = clamp(0.15 × window minutes, 3, 12)
 T     = exp(−total / κ)
 ```
 
-Slack sets the price of a minute of walking. With five minutes of slack, `κ = 3` and three minutes
-of walking scores 0.37. With forty minutes of slack, `κ = 12` and five minutes of walking still
-scores 0.66.
+The window sets the price of a walking minute. A twenty minute window puts `κ` at 3, so three
+minutes of walking scores 0.37. A two hour window puts `κ` at 12, so five minutes still scores 0.66.
+The walk eats into the window itself, and a long window absorbs a longer walk.
 
 Time tolerance lives inside this factor. A tight window punishes the same walk harder, so a second
 factor for it would repeat the first.
 
-The next class only gates feasibility, through `t_next ≤ next_start − t1 − 2`. A candidate that
-fails the test leaves the set at once.
+Two tests gate feasibility. The room has to be reachable with five minutes left to sit,
+`t_prev ≤ window minutes − 5`, and the walk to the next class has to fit,
+`t_next ≤ next_start − t1 − 2`. A candidate that fails either test leaves the set at once.
 
 ### Contiguous availability
 
@@ -201,7 +201,7 @@ function pickStudyRoom(W, p, n, u, rooms, snapshot):
         row   = table.rows[r.id]
         S2    = row.base * pow(1 - 0.12, effReject(row, now))
         total = walk(p, r) + walk(r, n)          # a missing side counts 0
-        k     = clamp(0.6 * slack(W, p), 3, 12)
+        k     = clamp(0.15 * len(W), 3, 12)
         T     = exp(-total / k)
         C     = min(contiguousFree(r, W.t0) / 120, 1)
         D     = 0.65*T + 0.35*C
@@ -218,14 +218,14 @@ is about 1600 evaluations, and that fits in a millisecond budget on a phone.
 
 ## Worked example
 
-Window 11:00 to 12:00, with the previous class ending at 10:45 in KB 223. That leaves `slack = 13`
-and `κ = 7.8`. The next class starts at 14:00 in CPD and only gates reachability.
+Window 11:00 to 12:00, so `κ = 9`. The previous class ends at 10:45 in KB 223, the next starts at
+14:00 in CPD and only gates reachability.
 
 | Room | S | Effective rejections | S' | total | T | C | D | F |
 |---|---|---|---|---|---|---|---|---|
-| KB 227 | 0.58 | 2.0 | 0.45 | 7 minutes | 0.41 | 0.50 | 0.44 | 0.46 |
-| LIB 3F | 0.82 | 0 | 0.82 | 21 minutes | 0.07 | 0.67 | 0.28 | **0.54** |
-| RHT 302 | 0.69 | 0 | 0.69 | 14 minutes | 0.17 | 0.50 | 0.29 | 0.48 |
+| KB 227 | 0.58 | 2.0 | 0.45 | 7 minutes | 0.46 | 0.50 | 0.47 | 0.46 |
+| LIB 3F | 0.82 | 0 | 0.82 | 21 minutes | 0.10 | 0.67 | 0.30 | **0.55** |
+| RHT 302 | 0.69 | 0 | 0.69 | 14 minutes | 0.21 | 0.50 | 0.31 | 0.49 |
 
 LIB 3F has the best room and takes first place, at a price of 21 minutes of walking. KB 227 sits
 downstairs, carries two rejections and offers an ordinary room, so it lands second.
@@ -241,7 +241,7 @@ exactly this.
 |---|---|---|---|
 | Rejection discount | 0.88 per rejection | 0.82 to 0.94 | how far one rejection lowers the score |
 | Rejection half-life | 21 days | 7 to 60 | how fast an old rejection fades |
-| `κ` coefficient | 0.6 × slack | 3 to 12 | steepness of the walk penalty |
+| `κ` coefficient | 0.15 × window | 3 to 12 | steepness of the walk penalty |
 | `C` full score | 120 minutes | 60 to 180 | how long counts as long enough to sit |
 | `wD` range | 0.40 to 0.65 | set by the window | split between the walk and the room |
 | Familiarity cap | 10 visits | 5 to 20 | keeps a student from settling in one building |
