@@ -18,7 +18,8 @@
   --faint:#8E9993;
   --sans:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Helvetica Neue",Arial,sans-serif;
   --serif:Georgia,"Times New Roman",serif;
-  --r:3px;
+  --r:6px;                          /* 块圆角，统一 6 */
+  --rl:14px;                         /* 大卡片与底栏顶部圆角 */
 }
 body{background:var(--mint);font-family:var(--sans);font-size:11px;color:var(--ink);min-height:100vh;
      display:flex;align-items:center;justify-content:center;padding:24px}
@@ -79,18 +80,21 @@ main.pad{padding-bottom:16px}
 .focus .dots:active .dico{background:rgba(255,255,255,.16)}
 
 /* ---------- 一天：260px 焦点卡（压短：整张一日清单留在第一屏） ---------- */
-.focus{flex:0 0 260px;height:260px;width:100%;border-radius:var(--r);overflow:hidden;position:relative;
+.focus{flex:0 0 280px;height:280px;width:100%;border-radius:var(--rl);overflow:hidden;position:relative;
        background-color:var(--deep);background-size:cover;background-position:center 35%;
        background-repeat:no-repeat;cursor:pointer}
 .focus:before{content:"";position:absolute;inset:0;z-index:1;
   background:linear-gradient(180deg,rgba(0,56,44,.34) 0%,rgba(0,56,44,.86) 100%)}
 /* 【可供性】状态标签两个都有明确边界：实心 = 现在，描边 = 下一间 */
+.focus.empty{background:#EFEAE0 !important;display:flex;align-items:flex-end}
+.focus.empty .froom{color:var(--ink);font-size:17px}
 .fstat{position:absolute;top:12px;left:16px;z-index:2;font-size:8.5px;line-height:1;
        letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r);font-weight:600}
 .doneTag{color:#9AA6A0 !important}
 .fstat.now{background:var(--green);color:#fff}
 .fstat.next{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.9);font-weight:500}
 .fbot{position:absolute;left:16px;bottom:16px;right:120px;z-index:2}
+.fwhen{font-size:11px;letter-spacing:.02em;color:#fff;margin-top:6px}
 .fwalk{font-size:8.5px;letter-spacing:.06em;color:rgba(255,255,255,.72);margin-top:4px}
 .froom{font-family:var(--serif);font-size:22px;line-height:1;color:#fff;letter-spacing:.01em}
 .fsub{font-size:11px;line-height:1.2;color:rgba(255,255,255,.78);margin-top:4px;letter-spacing:.04em}
@@ -143,6 +147,7 @@ main.pad{padding-bottom:16px}
 
 /* ---------- 底部固定区 ---------- */
 .dock{flex:0 0 auto;display:none;border-top:1px solid var(--line);background:var(--paper);
+      border-radius:var(--rl) var(--rl) 0 0;box-shadow:none;
       padding:8px 20px 12px;position:relative;z-index:3}
 .dockrow{display:flex;gap:10px}
 .dbtn{flex:1;height:40px;display:flex;align-items:center;justify-content:center;border-radius:var(--r);
@@ -306,6 +311,9 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
    ========================================================================== */
 /* ================= i18n ================= */
 const STR = {
+  leftMin:{en:'{n} min left',zh:'还剩 {n} 分钟',tw:'還剩 {n} 分鐘'},
+  inMin:{en:'starts in {n} min',zh:'{n} 分钟后开始',tw:'{n} 分鐘後開始'},
+  noStudy:{en:'No study left today',zh:'今天没有自习了',tw:'今天沒有自習了'},
   day:{en:'Day',zh:'一天',tw:'一天'},
   plan:{en:'Plan',zh:'规划',tw:'規劃'},
   mine:{en:'Mine',zh:'我的',tw:'我的'},
@@ -536,6 +544,9 @@ function focusCard(f){
       '<div class="froom">'+P(s.place)+'</div>'+
       '<div class="fsub">'+building(s.place)+'</div>'+
       '<div class="ftm">'+s.start+'&ndash;'+s.end+'</div>'+
+      '<div class="fwhen">'+(f.isNow
+        ? t('leftMin',{n:Math.max(0,mins(f.s.end)-NOWMIN)})
+        : t('inMin',{n:Math.max(0,mins(f.s.start)-NOWMIN)}))+'</div>'+
       (w!=null?'<div class="fwalk">'+t('walk',{n:w})+'</div>':'')+
     '</div>'+
     '<span class="fswap" onclick="event.stopPropagation();swapStop('+s.id+')">'+t('swap')+'</span>'+
@@ -592,6 +603,8 @@ function renderDay(){
   const f=focusPick();
   let h='';
   if(f) h+=focusCard(f);
+  else h+='<div class="focus empty"><span class="fstat next">'+t('nextTag')+'</span>'+
+          '<div class="fbot"><div class="froom">'+t('noStudy')+'</div></div></div>';
   h+='<div class="todaybar"><span>'+t('todayLabel')+'</span>'+
       '<span class="hint" id="hintBtn" onclick="openHint()">'+t('changed')+'</span></div>';
   const rest=live.filter(s=>!f || s.id!==f.s.id);
