@@ -91,12 +91,12 @@ main.pad{padding-bottom:16px}
 .fstat{position:absolute;top:12px;left:16px;z-index:2;font-size:8.5px;line-height:1;
        letter-spacing:.16em;text-transform:uppercase;padding:4px 8px;border-radius:var(--r);font-weight:600}
 .inTag{font-size:7.5px;letter-spacing:.14em;text-transform:uppercase;margin-left:8px;vertical-align:2px;font-family:var(--sans)}
-.inTag.cur{color:#00664F;font-weight:600}
+.inTag.now{color:#B49A5E;font-weight:600;border:1px solid #00664F;border-radius:3px;padding:2px 5px;letter-spacing:.1em;margin-left:8px;vertical-align:2px}
 .inTag.nx{color:#8E9993}
 .curbox{outline:1px solid #00664F;outline-offset:-1px;border-radius:6px}
 .doneTag{color:#9AA6A0 !important}
 .curTag{color:#00664F !important;font-weight:600}
-.fstat.now{background:var(--green);color:#fff}
+.fstat.now{background:rgba(0,56,44,.34);color:#E3C68C;border:1px solid #00664F;font-weight:600}
 .fstat.next{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.9);font-weight:500}
 .fbot{position:absolute;left:16px;bottom:16px;right:120px;z-index:2}
 .fwhen{font-size:11px;letter-spacing:.02em;color:#fff;margin-top:6px}
@@ -612,7 +612,7 @@ function block(s,ctx){
       '<div class="br"><span class="tt">'+tm+'</span>'+wl+bk+'</div>'+dots+'</div>';
   }
   const nxId = studyNextId();
-  const inline = cur ? '<span class="inTag cur">CURRENT</span>'
+  const inline = cur ? '<span class="inTag now">NOW</span>'
                : s.id===nxId ? '<span class="inTag nx">NEXT</span>' : '';
   return '<div class="blk'+(cur?' curbox':'')+dn+grp+'" '+oc+'>'+bar+dots+
     '<div class="b1">'+P(s.place)+inline+'</div>'+
