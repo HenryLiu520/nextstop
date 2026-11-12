@@ -477,11 +477,12 @@ h2 {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 6px;
 }
 
 .tile {
+  min-width: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -494,6 +495,7 @@ h2 {
 }
 
 .tile .k {
+  min-width: 0;
   font-size: 9px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
