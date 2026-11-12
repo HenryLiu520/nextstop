@@ -44,8 +44,8 @@ and repair it when the day moves. The server stores no plan and has no opinion a
 +--------------------------------------------------------------------+
 ```
 
-NextStop is a phone app. The client under `web/` carries four views in one build, Day, Plan, Find
-and Me, in that order along the bottom bar. The Find view is the only one that asks the service a
+NextStop is a phone app. The client is `product/demo/index.html`, one file carrying four views, Day,
+Plan, Find and Mine, in that order along the bottom bar. The Find view is the only one that asks the service a
 question of its own, and it asks `GET /api/availability` for the rooms that are free across a whole
 interval, so what it lists and what the day screen trusts come from the same arithmetic.
 

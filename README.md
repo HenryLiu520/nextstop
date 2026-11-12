@@ -172,9 +172,9 @@ stops as the same stop when the purpose, the building and the start time still l
 ## Architecture
 
 ```
-app      Vue 3 + Vite, one build, four containers
-(web/)   browser · PWA · Android shell · iOS shell
-         NextStop is a phone app: Day · Plan · Find · Me, four views, one build
+app      one HTML file, no build step
+(demo/)  product/demo/index.html · browser · PWA
+         NextStop is a phone app: Day · Plan · Find · Mine, four views, one file
    |
    |  REST + JSON
    v

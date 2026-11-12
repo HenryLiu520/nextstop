@@ -270,6 +270,46 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
 .dl .bx .tm{font-family:var(--serif);font-size:11px;color:var(--mute);font-variant-numeric:tabular-nums}
 #planBox{margin-top:auto;padding-top:8px}
 
+
+/* 查找 */
+.fform{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:6px;
+       background:var(--card);padding:12px;margin-bottom:10px}
+.fl{display:flex;flex-direction:column;gap:4px;font-size:9px;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
+.fl select,.fl input{height:34px;border:1px solid var(--line);border-radius:6px;background:var(--paper);
+                     color:var(--ink);font-size:12px;padding:0 8px;font-family:var(--sans)}
+.frow2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.fbtn{height:40px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+      background:var(--deep);color:var(--paper);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+.ferr{margin:0;color:#a3312c;font-size:10px}
+.fcount{margin:0 2px 8px;font-size:10px;letter-spacing:.06em;color:var(--faint)}
+.frow{position:relative;display:flex;align-items:center;gap:10px;min-height:54px;padding:8px 12px 8px 16px;
+      border:1px solid var(--line);border-radius:6px;background:var(--card);margin-bottom:8px;cursor:pointer;overflow:hidden}
+.fbar{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--green)}
+.fcode{font-family:var(--serif);font-size:16px}
+.fwhere{font-size:9px;color:var(--mute);margin-top:2px}
+.fside{margin-left:auto;font-size:9px;color:var(--faint)}
+
+/* 评价 */
+.rt{margin:0;font-family:var(--serif);font-size:22px;font-weight:400}
+.rs{margin:4px 0 10px;font-size:10px;color:var(--mute)}
+.ritem{border:1px solid var(--line);border-radius:6px;background:var(--card);padding:8px 10px;margin-bottom:8px}
+.rrow{display:flex;justify-content:space-between;font-size:10px;color:var(--mute)}
+.ritem p{margin:6px 0 0;font-size:11px;line-height:1.5;color:var(--ink)}
+.rchips{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px}
+.rchips span{font-size:9px;padding:2px 6px;border-radius:999px;background:var(--mint);color:var(--mute)}
+.rphotos{display:flex;gap:6px;margin-top:6px}
+.rphotos img{width:52px;height:52px;object-fit:cover;border-radius:4px;border:1px solid var(--line)}
+.rform{display:flex;flex-direction:column;gap:6px;border:1px solid var(--line);border-radius:6px;
+       background:var(--card);padding:10px;margin-top:8px}
+.rl{display:grid;grid-template-columns:92px 1fr 22px;align-items:center;gap:8px;font-size:10px;color:var(--mute)}
+.rl input[type=range]{accent-color:var(--green)}
+.rv{font-size:10px;text-align:right;color:var(--ink)}
+.rform textarea{border:1px solid var(--line);border-radius:6px;background:var(--paper);font:inherit;
+                font-size:11px;padding:6px 8px;color:var(--ink);resize:vertical}
+.rfile{display:flex;gap:8px;align-items:center;font-size:9px;color:var(--mute)}
+.rbtn{height:38px;display:flex;align-items:center;justify-content:center;border-radius:6px;
+      background:var(--deep);color:var(--paper);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
+
 </style></head><body>
 <div id="phone">
   <!-- Photo: HKU Loke Yew Hall, Wikimedia Commons, CC BY-SA 4.0 -->
@@ -299,6 +339,10 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
       <svg viewBox="0 0 18 18" aria-hidden="true"><rect x="2.6" y="2.6" width="5.4" height="5.4" rx="1"/><rect x="10" y="2.6" width="5.4" height="5.4" rx="1"/><rect x="2.6" y="10" width="5.4" height="5.4" rx="1"/><rect x="10" y="10" width="5.4" height="5.4" rx="1"/></svg>
       <i></i><span class="lab"></span>
     </div>
+    <div class="tab" data-tab="find" id="tab-find">
+      <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="8" cy="8" r="4.6"/><path d="M11.4 11.4l3.4 3.4"/></svg>
+      <i></i><span class="lab"></span>
+    </div>
     <div class="tab" data-tab="mine" id="tab-mine">
       <svg viewBox="0 0 18 18" aria-hidden="true"><circle cx="9" cy="6.4" r="2.9"/><path d="M3.6 15.4c.7-2.9 2.9-4.5 5.4-4.5s4.7 1.6 5.4 4.5"/></svg>
       <i></i><span class="lab"></span>
@@ -321,6 +365,34 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
    ========================================================================== */
 /* ================= i18n ================= */
 const STR = {
+  find:{en:'Find',zh:'查找',tw:'查找'},
+  findBuilding:{en:'Building',zh:'楼栋',tw:'樓棟'},
+  findAllBuildings:{en:'All buildings',zh:'全部楼栋',tw:'全部樓棟'},
+  findDate:{en:'Date',zh:'日期',tw:'日期'},
+  findFrom:{en:'From',zh:'从',tw:'從'},
+  findTo:{en:'To',zh:'到',tw:'到'},
+  findSearch:{en:'Find a free room',zh:'查空教室',tw:'查空教室'},
+  findSearching:{en:'Searching',zh:'查询中',tw:'查詢中'},
+  findCount:{en:'{n} free',zh:'找到 {n} 间',tw:'找到 {n} 間'},
+  findNone:{en:'No room is free for the whole interval',zh:'这段时间没有整段空着的教室',tw:'這段時間沒有整段空著的教室'},
+  findFailed:{en:'Search failed',zh:'查询失败',tw:'查詢失敗'},
+  findSeats:{en:'{n} seats',zh:'{n} 座',tw:'{n} 座'},
+  findAllDay:{en:'free all day',zh:'今天全天都空',tw:'今天全天都空'},
+  findNextBusy:{en:'busy from {t}',zh:'{t} 起有课',tw:'{t} 起有課'},
+  review:{en:'Review this room',zh:'评价这间房',tw:'評價這間房'},
+  revOverall:{en:'Overall',zh:'总分',tw:'總分'},
+  revQuiet:{en:'Quiet',zh:'安静',tw:'安靜'},
+  revDesk:{en:'Desk and seat',zh:'桌面与座位',tw:'桌面與座位'},
+  revSockets:{en:'Sockets',zh:'插座',tw:'插座'},
+  revAircon:{en:'Air conditioning',zh:'空调',tw:'空調'},
+  revSpace:{en:'Space',zh:'空间',tw:'空間'},
+  revLight:{en:'Daylight',zh:'采光',tw:'採光'},
+  revBody:{en:'Two lines are enough',zh:'写两句',tw:'寫兩句'},
+  revPhoto:{en:'Add photos, up to three',zh:'添加照片，最多三张',tw:'添加照片，最多三張'},
+  revSave:{en:'Post review',zh:'发布评价',tw:'發布評價'},
+  revSaved:{en:'Review posted',zh:'评价已发布',tw:'評價已發布'},
+  revNone:{en:'No review yet',zh:'还没有评价',tw:'還沒有評價'},
+  revCount:{en:'{n} reviews',zh:'{n} 条',tw:'{n} 條'},
   leftMin:{en:'{n} min left',zh:'还剩 {n} 分钟',tw:'還剩 {n} 分鐘'},
   inMin:{en:'starts in {n} min',zh:'{n} 分钟后开始',tw:'{n} 分鐘後開始'},
   noStudy:{en:'No study left today',zh:'今天没有自习了',tw:'今天沒有自習了'},
@@ -720,10 +792,184 @@ function renderMine(){
     `<span class="${l===LANG?'on':''}" onclick="setLang('${l}')">${{en:'EN',zh:'简',tw:'繁'}[l]}</span>`).join('');
 }
 
+
+/* ================= 查找 + 评价 ================= */
+const API = 'http://localhost:8080';
+let REVIEW = null;          // { code, list }
+
+function fmtDay(d){ return d.toISOString().slice(0,10); }
+
+async function apiBuildings(){
+  const r = await fetch(API + '/api/buildings', {signal:AbortSignal.timeout(3000)});
+  if(!r.ok) throw new Error('buildings ' + r.status);
+  const data = await r.json();
+  return (Array.isArray(data)?data:data.buildings||[]).map(b=>typeof b==='string'?b:b.name).filter(Boolean);
+}
+
+async function apiFreeRooms(building, date, from, to){
+  const qs = new URLSearchParams({date, from, to});
+  if(building) qs.set('building', building);
+  const r = await fetch(API + '/api/availability?' + qs, {signal:AbortSignal.timeout(4000)});
+  if(!r.ok) throw new Error('availability ' + r.status);
+  const data = await r.json();
+  return (data.rooms||[]).filter(x=>x.status==='AVAILABLE' && x.matches);
+}
+
+async function apiToken(){
+  const saved = localStorage.getItem('ns.token');
+  if(saved) return saved;
+  const r = await fetch(API + '/api/auth/login', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username:'user1', password:'user123'}),
+    signal: AbortSignal.timeout(3000)
+  });
+  if(!r.ok) throw new Error('login ' + r.status);
+  const d = await r.json();
+  localStorage.setItem('ns.token', d.token);
+  return d.token;
+}
+
+async function apiReviews(code){
+  const r = await fetch(API + '/api/rooms/' + encodeURIComponent(code) + '/reviews',
+                        {signal:AbortSignal.timeout(3000)});
+  if(!r.ok) throw new Error('reviews ' + r.status);
+  return r.json();
+}
+
+const FIND = { building:'', date:fmtDay(new Date()), from:'09:00', to:'10:50',
+               rooms:null, busy:false, error:'', buildings:[] };
+
+function hh(from, i){ return String(from + i).padStart(2,'0') + ':00'; }
+function toOpts(){ const a=[]; for(let i=9;i<=20;i++) a.push(String(i).padStart(2,'0')+':50'); return a; }
+
+function renderFind(){
+  const from = []; for(let i=8;i<=20;i++) from.push(String(i).padStart(2,'0')+':00');
+  const opts = from.map(h=>`<option ${h===FIND.from?'selected':''}>${h}</option>`).join('');
+  const opts2 = toOpts().map(h=>`<option ${h===FIND.to?'selected':''}>${h}</option>`).join('');
+  const bopts = FIND.buildings.map(b=>`<option ${b===FIND.building?'selected':''}>${b}</option>`).join('');
+  const rows = (FIND.rooms||[]).map(r=>`
+    <div class="frow" onclick="openReview('${r.room.code}')">
+      <i class="fbar"></i>
+      <div class="fmain">
+        <div class="fcode">${r.room.code}</div>
+        <div class="fwhere">${r.room.building}${r.room.capacity?' · '+t('findSeats',{n:r.room.capacity}):''}</div>
+      </div>
+      <div class="fside">${r.nextBusyStart?t('findNextBusy',{t:r.nextBusyStart}):t('findAllDay')}</div>
+    </div>`).join('');
+
+  main.innerHTML = `
+    <div class="fform">
+      <label class="fl"><span>${t('findBuilding')}</span>
+        <select onchange="FIND.building=this.value">
+          <option value="">${t('findAllBuildings')}</option>${bopts}
+        </select></label>
+      <label class="fl"><span>${t('findDate')}</span>
+        <input type="date" value="${FIND.date}" onchange="FIND.date=this.value"></label>
+      <div class="frow2">
+        <label class="fl"><span>${t('findFrom')}</span>
+          <select onchange="FIND.from=this.value">${opts}</select></label>
+        <label class="fl"><span>${t('findTo')}</span>
+          <select onchange="FIND.to=this.value">${opts2}</select></label>
+      </div>
+      <div class="fbtn" onclick="runFind()">${FIND.busy?t('findSearching'):t('findSearch')}</div>
+      ${FIND.error?`<p class="ferr">${FIND.error}</p>`:''}
+    </div>
+    ${FIND.rooms?`<p class="fcount">${FIND.rooms.length?t('findCount',{n:FIND.rooms.length}):t('findNone')}</p>`:''}
+    ${rows}
+  `;
+}
+
+async function runFind(){
+  if(FIND.busy) return;
+  FIND.busy = true; FIND.error = ''; renderFind();
+  try{
+    if(!FIND.buildings.length) FIND.buildings = await apiBuildings();
+    FIND.rooms = await apiFreeRooms(FIND.building, FIND.date, FIND.from, FIND.to);
+  }catch(e){ FIND.error = t('findFailed') + ' · ' + e.message; FIND.rooms = null; }
+  FIND.busy = false; renderFind();
+}
+
+const FACTORS = [['quiet','revQuiet'],['desk','revDesk'],['sockets','revSockets'],
+                 ['aircon','revAircon'],['space','revSpace'],['light','revLight']];
+
+function stars(key){
+  return `<label class="rl"><span>${t(key)}</span>
+    <input type="range" min="1" max="10" step="1" value="7"
+           oninput="this.nextElementSibling.textContent=this.value">
+    <b class="rv">7</b></label>`;
+}
+
+async function openReview(code){
+  REVIEW = { code, list:null, rating:8, dims:{quiet:7,desk:7,sockets:7,aircon:7,space:7,light:7} };
+  showSheet(`
+    <h3 class="rt">${code}</h3>
+    <p class="rs" id="revAvg">…</p>
+    <div id="revList"></div>
+    <div class="rform">
+      ${stars('revOverall').replace('value="7"','value="8"').replace('>7<','>8<')}
+      ${FACTORS.map(([k,key])=>stars(key).replace('oninput','data-k="'+k+'" oninput')).join('')}
+      <textarea id="revBody" rows="3" placeholder="${t('revBody')}"></textarea>
+      <label class="rfile"><input type="file" accept="image/*" multiple id="revPhoto">${t('revPhoto')}</label>
+      <div class="rbtn" id="revGo" onclick="submitReview()">${t('revSave')}</div>
+    </div>`);
+  try{
+    const d = await apiReviews(code);
+    REVIEW.list = d;
+    const el = document.getElementById('revAvg');
+    if(el) el.textContent = d.count ? `${d.average} / 10 · ` + t('revCount',{n:d.count}) : t('revNone');
+    const box = document.getElementById('revList');
+    if(box){
+      box.innerHTML = (d.items||[]).map(r=>`
+        <div class="ritem">
+          <div class="rrow"><b>${r.author}</b><span>${r.rating}/10</span></div>
+          <p>${r.body}</p>
+          ${r.dimensions?`<div class="rchips">${Object.entries(r.dimensions).map(([k,v])=>{
+              const f=FACTORS.find(x=>x[0]===k); return `<span>${f?t(f[1]):k} ${v}</span>`;}).join('')}</div>`:''}
+          ${(r.photos&&r.photos.length)?`<div class="rphotos">${r.photos.map(p=>`<img src="${API}${p.url}" alt="">`).join('')}</div>`:''}
+        </div>`).join('');
+    }
+  }catch(e){
+    const el = document.getElementById('revAvg'); if(el) el.textContent = e.message;
+  }
+}
+
+async function submitReview(){
+  const btn = document.getElementById('revGo');
+  if(!btn || btn.dataset.busy) return;
+  btn.dataset.busy = '1';
+  const rating = Number(document.querySelector('.rform input[type=range]').value);
+  const dims = {};
+  document.querySelectorAll('.rform input[data-k]').forEach(el=>{ dims[el.dataset.k] = Number(el.value); });
+  const body = document.getElementById('revBody').value.trim();
+  try{
+    const token = await apiToken();
+    const r = await fetch(API + '/api/rooms/' + encodeURIComponent(REVIEW.code) + '/reviews', {
+      method:'POST',
+      headers:{'Content-Type':'application/json', Authorization:'Bearer ' + token},
+      body: JSON.stringify({ rating, body, dimensions: dims })
+    });
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.message || ('review ' + r.status));
+    const files = document.getElementById('revPhoto').files;
+    for(const f of Array.from(files).slice(0,3)){
+      const form = new FormData(); form.append('file', f);
+      await fetch(API + '/api/reviews/' + data.id + '/photos', {
+        method:'POST', headers:{ Authorization:'Bearer ' + token }, body: form });
+    }
+    closeSheet();
+    toast(t('revSaved'));
+    await openReview(REVIEW.code);
+  }catch(e){
+    btn.textContent = e.message;
+    btn.dataset.busy = '';
+  }
+}
+
 function render(){
   document.getElementById('dateLine').textContent=t('date');
   document.querySelector('#tab-day .lab').textContent=t('day');
   document.querySelector('#tab-plan .lab').textContent=t('plan');
+  document.querySelector('#tab-find .lab').textContent=t('find');
   document.querySelector('#tab-mine .lab').textContent=t('mine');
   const box=document.getElementById('langs2')||document.getElementById('langs');
   if(box) box.innerHTML=['en','zh','tw'].map(l=>
@@ -737,7 +983,10 @@ function render(){
     document.getElementById('endBtn').textContent=t('endDay');
     document.getElementById('stayBtn').textContent=t('stay');
   }
-  if(S.tab==='day') renderDay(); else if(S.tab==='plan') renderPlan(); else renderMine();
+  if(S.tab==='day') renderDay();
+  else if(S.tab==='plan') renderPlan();
+  else if(S.tab==='find') renderFind();
+  else renderMine();
 }
 function setLang(l){ LANG=l; render(); }
 document.querySelectorAll('.tab').forEach(x=>x.onclick=()=>{S.tab=x.dataset.tab;render();});

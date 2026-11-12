@@ -160,9 +160,9 @@ RECOMPUTE EVERYTHING            REPAIR
 ## 架構
 
 ```
-app      Vue 3 + Vite，一套構建，四個容器
-(web/)   網頁 · PWA · Android 殼 · iOS 殼
-         NextStop 是手機 app：一天 · 規劃 · 查找 · 我的，四個視圖，一套構建
+app      一個 HTML 檔，無需構建
+(demo/)  product/demo/index.html · 瀏覽器 · PWA
+         NextStop 是手機 app：一天 · 規劃 · 查找 · 我的，四個視圖，一個檔
    |
    |  REST + JSON
    v
