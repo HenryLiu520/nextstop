@@ -25,6 +25,9 @@ body {
 
 button, input, select { font: inherit; }
 
+.app.embed .topbar,
+.app.embed .tabbar { display: none; }
+
 .app {
   min-height: 100%;
   display: flex;

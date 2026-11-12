@@ -271,7 +271,10 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
 #planBox{margin-top:auto;padding-top:8px}
 
 
-/* 查找 */
+/* 查找：嵌老前端 */
+.findframe{width:100%;height:calc(100% - 4px);border:0;display:block;background:var(--paper)}
+
+/* 查找（旧表单元件，保留备用） */
 .fform{display:flex;flex-direction:column;gap:8px;border:1px solid var(--line);border-radius:6px;
        background:var(--card);padding:12px;margin-bottom:10px}
 .fl{display:flex;flex-direction:column;gap:4px;font-size:9px;letter-spacing:.08em;color:var(--mute);text-transform:uppercase}
@@ -843,40 +846,8 @@ function hh(from, i){ return String(from + i).padStart(2,'0') + ':00'; }
 function toOpts(){ const a=[]; for(let i=9;i<=20;i++) a.push(String(i).padStart(2,'0')+':50'); return a; }
 
 function renderFind(){
-  const from = []; for(let i=8;i<=20;i++) from.push(String(i).padStart(2,'0')+':00');
-  const opts = from.map(h=>`<option ${h===FIND.from?'selected':''}>${h}</option>`).join('');
-  const opts2 = toOpts().map(h=>`<option ${h===FIND.to?'selected':''}>${h}</option>`).join('');
-  const bopts = FIND.buildings.map(b=>`<option ${b===FIND.building?'selected':''}>${b}</option>`).join('');
-  const rows = (FIND.rooms||[]).map(r=>`
-    <div class="frow" onclick="openReview('${r.room.code}')">
-      <i class="fbar"></i>
-      <div class="fmain">
-        <div class="fcode">${r.room.code}</div>
-        <div class="fwhere">${r.room.building}${r.room.capacity?' · '+t('findSeats',{n:r.room.capacity}):''}</div>
-      </div>
-      <div class="fside">${r.nextBusyStart?t('findNextBusy',{t:r.nextBusyStart}):t('findAllDay')}</div>
-    </div>`).join('');
-
-  main.innerHTML = `
-    <div class="fform">
-      <label class="fl"><span>${t('findBuilding')}</span>
-        <select onchange="FIND.building=this.value">
-          <option value="">${t('findAllBuildings')}</option>${bopts}
-        </select></label>
-      <label class="fl"><span>${t('findDate')}</span>
-        <input type="date" value="${FIND.date}" onchange="FIND.date=this.value"></label>
-      <div class="frow2">
-        <label class="fl"><span>${t('findFrom')}</span>
-          <select onchange="FIND.from=this.value">${opts}</select></label>
-        <label class="fl"><span>${t('findTo')}</span>
-          <select onchange="FIND.to=this.value">${opts2}</select></label>
-      </div>
-      <div class="fbtn" onclick="runFind()">${FIND.busy?t('findSearching'):t('findSearch')}</div>
-      ${FIND.error?`<p class="ferr">${FIND.error}</p>`:''}
-    </div>
-    ${FIND.rooms?`<p class="fcount">${FIND.rooms.length?t('findCount',{n:FIND.rooms.length}):t('findNone')}</p>`:''}
-    ${rows}
-  `;
+  /* 直接嵌老前端：查教室那张页面原样搬进来，数据由它自己调 /api */
+  main.innerHTML = `<iframe class="findframe" src="http://localhost:5174/?embed=1#/find" title="Find a room"></iframe>`;
 }
 
 async function runFind(){

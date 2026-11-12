@@ -8,8 +8,8 @@ import Me from './views/Me.vue'
 const routes = [
   { path: '/', redirect: '/find' },
   { path: '/login', component: Login, meta: { public: true } },
-  { path: '/find', component: Find },
-  { path: '/room/:code', component: Room },
+  { path: '/find', component: Find, meta: { public: true } },
+  { path: '/room/:code', component: Room, meta: { public: true } },
   { path: '/me', component: Me },
 ]
 

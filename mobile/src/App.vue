@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div class="app" :class="{ embed }">
     <header class="topbar">
       <button v-if="showBack" class="back" @click="goBack">‹</button>
       <h1>{{ title }}</h1>
@@ -26,6 +26,9 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { t, lang, setLang, LANG_NAMES } from './i18n.js'
+
+/* 被当页签嵌进主程序时，去掉自己的顶栏与底栏，只留内容 */
+const embed = new URLSearchParams(window.location.search).has('embed')
 
 const route = useRoute()
 const router = useRouter()
