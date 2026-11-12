@@ -80,7 +80,7 @@ This layer outputs durations only, so it can be tested on its own.
 
 **L3 Fill.** Each usable interval receives one stop, and the stop's end is derived from whatever follows it rather than chosen freely. Type comes from purpose priority (a meal window that
 would otherwise be missed outranks study), place comes from the availability engine plus the walk matrix. Fill runs once per day, at reveal, and the plan is read-only afterwards until a
-deviation. This is the layer that makes the output a sequence rather than a set: the stop chosen for 10:00 decides which building the student is standing in at 11:00.
+deviation. This is the layer that makes the output a sequence rather than a set: the stop chosen for 10:00 decides which building the student is standing in at 11:00. Which room fills an interval is a separate procedure with its own document, [`room-scoring.md`](room-scoring.md).
 
 **L4 Repair.** Any deviation enters here. Repair identifies which stops no longer hold against the committed plan, keeps the rest untouched, re-solves inside the broken window only, then
 checks the following stop to make sure the fix did not spill past the window. Repair is the only layer that may write to a published plan, and it always writes an undo record.
