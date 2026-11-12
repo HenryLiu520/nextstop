@@ -313,6 +313,13 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
 .rbtn{height:38px;display:flex;align-items:center;justify-content:center;border-radius:6px;
       background:var(--deep);color:var(--paper);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 
+.ask{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin:2px 0 8px;
+  padding:0 6px 0 10px;height:34px;border:1px solid var(--line);border-radius:17px;background:#fff}
+.ask input{flex:1;border:0;background:transparent;font:inherit;font-size:11px;color:var(--ink);outline:none}
+.ask input::placeholder{color:var(--faint)}
+.ask .send{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--green);
+  color:#F7F4EC;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.ask.busy{opacity:.55}
 </style></head><body>
 <div id="phone">
   <!-- Photo: HKU Loke Yew Hall, Wikimedia Commons, CC BY-SA 4.0 -->
@@ -405,6 +412,13 @@ const STR = {
   plan:{en:'Plan',zh:'规划',tw:'規劃'},
   mine:{en:'Mine',zh:'我的',tw:'我的'},
   changed:{en:'Something changed?',zh:'有变化？说一句',tw:'有變化？說一句'},
+  askPh:{en:'Say what changed',zh:'说一句，改计划',tw:'說一句，改計畫'},
+  askNo:{en:'These actions cannot express that',zh:'这几个动作做不到这件事',tw:'這幾個動作做不到這件事'},
+  askMoved:{en:'moved to {b}',zh:'挪到 {b}',tw:'挪到 {b}'},
+  askAdded:{en:'added {a}',zh:'加了 {a}',tw:'加了 {a}'},
+  askRemoved:{en:'removed {a}',zh:'删掉 {a}',tw:'刪掉 {a}'},
+  askSkipped:{en:'skipped {a}',zh:'跳过 {a}',tw:'跳過 {a}'},
+  askUndo:{en:'undone',zh:'已撤回',tw:'已撤回'},
   date:{en:'Thursday · 30 Oct',zh:'周四 · 10 月 30 日',tw:'週四 · 10 月 30 日'},
   todayFrom:{en:'Today from',zh:'今天从',tw:'今天從'},
   until:{en:'until',zh:'排到',tw:'排到'},
@@ -573,12 +587,224 @@ function fillGaps(){
     }
   }
   sortStops();
+  refreshGaps();
+}
+
+/* 只重算行走间隔，不动任何站点。撤回时用它，保证恢复到原样 */
+function refreshGaps(){
+  sortStops();
   const now=S.stops.filter(s=>s.status!=='dropped');
   S.gaps=[]; for(let i=1;i<now.length;i++){
     const w=Math.max(5,Math.round((mins(now[i].start)-mins(now[i-1].end))/5)*5);
     S.gaps.push('walk:'+w);
   }
 }
+
+
+/* ================= agent: 一句话，走同一批动作 =================
+   模型只回答「调哪个工具、传什么」，计划由 runTool 改，和点按钮走同一条路。
+   三个入口，按优先级：
+     window.AGENT_ENDPOINT  真正的模型接口，POST {sentence, plan} → {calls:[{name,args}]}
+     window.AGENT_PROXY     本地代理函数，测试用
+     fallback               离线规则，只认几个演示句式
+*/
+const SENTENCES = [];
+
+function snapshotStops(){ return JSON.stringify(S.stops); }
+function restoreStops(json){
+  S.stops = JSON.parse(json); refreshGaps(); render();
+}
+
+function findStop(a){
+  if(!a) return null;
+  const t = (a.stop != null) ? a.stop : (a.id != null ? a.id : a.start);
+  if(t == null) return null;
+  if(/^\d+$/.test(String(t))) return S.stops.find(s=>String(s.id)===String(t));
+  if(TIME_OK.test(String(t))) return S.stops.find(s=>s.start===String(t) && s.status!=='dropped');
+  return null;
+}
+
+/* 工具集 = 界面上能做的事。多一个少一个都要两边同时改。 */
+const TOOLS = {
+  read_plan(a){
+    const list = S.stops.filter(s=>s.status!=='dropped')
+      .map(s=>({id:s.id,start:s.start,end:s.end,type:s.type,place:s.place,status:s.status}));
+    return {date:(a&&a.date)||'today', stops:list};
+  },
+
+  change_stop(a){
+    const s=findStop(a);
+    if(!s) return {error:'no such stop'};
+    if(s.status==='done') return {error:'that block has passed'};
+    const bs=s.start, be=s.end;
+    if(a.shift) { s.start=r10(shift(s.start,a.shift)); s.end=r10(shift(s.end,a.shift)); }
+    if(a.start) s.start=r10(a.start);
+    if(a.end)   s.end=r10(a.end);
+    if(a.place) { s.place=a.place; if(s.status==='todo') s.status='planned'; }
+    if(mins(s.end)<=mins(s.start)){ s.start=bs; s.end=be; return {error:'end before start'}; }
+    fillGaps(); sortStops(); render();
+    return {ok:true, stop:{start:s.start,end:s.end,type:s.type,place:s.place}};
+  },
+
+  add_stop(a){
+    if(!a || !a.start) return {error:'start required'};
+    const st=r10(a.start), en=r10(a.end||shift(a.start,30));
+    if(mins(en)<=mins(st)) return {error:'end before start'};
+    const id=nextId++;
+    S.stops.push({id,type:a.type||'study',start:st,end:en,
+                  place:a.place||'tbd',status:'planned',src:'self'});
+    fillGaps(); sortStops(); render();
+    return {ok:true, id, start:st, end:en};
+  },
+
+  cancel_stop(a){
+    const s=findStop(a);
+    if(!s) return {error:'no such stop'};
+    s.status='dropped'; fillGaps(); render();
+    return {ok:true, start:s.start};
+  },
+
+  skip_class(a){
+    const s=findStop(a);
+    if(!s) return {error:'no such stop'};
+    if(s.type!=='class') return {error:'not a class'};
+    s.status='skipped'; fillGaps(); render();
+    return {ok:true, start:s.start};
+  },
+
+  undo(){ return {error:'nothing to undo'} }
+};
+
+/* 白名单 + 参数校验。未知工具、坏时间一律不进执行体。 */
+const TIME_OK = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+function checkArgs(name,a){
+  a = a || {};
+  if(name==='change_stop' || name==='cancel_stop' || name==='skip_class'){
+    const t=(a.stop != null) ? a.stop : (a.id != null ? a.id : a.start);
+    if(t == null) return 'needs stop';
+    if(!/^\d+$/.test(String(t)) && !TIME_OK.test(String(t))) return 'bad stop';
+  }
+  if(name==='add_stop'){
+    if(!a.start || !TIME_OK.test(a.start)) return 'bad start';
+    if(a.end && !TIME_OK.test(a.end)) return 'bad end';
+  }
+  if(name==='change_stop'){
+    if(a.start && !TIME_OK.test(a.start)) return 'bad start';
+    if(a.end && !TIME_OK.test(a.end)) return 'bad end';
+    if(a.shift != null && !Number.isFinite(a.shift)) return 'bad shift';
+  }
+  if(name==='read_plan' || name==='undo') return null;
+  if(!TOOLS[name]) return 'unknown tool';
+  return null;
+}
+
+function runTool(name,args){
+  const bad=checkArgs(name,args);
+  if(bad) return {error:bad};
+  if(name==='undo'){ if(undoGroup){ restoreStops(undoGroup); undoGroup=null; return {ok:true}; } return {error:'nothing to undo'}; }
+  return TOOLS[name](args||{});
+}
+
+/* 一句话解出的所有调用算一次改动，撤销一次全退 */
+let undoGroup=null;
+
+function runCalls(sentence, calls){
+  const before=snapshotStops();
+  const results=[];
+  for(const c of calls){
+    const r=runTool(c.name, c.args);
+    results.push({name:c.name, args:c.args||{}, result:r});
+    if(r && r.error) break;
+  }
+  SENTENCES.push({sentence, calls, results, source:'sentence', at:Date.now()});
+  const ok = results.filter(r=>r.result && r.result.ok).length;
+  if(ok){
+    undoGroup=before;
+    toast(describe(results), ()=>{ restoreStops(before); undoGroup=null; hideToast(); });
+  } else {
+    toast(t('askNo'));
+  }
+  return results;
+}
+
+function describe(results){
+  const parts=[];
+  for(const r of results){
+    if(!r.result || r.result.error) continue;
+    const s = r.result.stop || {};
+    if(r.name==='change_stop') parts.push(t('askMoved',{b:(s.start||'')+'-'+(s.end||'')}));
+    else if(r.name==='add_stop') parts.push(t('askAdded',{a:(s.start||r.result.start||'')}));
+    else if(r.name==='cancel_stop') parts.push(t('askRemoved',{a:r.result.start||r.args.start||''}));
+    else if(r.name==='skip_class') parts.push(t('askSkipped',{a:r.result.start||r.args.start||''}));
+    else if(r.name==='undo') parts.push(t('askUndo'));
+  }
+  return parts.join(' · ') || t('askNo');
+}
+
+/* ---------- 三个入口 ---------- */
+async function interpret(sentence){
+  const plan = TOOLS.read_plan({date:'today'}).stops;
+  if(window.AGENT_ENDPOINT){
+    const res = await fetch(window.AGENT_ENDPOINT, {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({sentence, plan})
+    });
+    const data = await res.json();
+    return (data.calls || []).slice(0,6);
+  }
+  if(typeof window.AGENT_PROXY==='function'){
+    return (await window.AGENT_PROXY(sentence, plan) || []).slice(0,6);
+  }
+  return fallbackParse(sentence, plan);
+}
+
+/* 离线规则：只为了没有接口时也能演示，能认的句子很少，认不出就老实说认不出 */
+function fallbackParse(sentence, plan){
+  const q = sentence.toLowerCase();
+  const nums = {one:1,two:2,three:3,four:4,five:5,six:6};
+  const timeOf = w => {
+    const m = w.match(/(\d{1,2})[:.](\d{2})/);
+    if(m) return String(m[1]).padStart(2,'0')+':'+m[2];
+    const h = w.match(/\b(one|two|three|four|five|six)\b/);
+    if(h) return String(12+nums[h[1]]).padStart(2,'0')+':00';
+    return null;
+  };
+
+  if(/cancel|remove|drop/.test(q)){
+    const s = plan.find(x=>x.start===timeOf(q));
+    return s ? [{name:'cancel_stop',args:{start:s.start}}] : [{name:'read_plan',args:{}}];
+  }
+  if(/skip/.test(q)){
+    const s = plan.find(x=>x.type==='class' && x.start===timeOf(q));
+    return s ? [{name:'skip_class',args:{start:s.start}}] : [{name:'read_plan',args:{}}];
+  }
+  const t1 = timeOf(q);
+  if(/study/.test(q) && t1){
+    const target = plan.find(x=>x.type==='study' && x.start>=t1)
+                || plan.filter(x=>x.type==='study').slice(-1)[0];
+    if(!target) return [{name:'add_stop',args:{start:t1,end:shift(t1,45),type:'study'}}];
+    const len = mins(target.end)-mins(target.start);
+    return [{name:'change_stop',args:{id:target.id,start:t1,end:shift(t1,len)}}];
+  }
+  return [];
+}
+
+async function askSend(){
+  const bar=document.getElementById('askBar'), el=document.getElementById('askIn');
+  if(!el) return;
+  const q=(el.value||'').trim();
+  if(!q) return;
+  el.value=''; bar.classList.add('busy');
+  let calls=[];
+  try { calls = await interpret(q); } catch(e){ calls=[]; }
+  bar.classList.remove('busy');
+  if(!calls.length){ toast(t('askNo')); return; }
+  runCalls(q, calls);
+}
+
+/* 给测试和手玩用 */
+window.__agent = {tools:TOOLS, runTool, runCalls, interpret, log:SENTENCES};
 
 /* ================= render: day ================= */
 /* 演示时钟固定 11:20 */
@@ -709,6 +935,8 @@ function renderDay(){
   else h+='<div class="focus empty"><span class="fstat next">'+t('nextTag')+'</span>'+
           '<div class="fbot"><div class="froom">'+t('noStudy')+'</div></div></div>';
   h+='<div class="todaybar"><span>'+t('todayLabel')+'</span></div>';
+  h+='<div class="ask" id="askBar"><input id="askIn" placeholder="'+t('askPh')+'" autocomplete="off" '+
+     'onkeydown="if(event.key===\'Enter\')askSend()"><span class="send" onclick="askSend()">&#8593;</span></div>';
   const rest=live;   /* 当天全部站都留在列表里，当前那一站标 CURRENT */
   let used=0, prevGap=0;
   rest.forEach((s,i)=>{
