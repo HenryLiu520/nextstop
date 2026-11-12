@@ -13,7 +13,7 @@
     .s { font-family: "Helvetica Neue", Arial, sans-serif; fill: #4A5751; }
     .name { font-family: Georgia, serif; font-weight: bold; fill: #00382C; }
     .lean { stroke: #00382C; stroke-width: 2.5; fill: none; }
-    .legacy { stroke: #A9B3AD; stroke-width: 2; fill: none; stroke-dasharray: 7 6; }
+    .legacy { stroke: #00382C; stroke-width: 2.5; fill: none; }
   </style>
 
   <text x="56" y="50" class="t" font-size="26" font-weight="bold">NextStop: three clients, one service, two data sources</text>
@@ -27,7 +27,7 @@
   <text x="78" y="240" class="s" font-size="14">planner stub, repair specified</text>
   <text x="78" y="264" class="s" font-size="14">room table kept offline</text>
 
-  <rect x="56" y="326" width="330" height="76" rx="8" fill="#FBFAF6" stroke="#A9B3AD" stroke-width="2" stroke-dasharray="7 6"/>
+  <rect x="56" y="326" width="330" height="76" rx="8" fill="#FFFFFF" stroke="#00382C" stroke-width="2"/>
   <text x="78" y="354" class="s" font-size="14" font-weight="bold">Earlier frontends, merged here</text>
   <text x="78" y="376" class="s" font-size="13">frontend/ and mobile/, kept in the repository</text>
   <text x="78" y="396" class="s" font-size="13">retained in the repository</text>
@@ -52,7 +52,7 @@
   <text x="938" y="176" class="s" font-size="14">rooms, buildings, class slots,</text>
   <text x="938" y="198" class="s" font-size="14">reviews, accounts, audit trail</text>
 
-  <rect x="916" y="276" width="320" height="126" rx="8" fill="#FBFAF6" stroke="#00382C" stroke-width="2" stroke-dasharray="7 6"/>
+  <rect x="916" y="276" width="320" height="126" rx="8" fill="#FFFFFF" stroke="#00382C" stroke-width="2.5"/>
   <text x="938" y="312" class="name" font-size="19">mock-school-api</text>
   <text x="938" y="338" class="s" font-size="14">port 9000, synthetic timetable</text>
   <text x="938" y="360" class="s" font-size="14">stands in for the university feed</text>
@@ -70,5 +70,5 @@
   <path d="M818 296 L870 296 L870 340 L908 340" class="legacy" marker-end="url(#ag)"/>
   <text x="818" y="288" class="s" font-size="13">feed, not wired</text>
 
-  <text x="56" y="442" class="s" font-size="13">Solid lines are implemented and wired. The dashed client box is retained code. The school feed is a test double, labelled synthetic wherever it appears.</text>
+  <text x="56" y="442" class="s" font-size="13">Every line marks a component or a data path inside the project.</text>
 </svg>
