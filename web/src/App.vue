@@ -1,6 +1,7 @@
 <script setup>
 import { computed, onMounted } from 'vue'
 import { state, load } from './store.js'
+import crest from './assets/hku-crest.png'
 import { t, fmtDate } from './i18n/index.js'
 import LangSwitch from './components/LangSwitch.vue'
 import BottomNav from './components/BottomNav.vue'
@@ -23,8 +24,11 @@ const dateLine = computed(() => fmtDate(state.day))
       <div class="screen">
         <header class="topbar">
           <div class="titles">
-            <h1 class="brand">{{ t('app.name') }}</h1>
-            <p class="date num">{{ dateLine || '—' }}</p>
+            <img class="crest" :src="crest" alt="HKU crest" />
+            <div class="names">
+              <h1 class="brand">{{ t('app.name') }}</h1>
+              <p class="date num">{{ dateLine || '—' }}</p>
+            </div>
           </div>
           <LangSwitch />
         </header>
@@ -52,7 +56,7 @@ const dateLine = computed(() => fmtDate(state.day))
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #e9e3d6;
+  background: var(--mint);
 }
 
 .device {
@@ -95,12 +99,27 @@ const dateLine = computed(() => fmtDate(state.day))
 }
 
 .titles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.crest {
+  display: block;
+  width: 26px;
+  height: 30px;
+  object-fit: contain;
+}
+
+.names {
   min-width: 0;
 }
 
 .brand {
   margin: 0;
-  font-size: 17px;
+  font-family: var(--serif);
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: 0.01em;
   line-height: 1.2;

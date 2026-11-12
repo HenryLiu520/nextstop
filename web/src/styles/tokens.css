@@ -4,29 +4,34 @@
    --------------------------------------------------------------- */
 :root {
   /* 纸与墨 */
-  --paper: #faf7f2;
+  --paper: #F7F4EC;
   --card: #ffffff;
-  --line: #e2dccf; /* 边框 1px */
-  --line-soft: #ece6d9; /* 分隔用的更浅一档 */
+  --line: #DDE4DF; /* 边框 1px */
+  --line-soft: #E6EFEA; /* 分隔用的更浅一档 */
+  --green: #00664F; /* 港大绿 · 主色 */
+  --deep: #00382C; /* 深绿 · 标题 */
+  --mint: #E6EFEA; /* 页面底色 */
+  --gold: #B49A5E; /* 金 · 标记 */
   --line-dash: #c9c1b1; /* 虚线 / 点线 */
-  --ink: #1c1a17; /* 主文字 */
-  --ink-2: #6b655c; /* 次文字 */
-  --ink-3: #9a9285; /* 三级文字 / 状态按钮描边 */
+  --ink: #16211D; /* 主文字 */
+  --ink-2: #5F6B65; /* 次文字 */
+  --ink-3: #8E9993; /* 三级文字 / 状态按钮描边 */
   --red: #c8452d; /* 强调 · 一屏只出现一次 */
 
   /* 类型竖条 */
-  --t-class: #1c1a17;
-  --t-study: #2f5d9e;
-  --t-meal: #b4763a;
-  --t-meeting: #6a4c93;
+  --t-class: #3F6E7A;
+  --t-study: #00664F;
+  --t-meal: #B08968;
+  --t-meeting: #B08968;
 
   /* 形状 */
-  --r-block: 12px;
-  --r-sheet: 18px;
+  --r-block: 6px;
+  --r-sheet: 14px;
   --r-pill: 999px;
 
   /* 字 */
-  --font: 'NS Digits', Georgia, 'Songti SC', 'STSong', 'SimSun', 'Noto Serif CJK SC', serif;
+  --font: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+  --serif: Georgia, 'Times New Roman', serif;
   --nums: tabular-nums lining-nums;
 
   /* 栅格 */
