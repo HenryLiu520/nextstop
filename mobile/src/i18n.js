@@ -2,6 +2,8 @@ import { ref } from 'vue'
 
 const dict = {
   en: {
+    'find.allRooms': 'All rooms',
+    'find.countAll': '{n} rooms',
     'find.allBuildings': 'All buildings',
     'find.timeFilter': 'Limit to a time window',
     'find.free': 'free',
@@ -61,6 +63,8 @@ const dict = {
     'common.back': 'Back',
   },
   zh: {
+    'find.allRooms': '全部教室',
+    'find.countAll': '共 {n} 间',
     'find.allBuildings': '全部楼栋',
     'find.timeFilter': '限定时间段',
     'find.free': '空着',
@@ -120,6 +124,8 @@ const dict = {
     'common.back': '返回',
   },
   tw: {
+    'find.allRooms': '全部教室',
+    'find.countAll': '共 {n} 间',
     'find.allBuildings': '全部樓棟',
     'find.timeFilter': '限定時間段',
     'find.free': '空著',
