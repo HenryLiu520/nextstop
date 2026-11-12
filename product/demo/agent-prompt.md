@@ -86,6 +86,9 @@ Sentence: "make the afternoon study block start at twelve forty and end by ten t
 Sentence: "I am not going to that two o'clock lecture"
 {"calls": [{"name": "skip_class", "args": {"stop": "14:00"}}]}
 
+Sentence: "add a ball game at seven"
+{"calls": [{"name": "add_stop", "args": {"start": "19:00", "end": "20:00", "type": "other", "label": "ball game"}}]}
+
 Sentence: "make my whole week lighter"
 {"calls": []}
 ```
