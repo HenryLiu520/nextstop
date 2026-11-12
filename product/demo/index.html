@@ -313,8 +313,18 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
 .rbtn{height:38px;display:flex;align-items:center;justify-content:center;border-radius:6px;
       background:var(--deep);color:var(--paper);font-size:10px;letter-spacing:.12em;text-transform:uppercase;cursor:pointer}
 
-.ask{flex:0 0 auto;display:flex;align-items:center;gap:6px;margin:2px 0 8px;
-  padding:0 6px 0 10px;height:34px;border:1px solid var(--line);border-radius:17px;background:#fff}
+.askwrap{flex:0 0 auto;margin:2px 0 8px}
+.ask{display:flex;align-items:center;gap:6px;padding:0 6px 0 12px;height:42px;
+  border:1px solid var(--line);border-radius:21px;background:#fff}
+.ask input{font-size:12px}
+.ask .send{width:28px;height:28px;font-size:13px}
+.ex{display:flex;gap:6px;margin-top:6px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.ex::-webkit-scrollbar{display:none}
+.ex b{flex:0 0 auto;font-weight:400;font-size:9.5px;padding:4px 9px;border-radius:11px;
+  border:1px solid var(--line);background:#fff;color:#6B655C;cursor:pointer;white-space:nowrap}
+.ex b:active{background:var(--mint)}
+.ex i{flex:0 0 auto;font-style:normal;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--faint);display:flex;align-items:center}
 .ask input{flex:1;border:0;background:transparent;font:inherit;font-size:11px;color:var(--ink);outline:none}
 .ask input::placeholder{color:var(--faint)}
 .ask .send{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--green);
@@ -412,7 +422,13 @@ const STR = {
   plan:{en:'Plan',zh:'规划',tw:'規劃'},
   mine:{en:'Mine',zh:'我的',tw:'我的'},
   changed:{en:'Something changed?',zh:'有变化？说一句',tw:'有變化？說一句'},
-  askPh:{en:'Say what changed',zh:'说一句，改计划',tw:'說一句，改計畫'},
+  askPh:{en:'cancel lunch, I am not hungry',zh:'取消午饭，我不饿',tw:'取消午飯，我不餓'},
+  askTry:{en:'Try one',zh:'点一句试试',tw:'點一句試試'},
+  askEx1:{en:'cancel lunch',zh:'取消午饭',tw:'取消午飯'},
+  askEx2:{en:'move study to 12:40',zh:'自习挪到 12:40',tw:'自習挪到 12:40'},
+  askEx3:{en:'skip 14:00 class',zh:'14:00 不去上课',tw:'14:00 不去上課'},
+  askHint:{en:'One sentence runs the same four actions a tap runs',
+           zh:'一句话走的是按钮那条路',tw:'一句話走的是按鈕那條路'},
   askNo:{en:'These actions cannot express that',zh:'这几个动作做不到这件事',tw:'這幾個動作做不到這件事'},
   askMoved:{en:'moved to {b}',zh:'挪到 {b}',tw:'挪到 {b}'},
   askAdded:{en:'added {a}',zh:'加了 {a}',tw:'加了 {a}'},
@@ -642,7 +658,7 @@ const TOOLS = {
     if(a.end)   s.end=r10(a.end);
     if(a.place) { s.place=a.place; if(s.status==='todo') s.status='planned'; }
     if(mins(s.end)<=mins(s.start)){ s.start=bs; s.end=be; return {error:'end before start'}; }
-    fillGaps(); sortStops(); render();
+    refreshGaps(); render();
     return {ok:true, stop:{start:s.start,end:s.end,type:s.type,place:s.place}};
   },
 
@@ -653,14 +669,14 @@ const TOOLS = {
     const id=nextId++;
     S.stops.push({id,type:a.type||'study',start:st,end:en,
                   place:a.place||'tbd',status:'planned',src:'self'});
-    fillGaps(); sortStops(); render();
+    refreshGaps(); render();
     return {ok:true, id, start:st, end:en};
   },
 
   cancel_stop(a){
     const s=findStop(a);
     if(!s) return {error:'no such stop'};
-    s.status='dropped'; fillGaps(); render();
+    s.status='dropped'; refreshGaps(); render();
     return {ok:true, start:s.start};
   },
 
@@ -668,7 +684,7 @@ const TOOLS = {
     const s=findStop(a);
     if(!s) return {error:'no such stop'};
     if(s.type!=='class') return {error:'not a class'};
-    s.status='skipped'; fillGaps(); render();
+    s.status='skipped'; refreshGaps(); render();
     return {ok:true, start:s.start};
   },
 
@@ -759,48 +775,77 @@ async function interpret(sentence){
   return fallbackParse(sentence, plan);
 }
 
-/* 离线规则：只为了没有接口时也能演示，能认的句子很少，认不出就老实说认不出 */
+/* 离线规则：没有接口时也能演示几句，认不出就老实说认不出 */
 function fallbackParse(sentence, plan){
   const q = sentence.toLowerCase();
-  const nums = {one:1,two:2,three:3,four:4,five:5,six:6};
-  const timeOf = w => {
-    const m = w.match(/(\d{1,2})[:.](\d{2})/);
-    if(m) return String(m[1]).padStart(2,'0')+':'+m[2];
-    const h = w.match(/\b(one|two|three|four|five|six)\b/);
-    if(h) return String(12+nums[h[1]]).padStart(2,'0')+':00';
+  const words = {one:13,two:14,three:15,four:16,five:17,six:18};   /* 下午的口语说法 */
+  const times = [];
+  (q.match(/\b\d{1,2}[:.]\d{2}\b/g) || []).forEach(x=>{
+    const [h,m]=x.split(/[:.]/); times.push(String(h).padStart(2,'0')+':'+m);
+  });
+  const hw = q.match(/\b(one|two|three|four|five|six)\b/);
+  if(hw && !times.length) times.push(String(words[hw[1]]).padStart(2,'0')+':00');
+
+  const kind = /lunch|eat|food|饭/.test(q) ? 'eat'
+             : /class|lecture|课/.test(q) ? 'class'
+             : /meet|meeting|见面/.test(q) ? 'meet'
+             : /study|自习/.test(q) ? 'study' : null;
+
+  const pick = () => {
+    if(times[0]){ const byTime=plan.find(x=>x.start===times[0]); if(byTime) return byTime; }
+    if(kind){ const k=plan.filter(x=>x.type===kind && x.status!=='done'); if(k.length) return k[0]; }
     return null;
   };
 
-  if(/cancel|remove|drop/.test(q)){
-    const s = plan.find(x=>x.start===timeOf(q));
-    return s ? [{name:'cancel_stop',args:{start:s.start}}] : [{name:'read_plan',args:{}}];
+  if(/cancel|remove|drop|取消|删/.test(q)){
+    const s=pick(); return s ? [{name:'cancel_stop',args:{stop:s.start}}] : [];
   }
-  if(/skip/.test(q)){
-    const s = plan.find(x=>x.type==='class' && x.start===timeOf(q));
-    return s ? [{name:'skip_class',args:{start:s.start}}] : [{name:'read_plan',args:{}}];
+  if(/skip|不去|跳过/.test(q)){
+    const s=pick(); return (s && s.type==='class') ? [{name:'skip_class',args:{stop:s.start}}] : [];
   }
-  const t1 = timeOf(q);
-  if(/study/.test(q) && t1){
-    const target = plan.find(x=>x.type==='study' && x.start>=t1)
-                || plan.filter(x=>x.type==='study').slice(-1)[0];
-    if(!target) return [{name:'add_stop',args:{start:t1,end:shift(t1,45),type:'study'}}];
-    const len = mins(target.end)-mins(target.start);
-    return [{name:'change_stop',args:{id:target.id,start:t1,end:shift(t1,len)}}];
+  if(/move|push|shift|挪|改到|推到/.test(q) || (times.length>1 && kind==='study')){
+    const s=pick();
+    const to = times[1] || (times[0] && s && s.start!==times[0] ? times[0] : null);
+    if(!s || !to) return [];
+    const len = mins(s.end)-mins(s.start);
+    return [{name:'change_stop',args:{stop:s.start,start:to,end:shift(to,len)}}];
   }
   return [];
 }
 
-async function askSend(){
+async function askSend(given){
   const bar=document.getElementById('askBar'), el=document.getElementById('askIn');
-  if(!el) return;
-  const q=(el.value||'').trim();
-  if(!q) return;
-  el.value=''; bar.classList.add('busy');
+  const q=String(given!=null ? given : (el && el.value) || '').trim();
+  if(!q || !bar) return;
+  if(el) el.value='';
+  bar.classList.add('busy');
   let calls=[];
   try { calls = await interpret(q); } catch(e){ calls=[]; }
   bar.classList.remove('busy');
   if(!calls.length){ toast(t('askNo')); return; }
   runCalls(q, calls);
+}
+
+/* 一天的输入行和计划页共用同一块，行为一致 */
+function askHTML(){
+  return '<div class="askwrap">'+
+    '<div class="ask" id="askBar">'+
+      '<input id="askIn" placeholder="'+t('askPh')+'" autocomplete="off" '+
+      'onkeydown="if(event.key===\'Enter\')askSend(this.value)">'+
+      '<span class="send" onclick="askSend()">&#8593;</span>'+
+    '</div>'+
+    '<div class="ex"><i>'+t('askTry')+'</i>'+
+      [t('askEx1'),t('askEx2'),t('askEx3')].map(x=>
+        '<b onclick="askFill(this.textContent)">'+x+'</b>').join('')+
+    '</div>'+
+  '</div>';
+}
+
+function askFill(text){
+  const el=document.getElementById('askIn');
+  if(!el) return;
+  el.value=text;
+  askSend(text);
 }
 
 /* 给测试和手玩用 */
@@ -935,8 +980,7 @@ function renderDay(){
   else h+='<div class="focus empty"><span class="fstat next">'+t('nextTag')+'</span>'+
           '<div class="fbot"><div class="froom">'+t('noStudy')+'</div></div></div>';
   h+='<div class="todaybar"><span>'+t('todayLabel')+'</span></div>';
-  h+='<div class="ask" id="askBar"><input id="askIn" placeholder="'+t('askPh')+'" autocomplete="off" '+
-     'onkeydown="if(event.key===\'Enter\')askSend()"><span class="send" onclick="askSend()">&#8593;</span></div>';
+  h+=askHTML();
   const rest=live;   /* 当天全部站都留在列表里，当前那一站标 CURRENT */
   let used=0, prevGap=0;
   rest.forEach((s,i)=>{
@@ -1000,10 +1044,8 @@ function renderPlan(){
         <div class="hh">${r[0]}</div>
         <div class="bx">${typeLabel(r[2])}<span class="tm">→ ${r[1]}</span><b>${P(r[3])}</b></div></div>`).join('')}
     <div style="margin-top:10px"><span class="btn" onclick="addSheet()">${t('addManual')}</span></div>
-    <div id="planBox"><textarea id="inp" placeholder="${t('placeholder')}"></textarea>
-    <div class="preview" id="pv"></div>
-    <div class="sheetrow"><span class="btn" onclick="planPreview()">${t('previewBtn')}</span>
-    <span class="btn" id="applyBtn" style="display:none" onclick="planApply()">${t('applyBtn')}</span></div></div>`;
+    <div class="dayhdr" style="margin-top:12px">${t('askHint')}</div>
+    ${askHTML()}`;
 }
 
 /* ================= render: mine ================= */

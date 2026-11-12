@@ -100,6 +100,7 @@ that answers with prose, or with a whole new plan, is answering outside the cont
 | Class in `cancel_stop` | allowed, matching the button, which removes a class too |
 | Any call fails midway | earlier calls stay applied, one undo reverses all of them |
 | One sentence, many calls | one undo record, not one per call |
+| Neighbouring stops | left alone, so the sentence changes only what it names |
 
 The executor never reads the sentence. Everything it needs arrives in `args`, which is why a
 sentence cannot reach past the four actions.
