@@ -330,6 +330,10 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
 .ask .send{flex:0 0 auto;width:22px;height:22px;border-radius:50%;background:var(--green);
   color:#F7F4EC;font-size:12px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .ask.busy{opacity:.55}
+.sheetbar{display:flex;align-items:center;margin:-8px 0 6px -8px}
+.sheetbar .back{width:38px;height:38px;display:flex;align-items:center;justify-content:center;
+  font-size:24px;line-height:1;color:var(--mute);cursor:pointer;border-radius:50%}
+.sheetbar .back:active{background:var(--mint);color:var(--green)}
 </style></head><body>
 <div id="phone">
   <!-- Photo: HKU Loke Yew Hall, Wikimedia Commons, CC BY-SA 4.0 -->
@@ -1308,9 +1312,26 @@ function toast(msg,undoCb,altCb,altText){
   clearTimeout(toastTimer); toastTimer=setTimeout(hideToast,6000);
 }
 const hideToast=()=>document.getElementById('toast').style.display='none';
-function showSheet(html){const s=document.getElementById('sheet'),v=document.getElementById('veil');
-  s.innerHTML=html;s.style.display='block';v.style.display='block';}
-function closeSheet(){document.getElementById('sheet').style.display='none';document.getElementById('veil').style.display='none';}
+/* 【可恢复】每张单都带返回键，退一层；退到底才关。点空白处直接关掉整叠 */
+let sheetStack=[];
+function showSheet(html){
+  const s=document.getElementById('sheet');
+  if(s.style.display==='block' && s.dataset.raw) sheetStack.push(s.dataset.raw);
+  if(sheetStack.length>4) sheetStack.shift();
+  paintSheet(html);
+}
+function paintSheet(html){
+  const s=document.getElementById('sheet'), v=document.getElementById('veil');
+  s.dataset.raw=html;
+  s.innerHTML='<div class="sheetbar"><span class="back" onclick="sheetBack()">&#8249;</span></div>'+html;
+  s.style.display='block'; v.style.display='block';
+}
+function sheetBack(){
+  if(sheetStack.length) paintSheet(sheetStack.pop());
+  else closeSheet();
+}
+function closeSheet(){document.getElementById('sheet').style.display='none';
+  document.getElementById('veil').style.display='none'; sheetStack=[];}
 document.getElementById('veil').onclick=closeSheet;
 
 /* ================= actions ================= */
