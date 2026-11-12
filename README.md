@@ -174,6 +174,7 @@ stops as the same stop when the purpose, the building and the start time still l
 ```
 app      Vue 3 + Vite, one build, four containers
 (web/)   browser · PWA · Android shell · iOS shell
+         NextStop is a phone app: Day · Plan · Find · Me, four views, one build
    |
    |  REST + JSON
    v

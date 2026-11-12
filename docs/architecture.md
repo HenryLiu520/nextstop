@@ -44,6 +44,11 @@ and repair it when the day moves. The server stores no plan and has no opinion a
 +--------------------------------------------------------------------+
 ```
 
+NextStop is a phone app. The client under `web/` carries four views in one build, Day, Plan, Find
+and Me, in that order along the bottom bar. The Find view is the only one that asks the service a
+question of its own, and it asks `GET /api/availability` for the rooms that are free across a whole
+interval, so what it lists and what the day screen trusts come from the same arithmetic.
+
 ## 2. Why the split is where it is
 
 The split follows one test: **is this fact shared, or is it personal?** A plan belongs to one
@@ -74,7 +79,7 @@ The server is smaller than it looks: it answers "can I go here" and gets out of 
 ## 3. The data layer
 
 Spring Boot 4.1.1 on Java 21, talking to PostgreSQL 17 on port 5433. Flyway manages the schema,
-V1 through V16. The service is covered by 27 automated tests that run against a real database.
+V1 through V16. The service is covered by 32 automated tests that run against a real database.
 
 | Method | Path | Who | Purpose |
 |---|---|---|---|

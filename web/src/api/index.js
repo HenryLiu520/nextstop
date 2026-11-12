@@ -239,3 +239,29 @@ export async function applyDayPlan(_payload) {
   // 真接口：return (await fetch('/api/day/plan', { method: 'POST', body: ... })).json()
   return { ok: true, changed: 2 }
 }
+
+/* ------------------------------------------------------------------
+ * 查找 · 真实接口
+ * 两块数据都来自后端，失败就抛错，不假装
+ * ------------------------------------------------------------------ */
+
+/** 楼栋清单：GET /api/buildings，返回名字数组 */
+export async function fetchBuildings() {
+  const r = await fetch('/api/buildings', { signal: AbortSignal.timeout(2500) })
+  if (!r.ok) throw new Error('buildings ' + r.status)
+  const data = await r.json()
+  return (Array.isArray(data) ? data : data.buildings || [])
+    .map((b) => (typeof b === 'string' ? b : b.name))
+    .filter(Boolean)
+}
+
+/** 某楼某段时间还空着的房间：GET /api/availability */
+export async function fetchFreeRooms({ date, building, from, to }) {
+  const qs = new URLSearchParams({ date, from, to })
+  if (building) qs.set('building', building)
+  const r = await fetch('/api/availability?' + qs.toString(), { signal: AbortSignal.timeout(4000) })
+  if (!r.ok) throw new Error('availability ' + r.status)
+  const data = await r.json()
+  const rooms = data.rooms || []
+  return rooms.filter((x) => x.status === 'AVAILABLE' && x.matches)
+}

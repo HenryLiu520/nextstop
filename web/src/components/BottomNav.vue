@@ -2,7 +2,7 @@
 import { state, setTab } from '../store.js'
 import { t } from '../i18n/index.js'
 
-const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'me' }]
+const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'find' }, { id: 'me' }]
 </script>
 
 <template>

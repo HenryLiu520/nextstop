@@ -162,6 +162,7 @@ RECOMPUTE EVERYTHING            REPAIR
 ```
 app      Vue 3 + Vite，一套构建，四个容器
 (web/)   网页 · PWA · Android 壳 · iOS 壳
+         NextStop 是手机 app：一天 · 规划 · 查找 · 我的，四个视图，一套构建
    |
    |  REST + JSON
    v

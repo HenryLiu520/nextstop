@@ -8,6 +8,7 @@ import BottomSheet from './components/BottomSheet.vue'
 import ToastBar from './components/ToastBar.vue'
 import DayView from './views/DayView.vue'
 import PlanView from './views/PlanView.vue'
+import FindView from './views/FindView.vue'
 import MeView from './views/MeView.vue'
 
 onMounted(load)
@@ -30,6 +31,7 @@ const dateLine = computed(() => fmtDate(state.day))
         <main class="body">
           <DayView v-if="state.tab === 'day'" />
           <PlanView v-else-if="state.tab === 'plan'" />
+          <FindView v-else-if="state.tab === 'find'" />
           <MeView v-else />
         </main>
 
