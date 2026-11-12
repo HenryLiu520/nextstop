@@ -20,7 +20,7 @@ not a tab, a block, a seam or a sheet is missing on purpose.
 | 1 | **Day** | Blocks, seams, block actions, End the day / Stay longer | 99% of opens. You look, you tap, you move | Forms, text inputs, chat history |
 | 2 | **Plan** | Week strip with load bars, tap a day, one sentence, preview, apply | The only place the future can be changed | Month grid, auto-opening keyboard, transcript |
 | 3 | **Find** | The older lookup page, embedded whole, with the free rooms of a moment | Look a room up without leaving the day | Filters, maps, favourites |
-| 4 | **Mine** | Learned defaults: walk speed, usual Thursday end, usual lunch spot | First run, and later when you want to correct it | Streaks, ratings, surveys |
+| 4 | **Me** | Learned defaults: walk speed, usual Thursday end, usual lunch spot | First run, and later when you want to correct it | Streaks, ratings, surveys |
 
 The bottom bar is 56px tall, page colour, one 1px top border, no icons, no raised
 tab. The active tab is ink `#1C1A17` with a 4px vermilion dot centred under the

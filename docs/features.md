@@ -78,7 +78,7 @@ and the time, never from a tap.
 ## 3. The four actions
 
 Actions belong to blocks, not to pages. There is no toolbar, and the bottom bar
-only switches between Day, Plan, Find and Mine.
+only switches between Day, Plan, Find and Me.
 
 | Action | Where | What it does | What you see | Depends on |
 |---|---|---|---|---|
@@ -145,7 +145,7 @@ block, so a hand-added study block is re-solved into a room before it is shown a
 having one. And the page edits the same plan the day screen reads, so an edit here
 can be undone there.
 
-## 6. Mine
+## 6. Me
 
 Two things live here, the parameters you may change and the ones it is changing.
 

@@ -77,7 +77,7 @@ Fill runs once, at reveal. The plan is published and stays read-only until somet
 
 It learns **four quantities**, each read from an action you perform anyway. Walking speed comes from the gap you leave before pressing "I am late". When your day ends comes from the moment you tap "End the day". Where you actually eat comes from which option you pick when several are open. Whether you attend comes from pressing "Not going". The walking factor is designed to travel from ×1.00 to ×1.28.
 
-A value moves only after **three observations** land on it, which is the entire gate. Under three, the default stands and the screen says "still learning you" beside it. At the third, the parameter takes the observed value, smoothed, so one strange Tuesday counts as one data point inside the average. Only parameters move while the algorithm stays fixed, so a learned value can be audited by reading one number. The Mine screen is where these values are meant to live: visible, editable, each with its counter beside it, and editing one resets that counter.
+A value moves only after **three observations** land on it, which is the entire gate. Under three, the default stands and the screen says "still learning you" beside it. At the third, the parameter takes the observed value, smoothed, so one strange Tuesday counts as one data point inside the average. Only parameters move while the algorithm stays fixed, so a learned value can be audited by reading one number. The Me screen is where these values are meant to live: visible, editable, each with its counter beside it, and editing one resets that counter.
 
 > The cost is that learning turns exactly the knobs placed there in advance. It works with the rules, the cost ladder and the actions that already exist. And the attendance rate stays on the device: totals accumulate locally, and screens show the parameters with their counters.
 
@@ -174,7 +174,7 @@ stops as the same stop when the purpose, the building and the start time still l
 ```
 app      one HTML file, no build step
 (demo/)  product/demo/index.html · browser · PWA
-         NextStop is a phone app: Day · Plan · Find · Mine, four views, one file
+         NextStop is a phone app: Day · Plan · Find · Me, four views, one file
    |
    |  REST + JSON
    v

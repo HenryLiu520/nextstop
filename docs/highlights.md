@@ -48,7 +48,7 @@ entry of the walk matrix, which is exactly the input `W` in section 1 of
 value auditable: to explain why the student was told to leave at 10:47 rather than 10:52, read one
 number and multiply.
 
-**The value is visible, and it is editable.** The Mine screen lists each learned value with its
+**The value is visible, and it is editable.** The Me screen lists each learned value with its
 counter, in the units the planner uses: `walk × 1.00`, `Thursdays usually end 20:00`, `usual lunch
 spot`. Any of them can be typed over, and saving writes the parameter and resets the counter, so
 the next three observations refine the value the student chose instead of arguing with it. The
