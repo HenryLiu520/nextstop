@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1300" height="470" viewBox="0 0 1300 470">
+  <rect width="1300" height="470" fill="#F7F4EC"/>
+  <defs>
+    <marker id="a" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#00382C"/>
+    </marker>
+    <marker id="ag" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#A9B3AD"/>
+    </marker>
+  </defs>
+  <style>
+    .t { font-family: Georgia, "Times New Roman", serif; fill: #16211D; }
+    .s { font-family: "Helvetica Neue", Arial, sans-serif; fill: #4A5751; }
+    .name { font-family: Georgia, serif; font-weight: bold; fill: #00382C; }
+    .lean { stroke: #00382C; stroke-width: 2.5; fill: none; }
+    .legacy { stroke: #A9B3AD; stroke-width: 2; fill: none; stroke-dasharray: 7 6; }
+  </style>
+
+  <text x="56" y="50" class="t" font-size="26" font-weight="bold">NextStop: three clients, one service, two data sources</text>
+
+  <rect x="56" y="92" width="330" height="196" rx="8" fill="#FFFFFF" stroke="#00382C" stroke-width="3"/>
+  <rect x="56" y="92" width="330" height="46" rx="8" fill="#00382C"/>
+  <text x="78" y="123" font-size="19" font-weight="bold" style="font-family:Georgia,serif;fill:#F7F4EC">nextstop-web · the app</text>
+  <text x="78" y="168" class="s" font-size="14">Vue 3 and Vite, three views</text>
+  <text x="78" y="192" class="s" font-size="14">Day · Plan · Me</text>
+  <text x="78" y="216" class="s" font-size="14">the plan is built on the device</text>
+  <text x="78" y="240" class="s" font-size="14">planner stub, repair specified</text>
+  <text x="78" y="264" class="s" font-size="14">room table kept offline</text>
+
+  <rect x="56" y="326" width="330" height="76" rx="8" fill="#FBFAF6" stroke="#A9B3AD" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="78" y="354" class="s" font-size="14" font-weight="bold">Earlier frontends, merged here</text>
+  <text x="78" y="376" class="s" font-size="13">frontend/ and mobile/, kept in the repository</text>
+  <text x="78" y="396" class="s" font-size="13">retained in the repository</text>
+
+  <rect x="486" y="92" width="330" height="310" rx="8" fill="#FFFFFF" stroke="#00382C" stroke-width="2.5"/>
+  <text x="508" y="130" class="name" font-size="20">Backend · Spring Boot</text>
+  <text x="508" y="156" class="s" font-size="14">port 8080, nine controllers</text>
+  <line x1="508" y1="172" x2="794" y2="172" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="508" y="198" class="s" font-size="14">/availability  interval algebra</text>
+  <text x="508" y="220" class="s" font-size="14">/rooms · /buildings · timeline</text>
+  <text x="508" y="242" class="s" font-size="14">/reviews · /review-photos</text>
+  <text x="508" y="264" class="s" font-size="14">/updates · /audit</text>
+  <text x="508" y="286" class="s" font-size="14">/auth · /accounts</text>
+  <line x1="508" y1="304" x2="794" y2="304" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="508" y="330" class="s" font-size="14">32 tests in six classes</text>
+  <text x="508" y="352" class="s" font-size="14">OpenAPI contract, smoke script</text>
+  <text x="508" y="380" class="s" font-size="13" font-style="italic">implemented</text>
+
+  <rect x="916" y="92" width="320" height="126" rx="8" fill="#FFFFFF" stroke="#00382C" stroke-width="2.5"/>
+  <text x="938" y="128" class="name" font-size="19">PostgreSQL</text>
+  <text x="938" y="154" class="s" font-size="14">port 5433, schema by Flyway</text>
+  <text x="938" y="176" class="s" font-size="14">rooms, buildings, class slots,</text>
+  <text x="938" y="198" class="s" font-size="14">reviews, accounts, audit trail</text>
+
+  <rect x="916" y="276" width="320" height="126" rx="8" fill="#FBFAF6" stroke="#00382C" stroke-width="2" stroke-dasharray="7 6"/>
+  <text x="938" y="312" class="name" font-size="19">mock-school-api</text>
+  <text x="938" y="338" class="s" font-size="14">port 9000, synthetic timetable</text>
+  <text x="938" y="360" class="s" font-size="14">stands in for the university feed</text>
+  <text x="938" y="382" class="s" font-size="14">OpenAPI, API key, test double</text>
+
+  <path d="M388 190 L478 190" class="lean" marker-end="url(#a)"/>
+  <text x="396" y="180" class="s" font-size="13">HTTP /api</text>
+
+  <path d="M388 364 L432 364 L432 296 L478 296" class="legacy" marker-end="url(#ag)"/>
+  <text x="392" y="386" class="s" font-size="12">same endpoints</text>
+
+  <path d="M818 168 L908 168" class="lean" marker-end="url(#a)"/>
+  <text x="826" y="158" class="s" font-size="13">JDBC</text>
+
+  <path d="M818 296 L870 296 L870 340 L908 340" class="legacy" marker-end="url(#ag)"/>
+  <text x="818" y="288" class="s" font-size="13">feed, not wired</text>
+
+  <text x="56" y="442" class="s" font-size="13">Solid lines are implemented and wired. The dashed client box is retained code. The school feed is a test double, labelled synthetic wherever it appears.</text>
+</svg>
