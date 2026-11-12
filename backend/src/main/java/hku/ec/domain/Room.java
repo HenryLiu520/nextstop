@@ -38,6 +38,13 @@ public class Room {
     @Column(name = "facilities_verified_at")
     private java.time.LocalDateTime facilitiesVerifiedAt;
 
+    /** 房间自带的两项打分（1–10），评价还不够时用作安静与座位的兜底 */
+    @Column(name = "quiet_score")
+    private Integer quietScore;
+
+    @Column(name = "comfort_score")
+    private Integer comfortScore;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -55,6 +62,12 @@ public class Room {
 
     public Boolean getSockets() { return sockets; }
     public void setSockets(Boolean sockets) { this.sockets = sockets; }
+
+    public Integer getQuietScore() { return quietScore; }
+    public void setQuietScore(Integer quietScore) { this.quietScore = quietScore; }
+
+    public Integer getComfortScore() { return comfortScore; }
+    public void setComfortScore(Integer comfortScore) { this.comfortScore = comfortScore; }
 
     public String getSeatType() { return seatType; }
     public void setSeatType(String seatType) { this.seatType = seatType; }

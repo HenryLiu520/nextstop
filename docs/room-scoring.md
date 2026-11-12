@@ -10,9 +10,10 @@ Step 1 removes rooms that cannot serve the window at all. Step 2 scores the two 
 with the hour. Step 3 blends the two scores with a weight that follows the length of the window.
 Step 4 takes the first room and keeps three more for the swap action.
 
-Two parts of this document carry different status. The static score is implemented and reads the
-review table on the server. The rejection model, the dynamic score and the fusion are specified with
-design values and no shipped code.
+Two parts of this document carry different status. The static score and the rejection discount are
+implemented and read the review, visit and rejection tables on the server, so all seven factors
+score when the request carries an account. The dynamic score and the fusion are specified with design
+values and no shipped code.
 
 ## 01 Pipeline
 
@@ -77,8 +78,9 @@ f_i = mean(reviews on factor i) / 10        missing factor, weight redistributed
 ```
 
 The overall score in a review is kept for display and does not feed the ranking, because a single
-number carries no information about which quality moved. Familiarity is dropped on the server side,
-since it belongs to one account and a shared endpoint has no account to read.
+number carries no information about which quality moved. Familiarity comes from `room_visits`, so it
+is read only when the request carries an account. Without one the endpoint scores the six reviewable
+factors and renormalises them to 0.80, and the response says so by leaving familiarity out.
 
 Six weights renormalise to 0.80, and `GET /api/rooms/overview` reports the result:
 

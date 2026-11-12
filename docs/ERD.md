@@ -10,7 +10,7 @@ what the running system actually has.
 
 ![ER diagram](diagrams/er-main.png)
 
-Eight tables. `flyway_schema_history` is left out on purpose: it is Flyway's own bookkeeping, not
+Ten tables. `flyway_schema_history` is left out on purpose: it is Flyway's own bookkeeping, not
 part of the model.
 
 | Table | What it holds | Rows now |
@@ -21,6 +21,8 @@ part of the model.
 | `room_updates` | a change an administrator published (use / release), with a reason and an optional expiry | 4 |
 | `room_reviews` | one review per person per room, with a rating and six factor scores | 9 |
 | `review_photos` | photos attached to a review; the file lives on disk, this table stores only the pointer | 0 |
+| `room_visits` | how often one account has been in a room, the input to familiarity | 3 |
+| `room_rejections` | one row per refusal, weighted 1.0 / 0.5 / 0.3 and decayed over 21 days | 2 |
 | `app_user` | accounts and roles (`user` / `admin` / `superadmin`) | 4 |
 | `audit_log` | append-only record of who changed what | 22 |
 

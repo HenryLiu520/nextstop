@@ -100,7 +100,8 @@ public final class Dtos {
     public record RoomOverview(
             String code, String building, String floor, int capacity, Boolean sockets,
             Boolean free, String nextBusyStart,
-            Double score, int reviewCount, Map<String, Double> factors
+            Double score, Double sPrime, double nEff, double familiarity,
+            int reviewCount, Map<String, Double> factors
     ) { }
 
     public record ReviewRequest(Integer rating, String body, Map<String, Integer> dimensions) { }

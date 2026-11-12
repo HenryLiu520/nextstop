@@ -8,7 +8,7 @@
 
 ![ER 图](diagrams/er-main.png)
 
-八张表。`flyway_schema_history` 故意没画：那是 Flyway 自己的记账，不属于模型。
+十张表。`flyway_schema_history` 故意没画：那是 Flyway 自己的记账，不属于模型。
 
 | 表 | 存什么 | 现在多少行 |
 |---|---|---|
@@ -18,7 +18,9 @@
 | `room_updates` | 管理员发布的变更（占用 / 释放），带原因和可选过期时间 | 7 |
 | `room_reviews` | 每人每间房一条评价 | 6 |
 | `review_photos` | 评价带的照片；**文件在磁盘，这张表只存指针** | 2 |
-| `app_user` | 账号与角色（`user` / `admin` / `superadmin`） | 6 |
+| `room_visits` | 某个账号进过某间房几次，熟悉度的输入 | 3 |
+| `room_rejections` | 每拒一次一行，份量 1.0 / 0.5 / 0.3，按 21 天衰减 | 2 |
+| `app_user` | 账号与角色（`user` / `admin` / `superadmin`） | 4 |
 | `audit_log` | 只追加的变更记录 | 101 |
 
 **空闲是怎么算出来的。** 没有"空闲教室"这张表。空闲是**算**出来的：把 `class_slots`（学校课表）加上生效中的 `room_updates`（员工加进去或释放掉的）从教学日里减掉，剩下的就是接口回答的内容。所以库里没有预约表 —— 这个系统里没有任何东西能"占用"一间房。

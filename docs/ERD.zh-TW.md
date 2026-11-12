@@ -8,7 +8,7 @@
 
 ![ER 圖](diagrams/er-main.png)
 
-八張表。`flyway_schema_history` 故意沒畫：那是 Flyway 自己的記帳，不屬於模型。
+十張表。`flyway_schema_history` 故意沒畫：那是 Flyway 自己的記帳，不屬於模型。
 
 | 表 | 存什麼 | 現在多少行 |
 |---|---|---|
@@ -18,7 +18,9 @@
 | `room_updates` | 管理員釋出的變更（佔用 / 釋放），帶原因和可選過期時間 | 7 |
 | `room_reviews` | 每人每間房一條評價 | 6 |
 | `review_photos` | 評價帶的照片；**檔案在磁碟，這張表只存指標** | 2 |
-| `app_user` | 帳號與角色（`user` / `admin` / `superadmin`） | 6 |
+| `room_visits` | 某個帳號進過某間房幾次，熟悉度的輸入 | 3 |
+| `room_rejections` | 每拒一次一行，份量 1.0 / 0.5 / 0.3，按 21 天衰減 | 2 |
+| `app_user` | 帳號與角色（`user` / `admin` / `superadmin`） | 4 |
 | `audit_log` | 只追加的變更記錄 | 101 |
 
 **空閒是怎麼算出來的。** 沒有"空閒教室"這張表。空閒是**算**出來的：把 `class_slots`（學校課表）加上生效中的 `room_updates`（員工加進去或釋放掉的）從教學日裡減掉，剩下的就是介面回答的內容。所以庫裡沒有預約表 —— 這個系統裡沒有任何東西能"佔用"一間房。
