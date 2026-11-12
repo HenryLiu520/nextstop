@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="880" viewBox="0 0 1400 880">
+  <rect width="1400" height="880" fill="#F7F4EC"/>
+  <style>
+    .t { font-family: Georgia, "Times New Roman", serif; fill: #16211D; }
+    .s { font-family: "Helvetica Neue", Arial, sans-serif; fill: #4A5751; }
+    .box { fill: #FFFFFF; stroke: #00382C; stroke-width: 2; }
+    .spec { fill: #FBFAF6; stroke: #8E9993; stroke-width: 2; stroke-dasharray: 7 6; }
+    .lbl { font-family: Georgia, serif; font-weight: bold; fill: #00382C; }
+    .flow { stroke: #00382C; stroke-width: 2.5; fill: none; }
+    .flowd { stroke: #8E9993; stroke-width: 2.5; fill: none; stroke-dasharray: 8 7; }
+  </style>
+
+  <text x="60" y="56" class="t" font-size="30" font-weight="bold">NextStop — component and data flow</text>
+  <text x="60" y="86" class="s" font-size="17">solid line: implemented and wired   ·   dashed line: specified or not yet wired</text>
+
+  <!-- inputs -->
+  <rect x="60" y="130" width="250" height="96" class="spec" rx="6"/>
+  <text x="80" y="164" class="lbl" font-size="18">mock-school-api</text>
+  <text x="80" y="190" class="s" font-size="14">synthetic timetable, port 9000</text>
+  <text x="80" y="210" class="s" font-size="14">OpenAPI, standalone</text>
+
+  <rect x="60" y="256" width="250" height="96" class="box" rx="6"/>
+  <text x="80" y="290" class="lbl" font-size="18">Room and class data</text>
+  <text x="80" y="316" class="s" font-size="14">buildings, rooms, slots</text>
+  <text x="80" y="336" class="s" font-size="14">PostgreSQL, port 5433</text>
+
+  <rect x="60" y="382" width="250" height="96" class="box" rx="6"/>
+  <text x="80" y="416" class="lbl" font-size="18">Reviews and updates</text>
+  <text x="80" y="442" class="s" font-size="14">room reviews, review photos,</text>
+  <text x="80" y="462" class="s" font-size="14">attribute proposals</text>
+
+  <!-- backend -->
+  <rect x="420" y="130" width="330" height="348" class="box" rx="8"/>
+  <text x="444" y="170" class="lbl" font-size="21">Backend · Spring Boot</text>
+  <text x="444" y="198" class="s" font-size="14">port 8080, nine controllers</text>
+  <line x1="444" y1="212" x2="726" y2="212" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="444" y="238" class="s" font-size="14">/availability  interval algebra</text>
+  <text x="444" y="262" class="s" font-size="14">/rooms · /buildings · timeline</text>
+  <text x="444" y="286" class="s" font-size="14">/reviews · /review-photos</text>
+  <text x="444" y="310" class="s" font-size="14">/updates · /audit</text>
+  <text x="444" y="334" class="s" font-size="14">/auth · /accounts</text>
+  <line x1="444" y1="352" x2="726" y2="352" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="444" y="378" class="s" font-size="14">32 tests in six classes</text>
+  <text x="444" y="402" class="s" font-size="14">OpenAPI contract, smoke script</text>
+
+  <!-- client -->
+  <rect x="880" y="130" width="330" height="348" class="box" rx="8"/>
+  <text x="904" y="170" class="lbl" font-size="21">Client · nextstop-web</text>
+  <text x="904" y="198" class="s" font-size="14">Vue 3 and Vite, three views</text>
+  <line x1="904" y1="212" x2="1186" y2="212" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="904" y="238" class="s" font-size="14">Day · Plan · Me</text>
+  <text x="904" y="262" class="s" font-size="14">/api proxy to port 8080</text>
+  <text x="904" y="286" class="s" font-size="14">plan computed on device</text>
+  <line x1="904" y1="304" x2="1186" y2="304" stroke="#D8DFD9" stroke-width="1.5"/>
+  <text x="904" y="330" class="s" font-size="14">planner: stub, fixed length blocks</text>
+  <text x="904" y="354" class="s" font-size="14">room scoring: mock harness</text>
+  <text x="904" y="378" class="s" font-size="14">repair and learning: specified</text>
+  <text x="904" y="402" class="s" font-size="14">carries an offline room table</text>
+
+  <!-- arrows -->
+  <path d="M310 178 L410 178" class="flowd" marker-end="url(#ahd)"/>
+  <path d="M310 300 L410 300" class="flow" marker-end="url(#ah)"/>
+  <path d="M310 424 L410 424" class="flow" marker-end="url(#ah)"/>
+  <path d="M760 300 L870 300" class="flow" marker-end="url(#ah)"/>
+  <text x="770" y="288" class="s" font-size="13">HTTP /api</text>
+  <text x="312" y="163" class="s" font-size="13">adapter, not built</text>
+
+  <!-- bottom row -->
+  <rect x="420" y="530" width="330" height="86" class="spec" rx="6"/>
+  <text x="444" y="562" class="lbl" font-size="17">Single file prototype</text>
+  <text x="444" y="588" class="s" font-size="14">product/demo, no backend,</text>
+  <text x="444" y="606" class="s" font-size="14">four actions on the day screen</text>
+
+  <rect x="880" y="530" width="330" height="86" class="spec" rx="6"/>
+  <text x="904" y="562" class="lbl" font-size="17">Earlier frontends, retained</text>
+  <text x="904" y="588" class="s" font-size="14">frontend/ and mobile/</text>
+  <text x="904" y="606" class="s" font-size="14">no further development</text>
+
+  <path d="M1045 530 L1045 490" class="flowd" marker-end="url(#ahd)"/>
+  <path d="M585 530 L585 490" class="flowd" marker-end="url(#ahd)"/>
+
+  <!-- status strip -->
+  <rect x="60" y="680" width="1150" height="130" fill="#FFFFFF" stroke="#D8DFD9" stroke-width="1.5" rx="6"/>
+  <text x="84" y="716" class="lbl" font-size="17">What runs today</text>
+  <text x="84" y="744" class="s" font-size="14">Backend data layer, PostgreSQL, nextstop-web, single file prototype, mock school feed.</text>
+  <text x="84" y="770" class="s" font-size="14">What is specified: repair ladder, four parameter learning, PWA and phone shells, planner solver.</text>
+  <text x="84" y="796" class="s" font-size="14">Measured: 32 tests, 200 rooms and 600 evaluations in 6.3 ms on the mock harness.</text>
+
+  <defs>
+    <marker id="ah" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#00382C"/>
+    </marker>
+    <marker id="ahd" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8E9993"/>
+    </marker>
+  </defs>
+</svg>
