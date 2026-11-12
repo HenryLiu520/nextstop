@@ -14,9 +14,6 @@
         <dt>{{ t('find.sockets') }}</dt>
         <dd>{{ room.sockets === true ? '✓' : room.sockets === false ? '✗' : t('room.unknown') }}</dd>
       </dl>
-      <div class="meta" style="margin-top: 10px" v-if="room.facilitiesVerifiedAt">
-        <span class="chip">{{ t('room.facilities') }}: {{ room.facilitiesVerifiedAt }}</span>
-      </div>
     </div>
 
     <div class="card">
@@ -42,55 +39,85 @@
       <p v-else class="hint">{{ t('common.loading') }}</p>
     </div>
 
+    <!-- 评价：先看，再写。写的那一层默认收起 -->
     <div class="card">
-      <h2>
-        {{ t('room.reviews') }}
-        <span v-if="reviews && reviews.count" class="hint" style="font-weight: 400">
-          · {{ reviews.average }} / 10 ({{ reviews.count }})
-        </span>
-      </h2>
+      <div class="head">
+        <h2>
+          {{ t('room.reviews') }}
+          <span v-if="reviews && reviews.count" class="avg">{{ reviews.average }}<em>/10</em></span>
+        </h2>
+        <button v-if="!editing" class="addBtn" type="button" @click="editing = true">
+          + {{ t('rev.add') }}
+        </button>
+      </div>
+
       <div v-for="rv in reviews?.items || []" :key="rv.id" class="review">
-        <span class="stars">{{ rv.rating }} / 10</span>
-        <span class="who">{{ rv.author }}</span>
+        <div class="rhead">
+          <span class="score">{{ rv.rating }}<em>/10</em></span>
+          <span class="who">{{ rv.author }}</span>
+        </div>
         <div class="body">{{ rv.body }}</div>
-        <div v-if="rv.dimensions && Object.keys(rv.dimensions).length" class="meta">
-          <span v-for="(v, k) in rv.dimensions" :key="k" class="chip">{{ t('rev.' + k) }} {{ v }}</span>
+        <div v-if="rv.dimensions && Object.keys(rv.dimensions).length" class="chips">
+          <span v-for="(v, k) in rv.dimensions" :key="k">{{ t('rev.' + k) }} {{ v }}</span>
         </div>
         <div v-if="rv.photos && rv.photos.length" class="photos">
-          <img
-            v-for="p in rv.photos"
-            :key="p.id"
-            :src="p.url"
-            alt=""
-            loading="lazy"
-            @click="zoom = p.url"
-          />
+          <img v-for="p in rv.photos" :key="p.id" :src="p.url" alt="" loading="lazy" @click="zoom = p.url" />
         </div>
       </div>
+
       <p v-if="reviews && !reviews.count" class="hint">{{ t('room.noReviews') }}</p>
+
+      <form v-if="editing" class="form" @submit.prevent="submit">
+        <div class="row">
+          <span class="lbl">{{ t('rev.overall') }}</span>
+          <div class="stars">
+            <button
+              v-for="n in 10"
+              :key="n"
+              type="button"
+              class="star"
+              :class="{ on: n <= form.rating }"
+              :aria-label="n"
+              @click="form.rating = n"
+            >★</button>
+          </div>
+          <b class="val">{{ form.rating }}</b>
+        </div>
+
+        <div class="row" v-for="f in FACTORS" :key="f">
+          <span class="lbl">{{ t('rev.' + f) }}</span>
+          <div class="ticks10">
+            <button
+              v-for="n in 10"
+              :key="n"
+              type="button"
+              class="tick"
+              :class="{ on: n <= form.dims[f] }"
+              :aria-label="n"
+              @click="form.dims[f] = n"
+            />
+          </div>
+          <b class="val">{{ form.dims[f] }}</b>
+        </div>
+
+        <textarea v-model="form.body" rows="3" :placeholder="t('rev.body')" class="area" />
+
+        <label class="file">
+          <input type="file" accept="image/*" multiple @change="onFiles" />
+          <span>{{ files.length ? t('rev.picked', { n: files.length }) : t('rev.photo') }}</span>
+        </label>
+
+        <p v-if="formError" class="err">{{ formError }}</p>
+
+        <div class="actions">
+          <button class="ghost" type="button" @click="editing = false">{{ t('rev.cancel') }}</button>
+          <button class="primary" type="submit" :disabled="saving">
+            {{ saving ? t('common.loading') : t('rev.save') }}
+          </button>
+        </div>
+      </form>
     </div>
 
-    <div class="card">
-      <h2>{{ t('room.writeReview') }}</h2>
-      <label class="line">
-        <span>{{ t('rev.overall') }}</span>
-        <input type="range" min="1" max="10" step="1" v-model.number="form.rating" />
-        <b>{{ form.rating }}</b>
-      </label>
-      <label class="line" v-for="f in FACTORS" :key="f">
-        <span>{{ t('rev.' + f) }}</span>
-        <input type="range" min="1" max="10" step="1" v-model.number="form.dims[f]" />
-        <b>{{ form.dims[f] }}</b>
-      </label>
-      <textarea v-model="form.body" rows="3" :placeholder="t('rev.body')" class="area" />
-      <input type="file" accept="image/*" multiple @change="onFiles" class="file" />
-      <p v-if="formError" class="err">{{ formError }}</p>
-      <button class="btn" :disabled="saving" @click="submit">
-        {{ saving ? t('common.loading') : t('rev.save') }}
-      </button>
-    </div>
-
-    <!-- 点开看大图：手机上 104px 的缩略图看不清字体/插座位置 -->
     <div v-if="zoom" class="lightbox" @click="zoom = ''">
       <img :src="zoom" alt="" />
     </div>
@@ -112,6 +139,7 @@ const form = ref({ rating: 8, dims: { quiet: 7, desk: 7, sockets: 7, aircon: 7, 
 const files = ref([])
 const saving = ref(false)
 const formError = ref('')
+const editing = ref(false)
 
 const room = ref(null)
 const segments = ref([])
@@ -148,6 +176,7 @@ async function submit() {
     reviews.value = fresh.data
     files.value = []
     form.value.body = ''
+    editing.value = false
   } catch (e) {
     formError.value = errorText(e)
   } finally {
@@ -176,3 +205,240 @@ onMounted(async () => {
   }
 })
 </script>
+
+<style scoped>
+h2 {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 400;
+  font-size: 19px;
+  margin: 0 0 10px;
+}
+
+.head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.avg {
+  font-size: 13px;
+  color: var(--green);
+  margin-left: 6px;
+}
+.avg em,
+.score em {
+  font-style: normal;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.addBtn {
+  border: 1px solid var(--green);
+  background: transparent;
+  color: var(--green);
+  border-radius: 6px;
+  height: 30px;
+  padding: 0 10px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+
+.review {
+  border-top: 1px solid var(--line);
+  padding: 10px 0 2px;
+}
+
+.rhead {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.score {
+  font-size: 14px;
+  color: var(--green);
+}
+
+.who {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.body {
+  margin-top: 5px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.chips span {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: var(--mint);
+  color: var(--muted);
+}
+
+.photos {
+  display: flex;
+  gap: 6px;
+  margin-top: 7px;
+}
+
+.photos img {
+  width: 54px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid var(--line);
+}
+
+/* 表单：三重网格，标签 / 控件 / 数值 各占一列，行行对齐 */
+.form {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 92px 1fr 22px;
+  align-items: center;
+  gap: 8px;
+}
+
+.lbl {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.val {
+  font-size: 11px;
+  text-align: right;
+  color: var(--ink);
+}
+
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  border: none;
+  background: none;
+  padding: 0;
+  font-size: 17px;
+  line-height: 1;
+  color: #d7ddd7;
+  cursor: pointer;
+}
+
+.star.on {
+  color: var(--gold);
+}
+
+.ticks10 {
+  display: flex;
+  gap: 3px;
+}
+
+.tick {
+  flex: 1;
+  height: 12px;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+}
+
+.tick.on {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.area {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+  font: inherit;
+  font-size: 12px;
+  padding: 8px;
+  color: var(--ink);
+  resize: vertical;
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.file input {
+  font-size: 10px;
+}
+
+.err {
+  margin: 0;
+  font-size: 11px;
+  color: #a3312c;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ghost,
+.primary {
+  flex: 1;
+  height: 38px;
+  border-radius: 6px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+}
+
+.ghost {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.primary {
+  border: 1px solid var(--green);
+  background: var(--green);
+  color: #f7f4ec;
+}
+
+.lightbox {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.82);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.lightbox img {
+  max-width: 92%;
+  max-height: 86%;
+  border-radius: 6px;
+}
+</style>

@@ -2,6 +2,10 @@ import { ref } from 'vue'
 
 const dict = {
   en: {
+    'rev.photo': 'Add photos, up to three',
+    'rev.add': 'Add review',
+    'rev.cancel': 'Cancel',
+    'rev.picked': '{n} picked',
     'find.allRooms': 'All rooms',
     'find.countAll': '{n} rooms',
     'find.allBuildings': 'All buildings',
@@ -63,6 +67,10 @@ const dict = {
     'common.back': 'Back',
   },
   zh: {
+    'rev.photo': '添加照片，最多三张',
+    'rev.add': '添加评论',
+    'rev.cancel': '取消',
+    'rev.picked': '已选 {n} 张',
     'find.allRooms': '全部教室',
     'find.countAll': '共 {n} 间',
     'find.allBuildings': '全部楼栋',
@@ -124,6 +132,10 @@ const dict = {
     'common.back': '返回',
   },
   tw: {
+    'rev.photo': '添加照片，最多三張',
+    'rev.add': '添加評論',
+    'rev.cancel': '取消',
+    'rev.picked': '已選 {n} 張',
     'find.allRooms': '全部教室',
     'find.countAll': '共 {n} 间',
     'find.allBuildings': '全部樓棟',
