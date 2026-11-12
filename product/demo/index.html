@@ -435,6 +435,7 @@ const STR = {
               tw:'還沒接模型，這句讀不了。點下面三句試試'},
   askOffTag:{en:'offline demo',zh:'离线演示',tw:'離線演示'},
   askBusy:{en:'reading the sentence',zh:'正在读这句话',tw:'正在讀這句話'},
+  askNet:{en:'Cannot reach the model service',zh:'连不上模型服务',tw:'連不上模型服務'},
   askTaken:{en:'That slot is already taken',zh:'那个时段已经被占了',tw:'那個時段已經被佔了'},
   askNoStop:{en:'No such block in the plan',zh:'计划里没有这一站',tw:'計畫裡沒有這一站'},
   askBadTime:{en:'The end lands before the start',zh:'结束时间早于开始时间',tw:'結束時間早於開始時間'},
@@ -870,7 +871,8 @@ async function askSend(given){
   if(el){ el.value=''; el.placeholder=t('askBusy'); el.disabled=true; }
   bar.classList.add('busy');
   let calls=[];
-  try { calls = await interpret(q); } catch(e){ calls=[]; }
+  try { calls = await interpret(q); }
+  catch(e){ calls=[]; toast(t('askNet')); }
   bar.classList.remove('busy');
   if(el){ el.placeholder=t('askPh'); el.disabled=false; }
   if(!calls.length){ toast(offline() ? t('askOffline') : t('askNo')); return; }
@@ -1485,6 +1487,9 @@ function openHint(){
   const qp=new URLSearchParams(location.search);
   const a=qp.get('agent');
   if(a) window.AGENT_ENDPOINT=a;
+  /* 由 agent-server.py 发出来的时候，接口就在同一个源上 */
+  else if(location.protocol==='http:' && location.port==='8787')
+    window.AGENT_ENDPOINT=new URL('/interpret', location.origin).href;
 })();
 
 buildWeek();
