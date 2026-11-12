@@ -18,11 +18,11 @@ part of the model.
 | `rooms` | one row per teaching room; `code` is unique | 10 |
 | `school_slots` | the raw pull from the school system, every slot as it arrived, stamped with the pull time | 0 |
 | `class_slots` | the working timetable the service reads: which room, which weekday, which block, which course | 100 |
-| `room_updates` | a change an administrator published (use / release), with a reason and an optional expiry | 7 |
-| `room_reviews` | one review per person per room | 6 |
-| `review_photos` | photos attached to a review; the file lives on disk, this table stores only the pointer | 2 |
-| `app_user` | accounts and roles (`user` / `admin` / `superadmin`) | 6 |
-| `audit_log` | append-only record of who changed what | 101 |
+| `room_updates` | a change an administrator published (use / release), with a reason and an optional expiry | 4 |
+| `room_reviews` | one review per person per room, with a rating and six factor scores | 9 |
+| `review_photos` | photos attached to a review; the file lives on disk, this table stores only the pointer | 0 |
+| `app_user` | accounts and roles (`user` / `admin` / `superadmin`) | 4 |
+| `audit_log` | append-only record of who changed what | 22 |
 
 **How availability is derived.** There is no "free room" table. Free time is computed:
 `class_slots` (the school's timetable) plus active `room_updates` (what staff added or released)
