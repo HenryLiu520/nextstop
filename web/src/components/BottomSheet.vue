@@ -1,14 +1,14 @@
 <script setup>
 import { computed, ref, watch } from 'vue'
-import { state, closeSheet, applySwap, openSwap, addStop, toast } from '../store.js'
+import { state, closeSheet, applySwap, openSwap, addStop, toast, openReview } from '../store.js'
 import { t } from '../i18n/index.js'
 
 /* 动作矩阵：四个动作封顶，按块类型给。
    课只有「不去」。自习/吃饭只有「换一个」。见面才有「一键预约」。
    没有「我到了」，也没有「我晚了」——这两件事不再由按钮承担。 */
 const ACTIONS = {
-  class: ['skip'],
-  study: ['swap'],
+  class: ['review'],
+  study: ['swap', 'review'],
   meal: ['swap'],
   meeting: ['book', 'swap'],
 }
@@ -37,6 +37,10 @@ function run(id) {
   if (!stop.value) return
   if (id === 'swap') {
     openSwap(stop.value)
+    return
+  }
+  if (id === 'review') {
+    openReview(stop.value.place)
     return
   }
   if (id === 'skip') {

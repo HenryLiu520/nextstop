@@ -6,6 +6,7 @@ import LangSwitch from './components/LangSwitch.vue'
 import BottomNav from './components/BottomNav.vue'
 import BottomSheet from './components/BottomSheet.vue'
 import ToastBar from './components/ToastBar.vue'
+import ReviewSheet from './components/ReviewSheet.vue'
 import DayView from './views/DayView.vue'
 import PlanView from './views/PlanView.vue'
 import FindView from './views/FindView.vue'
@@ -38,6 +39,7 @@ const dateLine = computed(() => fmtDate(state.day))
         <BottomNav />
         <BottomSheet />
         <ToastBar />
+        <ReviewSheet />
       </div>
     </div>
   </div>

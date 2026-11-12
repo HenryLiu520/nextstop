@@ -36,6 +36,10 @@ public class RoomReview {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    /** 分项打分，JSON 文本，键是因子名，值是 1 到 10；没有就是 null */
+    @Column(name = "dimensions")
+    private String dimensions;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -53,6 +57,9 @@ public class RoomReview {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public String getDimensions() { return dimensions; }
+    public void setDimensions(String dimensions) { this.dimensions = dimensions; }
 
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }

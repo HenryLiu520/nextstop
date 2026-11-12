@@ -51,14 +51,22 @@ public class ReviewService {
 
     @Transactional
     public Dtos.ReviewView upsert(String roomCode, Integer rating, String body, String actor) {
+        return upsert(roomCode, rating, body, null, actor);
+    }
+
+    @Transactional
+    public Dtos.ReviewView upsert(String roomCode, Integer rating, String body,
+                                  Map<String, Integer> dimensions, String actor) {
         Room room = room(roomCode);
         validate(rating, body);
+        validateDimensions(dimensions);
 
         RoomReview r = reviews.findByRoomIdAndCreatedBy(room.getId(), actor).orElseGet(RoomReview::new);
         boolean isNew = r.getId() == null;
         r.setRoomId(room.getId());
         r.setRating(rating);
         r.setBody(body.trim());
+        r.setDimensions(writeDimensions(dimensions));
         r.setCreatedBy(actor);
         LocalDateTime now = LocalDateTime.now();
         if (isNew) r.setCreatedAt(now);
@@ -66,7 +74,7 @@ public class ReviewService {
         RoomReview saved = reviews.save(r);
 
         audit.save(new AuditEntry(isNew ? "CREATE_REVIEW" : "UPDATE_REVIEW", "room_reviews", saved.getId(),
-                actor, "%s %d/5 %s".formatted(room.getCode(), rating, isNew ? "(new)" : "(edited)")));
+                actor, "%s %d/10 %s".formatted(room.getCode(), rating, isNew ? "(new)" : "(edited)")));
         return view(saved, room.getCode(), actor, photosOf(List.of(saved.getId())).get(saved.getId()));
     }
 
@@ -134,6 +142,50 @@ public class ReviewService {
 
     // ---------------------------------------------------------------- internal
 
+
+    /** 分项只接受算法里那六个固态因子，取值 1 到 10，缺项允许 */
+    private static final java.util.Set<String> FACTORS = java.util.Set.of(
+            "quiet", "desk", "sockets", "aircon", "space", "light");
+
+    private void validateDimensions(Map<String, Integer> dims) {
+        if (dims == null) return;
+        for (Map.Entry<String, Integer> e : dims.entrySet()) {
+            if (!FACTORS.contains(e.getKey())) {
+                throw new IllegalArgumentException("Unknown dimension: " + e.getKey());
+            }
+            Integer v = e.getValue();
+            if (v == null || v < 1 || v > 10) {
+                throw new IllegalArgumentException("Each dimension runs from 1 to 10");
+            }
+        }
+    }
+
+    /** 存成 quiet=8,desk=7 这样的扁平文本，六个键我们自己定义，不需要 JSON 库 */
+    private String writeDimensions(Map<String, Integer> dims) {
+        if (dims == null || dims.isEmpty()) return null;
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<String, Integer> e : dims.entrySet()) {
+            if (sb.length() > 0) sb.append(',');
+            sb.append(e.getKey()).append('=').append(e.getValue());
+        }
+        return sb.toString();
+    }
+
+    private Map<String, Integer> readDimensions(String raw) {
+        if (raw == null || raw.isBlank()) return Map.of();
+        Map<String, Integer> out = new java.util.LinkedHashMap<>();
+        for (String part : raw.split(",")) {
+            int i = part.indexOf('=');
+            if (i <= 0) continue;
+            try {
+                out.put(part.substring(0, i), Integer.parseInt(part.substring(i + 1).trim()));
+            } catch (NumberFormatException ignored) {
+                /* 坏值跳过 */
+            }
+        }
+        return out;
+    }
+
     private Room room(String code) {
         return rooms.findByCode(code).orElseThrow(() -> new IllegalArgumentException("unknown room: " + code));
     }
@@ -144,8 +196,8 @@ public class ReviewService {
     }
 
     private void validate(Integer rating, String body) {
-        if (rating == null || rating < 1 || rating > 5) {
-            throw new IllegalArgumentException("Please give a rating from 1 to 5 stars");
+        if (rating == null || rating < 1 || rating > 10) {
+            throw new IllegalArgumentException("Please give a rating from 1 to 10");
         }
         String text = body == null ? "" : body.trim();
         if (text.isEmpty()) {
@@ -160,6 +212,7 @@ public class ReviewService {
         return new Dtos.ReviewView(r.getId(), roomCode, r.getRating(), r.getBody(), r.getCreatedBy(),
                 r.getCreatedAt().format(TS), r.getUpdatedAt().format(TS),
                 viewer != null && viewer.equals(r.getCreatedBy()),
-                photos == null ? List.of() : photos);
+                photos == null ? List.of() : photos,
+                readDimensions(r.getDimensions()));
     }
 }

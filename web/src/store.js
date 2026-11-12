@@ -10,6 +10,7 @@ export const state = reactive({
   selectedWeekday: 4,
 
   sheet: null, // { kind: 'block' | 'swap' | 'add', stop, candidates, seen }
+  review: null, // { roomCode } 打开评价面板时为真
   toast: null, // { text, undo: false }
 
   planText: '',
@@ -37,6 +38,15 @@ export function undoToast() {
   if (toastTimer) clearTimeout(toastTimer)
   toastTimer = null
   state.toast = null
+}
+
+export function openReview(roomCode) {
+  state.sheet = null
+  state.review = { roomCode }
+}
+
+export function closeReview() {
+  state.review = null
 }
 
 export function setTab(tab) {

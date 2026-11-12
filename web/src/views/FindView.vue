@@ -3,6 +3,7 @@
  * 数据全部来自 /api/buildings 与 /api/availability，失败就说失败。 */
 import { ref, computed, onMounted } from 'vue'
 import { fetchBuildings, fetchFreeRooms } from '../api/index.js'
+import { openReview } from '../store.js'
 import { t } from '../i18n/index.js'
 
 const buildings = ref([])
@@ -97,7 +98,7 @@ const floorText = (room) => (room.floor ? room.floor : '')
     <p v-if="countText" class="count">{{ countText }}</p>
 
     <ul v-if="rooms.length" class="list">
-      <li v-for="r in rooms" :key="r.room.code" class="room">
+      <li v-for="r in rooms" :key="r.room.code" class="room" @click="openReview(r.room.code)">
         <span class="bar" aria-hidden="true" />
         <div class="main">
           <div class="code">{{ r.room.code }}</div>

@@ -265,3 +265,62 @@ export async function fetchFreeRooms({ date, building, from, to }) {
   const rooms = data.rooms || []
   return rooms.filter((x) => x.status === 'AVAILABLE' && x.matches)
 }
+
+/* ------------------------------------------------------------------
+ * 评价 · 真实接口
+ * 读公开；写要登录，原型用演示账号 user1 / user123 换一个 token
+ * ------------------------------------------------------------------ */
+
+const TOKEN_KEY = 'nextstop.token'
+
+async function ensureToken() {
+  const saved = localStorage.getItem(TOKEN_KEY)
+  if (saved) return saved
+  const r = await fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username: 'user1', password: 'user123' }),
+    signal: AbortSignal.timeout(3000),
+  })
+  if (!r.ok) throw new Error('login ' + r.status)
+  const data = await r.json()
+  localStorage.setItem(TOKEN_KEY, data.token)
+  return data.token
+}
+
+/** 某间房的评价：平均分 + 条数 + 条目 */
+export async function fetchReviews(code) {
+  const r = await fetch(`/api/rooms/${encodeURIComponent(code)}/reviews`, { signal: AbortSignal.timeout(3000) })
+  if (!r.ok) throw new Error('reviews ' + r.status)
+  return r.json()
+}
+
+/** 提交或更新我自己的评价 */
+export async function submitReview(code, payload) {
+  const token = await ensureToken()
+  const r = await fetch(`/api/rooms/${encodeURIComponent(code)}/reviews`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(4000),
+  })
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(data.message || 'review ' + r.status)
+  return data
+}
+
+/** 给一条评价加一张照片 */
+export async function uploadReviewPhoto(reviewId, file) {
+  const token = await ensureToken()
+  const form = new FormData()
+  form.append('file', file)
+  const r = await fetch(`/api/reviews/${reviewId}/photos`, {
+    method: 'POST',
+    headers: { Authorization: 'Bearer ' + token },
+    body: form,
+    signal: AbortSignal.timeout(8000),
+  })
+  const data = await r.json().catch(() => ({}))
+  if (!r.ok) throw new Error(data.message || 'photo ' + r.status)
+  return data
+}

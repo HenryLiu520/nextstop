@@ -50,7 +50,7 @@ public class ReviewController {
             return ResponseEntity.status(401).body(new Dtos.ApiError("UNAUTHORIZED", "Sign in to review a room"));
         }
         try {
-            return ResponseEntity.ok(reviews.upsert(code, req.rating(), req.body(), s.username()));
+            return ResponseEntity.ok(reviews.upsert(code, req.rating(), req.body(), req.dimensions(), s.username()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(new Dtos.ApiError("BAD_REVIEW", e.getMessage()));
         }

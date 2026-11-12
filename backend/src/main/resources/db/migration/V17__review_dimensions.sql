@@ -1,0 +1,1 @@
+ALTER TABLE room_reviews ADD COLUMN IF NOT EXISTS dimensions TEXT;

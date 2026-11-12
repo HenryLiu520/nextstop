@@ -6,6 +6,7 @@
 package hku.ec.web;
 
 import java.util.List;
+import java.util.Map;
 
 /** 接口出参/入参（原型阶段用 record，字段名与前端对齐） */
 public final class Dtos {
@@ -82,7 +83,7 @@ public final class Dtos {
     public record ReviewView(
             Long id, String roomCode, int rating, String body, String author,
             String createdAt, String updatedAt, boolean mine,
-            List<PhotoView> photos
+            List<PhotoView> photos, Map<String, Integer> dimensions
     ) { }
 
     /** 一张评价照片：id + 取图的 URL + 字节数 */
@@ -95,7 +96,7 @@ public final class Dtos {
 
     public record ReviewSummary(String roomCode, double average, int count) { }
 
-    public record ReviewRequest(Integer rating, String body) { }
+    public record ReviewRequest(Integer rating, String body, Map<String, Integer> dimensions) { }
 
     /** 管理员编辑设施（第一批三条）：座位总数 / 有没有插座 / 座位类型 */
     public record FacilitiesRequest(Integer capacity, Boolean sockets, String seatType) { }
