@@ -429,7 +429,14 @@ const STR = {
   askEx3:{en:'skip 14:00 class',zh:'14:00 不去上课',tw:'14:00 不去上課'},
   askHint:{en:'One sentence runs the same four actions a tap runs',
            zh:'一句话走的是按钮那条路',tw:'一句話走的是按鈕那條路'},
-  askNo:{en:'These actions cannot express that',zh:'这几个动作做不到这件事',tw:'這幾個動作做不到這件事'},
+  askNo:{en:'The actions cannot express that',zh:'这几个动作做不到这件事',tw:'這幾個動作做不到這件事'},
+  askOffline:{en:'No model connected, so this sentence is not read. Try one of the three below.',
+              zh:'还没接模型，这句读不了。点下面三句试试',
+              tw:'還沒接模型，這句讀不了。點下面三句試試'},
+  askOffTag:{en:'offline demo',zh:'离线演示',tw:'離線演示'},
+  askTaken:{en:'That slot is already taken',zh:'那个时段已经被占了',tw:'那個時段已經被佔了'},
+  askNoStop:{en:'No such block in the plan',zh:'计划里没有这一站',tw:'計畫裡沒有這一站'},
+  askBadTime:{en:'The end lands before the start',zh:'结束时间早于开始时间',tw:'結束時間早於開始時間'},
   askMoved:{en:'moved to {b}',zh:'挪到 {b}',tw:'挪到 {b}'},
   askAdded:{en:'added {a}',zh:'加了 {a}',tw:'加了 {a}'},
   askRemoved:{en:'removed {a}',zh:'删掉 {a}',tw:'刪掉 {a}'},
@@ -658,6 +665,7 @@ const TOOLS = {
     if(a.end)   s.end=r10(a.end);
     if(a.place) { s.place=a.place; if(s.status==='todo') s.status='planned'; }
     if(mins(s.end)<=mins(s.start)){ s.start=bs; s.end=be; return {error:'end before start'}; }
+    if(overlaps(s)){ s.start=bs; s.end=be; return {error:'that time is taken'}; }
     refreshGaps(); render();
     return {ok:true, stop:{start:s.start,end:s.end,type:s.type,place:s.place}};
   },
@@ -667,8 +675,10 @@ const TOOLS = {
     const st=r10(a.start), en=r10(a.end||shift(a.start,30));
     if(mins(en)<=mins(st)) return {error:'end before start'};
     const id=nextId++;
-    S.stops.push({id,type:a.type||'study',start:st,end:en,
-                  place:a.place||'tbd',status:'planned',src:'self'});
+    const fresh={id,type:a.type||'study',start:st,end:en,
+                 place:a.place||'tbd',status:'planned',src:'self'};
+    if(overlaps(fresh)) return {error:'that time is taken'};
+    S.stops.push(fresh);
     refreshGaps(); render();
     return {ok:true, id, start:st, end:en};
   },
@@ -690,6 +700,15 @@ const TOOLS = {
 
   undo(){ return {error:'nothing to undo'} }
 };
+
+/* 时间不能叠：叠了两块，列表就没有意义 */
+function overlaps(cand){
+  return S.stops.some(x=>{
+    if(x===cand) return false;
+    if(x.status==='dropped') return false;
+    return mins(cand.start) < mins(x.end) && mins(x.start) < mins(cand.end);
+  });
+}
 
 /* 白名单 + 参数校验。未知工具、坏时间一律不进执行体。 */
 const TIME_OK = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -739,7 +758,8 @@ function runCalls(sentence, calls){
     undoGroup=before;
     toast(describe(results), ()=>{ restoreStops(before); undoGroup=null; hideToast(); });
   } else {
-    toast(t('askNo'));
+    const err=(results.find(r=>r.result && r.result.error) || {}).result;
+    toast(errText(err && err.error));
   }
   return results;
 }
@@ -803,12 +823,41 @@ function fallbackParse(sentence, plan){
   if(/skip|不去|跳过/.test(q)){
     const s=pick(); return (s && s.type==='class') ? [{name:'skip_class',args:{stop:s.start}}] : [];
   }
+  /* 排到几点：改结束时间 */
+  if(/extend|until|till|排到/.test(q) && times.length && (kind==='study'||!kind)){
+    const cap=times[times.length-1];
+    const studies=plan.filter(x=>x.type==='study' && x.status!=='done');
+    const s=studies.filter(x=>mins(x.end)>mins(cap)).pop() || studies.slice(-1)[0];
+    if(s && mins(cap)>mins(s.start)) return [{name:'change_stop',args:{stop:s.start,end:cap}}];
+  }
+
+  /* 几点前回实验室：给下午那节自习一个上界 */
+  if(/(back\b.*\bby\b|before|回到|前回|之前回)/.test(q) && times.length){
+    const cap=times[times.length-1];
+    const s=plan.filter(x=>x.type==='study' && mins(x.start)>=mins('11:00')).pop();
+    if(s && mins(cap)>mins(s.start)+20) return [{name:'change_stop',args:{stop:s.start,end:cap}}];
+  }
+
   if(/move|push|shift|挪|改到|推到/.test(q) || (times.length>1 && kind==='study')){
     const s=pick();
     const to = times[1] || (times[0] && s && s.start!==times[0] ? times[0] : null);
     if(!s || !to) return [];
     const len = mins(s.end)-mins(s.start);
     return [{name:'change_stop',args:{stop:s.start,start:to,end:shift(to,len)}}];
+  }
+  /* 只说了时间和自习，没有动词：当成「把自习挪到这个点」 */
+  if(kind==='study' && times.length===1){
+    const s=plan.filter(x=>x.type==='study' && x.status!=='done').pop();
+    if(s){
+      const start=mins(times[0]);
+      const next=plan.filter(x=>mins(x.start)>start).sort((a,b)=>mins(a.start)-mins(b.start))[0];
+      const room=next ? mins(next.start)-start-10 : 120;
+      const len=Math.min(mins(s.end)-mins(s.start), room);
+      if(len>=30){
+        const en=String(Math.floor((start+len)/60)).padStart(2,'0')+':'+String((start+len)%60).padStart(2,'0');
+        return [{name:'change_stop',args:{stop:s.start,start:times[0],end:en}}];
+      }
+    }
   }
   return [];
 }
@@ -822,9 +871,19 @@ async function askSend(given){
   let calls=[];
   try { calls = await interpret(q); } catch(e){ calls=[]; }
   bar.classList.remove('busy');
-  if(!calls.length){ toast(t('askNo')); return; }
+  if(!calls.length){ toast(offline() ? t('askOffline') : t('askNo')); return; }
   runCalls(q, calls);
 }
+
+function errText(code){
+  if(code==='that time is taken') return t('askTaken');
+  if(code==='no such stop') return t('askNoStop');
+  if(code==='end before start') return t('askBadTime');
+  if(offline()) return t('askOffline');
+  return t('askNo');
+}
+
+const offline = () => !window.AGENT_ENDPOINT && typeof window.AGENT_PROXY!=='function';
 
 /* 一天的输入行和计划页共用同一块，行为一致 */
 function askHTML(){
@@ -837,6 +896,7 @@ function askHTML(){
     '<div class="ex"><i>'+t('askTry')+'</i>'+
       [t('askEx1'),t('askEx2'),t('askEx3')].map(x=>
         '<b onclick="askFill(this.textContent)">'+x+'</b>').join('')+
+      (offline() ? '<i style="margin-left:auto">'+t('askOffTag')+'</i>' : '')+
     '</div>'+
   '</div>';
 }

@@ -96,7 +96,8 @@ that answers with prose, or with a whole new plan, is answering outside the cont
 |---|---|
 | Unknown tool | rejected before execution, `unknown tool` |
 | Time not `HH:MM`, or end before start | rejected, plan untouched |
-| Target stop missing | rejected, the run stops at that call |
+| Target stop missing | rejected with "No such block in the plan" |
+| Time overlaps another stop | rejected with "That slot is already taken", plan untouched |
 | Class in `cancel_stop` | allowed, matching the button, which removes a class too |
 | Any call fails midway | earlier calls stay applied, one undo reverses all of them |
 | One sentence, many calls | one undo record, not one per call |
