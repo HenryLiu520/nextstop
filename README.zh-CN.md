@@ -160,8 +160,8 @@ RECOMPUTE EVERYTHING            REPAIR
 ## 架构
 
 ```
-web/     Vue 3 + Vite，一套构建，四个容器
-         网页 · PWA · Android 壳 · iOS 壳
+app      Vue 3 + Vite，一套构建，四个容器
+(web/)   网页 · PWA · Android 壳 · iOS 壳
    |
    |  REST + JSON
    v

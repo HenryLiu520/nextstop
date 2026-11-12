@@ -160,8 +160,8 @@ RECOMPUTE EVERYTHING            REPAIR
 ## 架構
 
 ```
-web/     Vue 3 + Vite，一套構建，四個容器
-         網頁 · PWA · Android 殼 · iOS 殼
+app      Vue 3 + Vite，一套構建，四個容器
+(web/)   網頁 · PWA · Android 殼 · iOS 殼
    |
    |  REST + JSON
    v

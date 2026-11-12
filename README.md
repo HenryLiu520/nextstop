@@ -172,8 +172,8 @@ stops as the same stop when the purpose, the building and the start time still l
 ## Architecture
 
 ```
-web/     Vue 3 + Vite, one build, four containers
-         browser · PWA · Android shell · iOS shell
+app      Vue 3 + Vite, one build, four containers
+(web/)   browser · PWA · Android shell · iOS shell
    |
    |  REST + JSON
    v
