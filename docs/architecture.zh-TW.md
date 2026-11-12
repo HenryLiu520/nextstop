@@ -33,7 +33,7 @@ NextStop 只回答一個問題：*這個人此刻應該在哪裡，什麼時候�
 | audit log, accounts, roles user < admin < superadmin               |
 | stores no plan, decides nothing about where you go                 |
 +--------------------------------------------------------------------+
-                                 |  JDBC, Flyway migrations V1 .. V16
+                                 |  JDBC, Flyway migrations V1 .. V20
                                  v
 +--------------------------------------------------------------------+
 | DATABASE   PostgreSQL 17, port 5433                                |
@@ -72,7 +72,7 @@ NextStop 只回答一個問題：*這個人此刻應該在哪裡，什麼時候�
 ## 3. 資料層
 
 Spring Boot 4.1.1 跑在 Java 21 上，連埠 5433 的 PostgreSQL 17。Flyway 管理 schema，
-V1 到 V16。服務由 27 個自動化測試覆蓋，這些測試跑在真實資料庫上。
+V1 到 V20。服務由 32 個自動化測試覆蓋，這些測試跑在真實資料庫上。
 
 | 方法 | 路徑 | 誰 | 用途 |
 |---|---|---|---|
@@ -227,7 +227,7 @@ GET /v1/rooms/attributes
 | Vue 3 手機 | 5174 | 一個 Vite dev server |
 
 `scripts/start-all.sh` 按那個順序把它們拉起來：資料庫、服務，然後兩個客戶端。
-`scripts/test.sh` 跑那 27 個自動化測試。第一次執行會應用 V1 到 V16，花幾分鐘。
+`scripts/test.sh` 跑那 32 個自動化測試。第一次執行會應用 V1 到 V20，花幾分鐘。
 
 Docker 是可選的。`docker-compose.yml` 把同樣的三個程序加資料庫打包起來，給一臺不願意裝
 Java 和 Node 的機器用。佈局完全一樣：計劃層以靜態檔案提供，所以它不在乎資料跑在哪裡。

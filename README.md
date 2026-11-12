@@ -21,7 +21,7 @@
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="27 tests" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
+  <img alt="32 tests" src="https://img.shields.io/badge/tests-32%20passing-1C1A17">
   <img alt="planner still a stub" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
@@ -189,7 +189,7 @@ Planning, repair and the interface all run in the client, so the corridor case k
 ## What's included
 
 - The clickable prototype ships as one file, it covers three languages and runs offline.
-- The availability service, built earlier in the project, runs on Spring Boot with PostgreSQL, answers which rooms are free, and passes 27 tests.
+- The availability service, built earlier in the project, runs on Spring Boot with PostgreSQL, answers which rooms are free, and passes 32 tests.
 - The planner is a stub today, it returns a shaped day and hands the solving step to the roadmap.
 
 ## Documentation

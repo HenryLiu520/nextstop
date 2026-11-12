@@ -21,7 +21,7 @@
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="27 個測試" src="https://img.shields.io/badge/tests-27%20passing-1C1A17">
+  <img alt="32 個測試" src="https://img.shields.io/badge/tests-32%20passing-1C1A17">
   <img alt="規劃器仍是樁" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
@@ -177,7 +177,7 @@ backend  Spring Boot + PostgreSQL
 ## 包含內容
 
 - 可點原型收在單檔案裡，自帶三種語言，離線也能跑。
-- 可用性服務用 Spring Boot 與 PostgreSQL 搭成，專案早前完成，它回答哪些房間空著，27 個測試在它身後把關。
+- 可用性服務用 Spring Boot 與 PostgreSQL 搭成，專案早前完成，它回答哪些房間空著，32 個測試在它身後把關。
 - 規劃器今天仍是樁，它交出一份有形狀的一天，真正的求解排在路線圖上。
 
 ## 文件

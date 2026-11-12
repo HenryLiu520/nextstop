@@ -8,12 +8,13 @@
 
 ![ER 圖](diagrams/er-main.png)
 
-七張表。`flyway_schema_history` 故意沒畫：那是 Flyway 自己的記帳，不屬於模型。
+八張表。`flyway_schema_history` 故意沒畫：那是 Flyway 自己的記帳，不屬於模型。
 
 | 表 | 存什麼 | 現在多少行 |
 |---|---|---|
 | `rooms` | 每間教室一行；`code` 唯一 | 10 |
-| `class_slots` | 學校課表：哪間房、周幾、哪個時段、哪門課 | 100 |
+| `school_slots` | 從學校系統拉來的原始資料，每條按拉取時的樣子存，帶拉取時間 | 0 |
+| `class_slots` | 服務讀的工作課表：哪間房、週幾、哪個時段、哪門課 | 100 |
 | `room_updates` | 管理員釋出的變更（佔用 / 釋放），帶原因和可選過期時間 | 7 |
 | `room_reviews` | 每人每間房一條評價 | 6 |
 | `review_photos` | 評價帶的照片；**檔案在磁碟，這張表只存指標** | 2 |

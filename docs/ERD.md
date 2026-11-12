@@ -10,13 +10,14 @@ what the running system actually has.
 
 ![ER diagram](diagrams/er-main.png)
 
-Seven tables. `flyway_schema_history` is left out on purpose: it is Flyway's own bookkeeping, not
+Eight tables. `flyway_schema_history` is left out on purpose: it is Flyway's own bookkeeping, not
 part of the model.
 
 | Table | What it holds | Rows now |
 |---|---|---|
 | `rooms` | one row per teaching room; `code` is unique | 10 |
-| `class_slots` | the school timetable: which room, which weekday, which block, which course | 100 |
+| `school_slots` | the raw pull from the school system, every slot as it arrived, stamped with the pull time | 0 |
+| `class_slots` | the working timetable the service reads: which room, which weekday, which block, which course | 100 |
 | `room_updates` | a change an administrator published (use / release), with a reason and an optional expiry | 7 |
 | `room_reviews` | one review per person per room | 6 |
 | `review_photos` | photos attached to a review; the file lives on disk, this table stores only the pointer | 2 |

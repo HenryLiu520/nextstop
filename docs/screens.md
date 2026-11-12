@@ -2,24 +2,25 @@
 
 **English** · [简体中文](screens.zh-CN.md) · [繁體中文](screens.zh-TW.md)
 
-NextStop is one page with three tabs. A day is a column of blocks with walking
+NextStop is one page with four tabs. A day is a column of blocks with walking
 time in the seams between them. Every action lives inside the block it changes.
 
 This is the contract that `product/demo/index.html` already obeys. Where the
 prototype and this text disagree, the prototype wins and this file gets fixed.
 
-## 1. Three tabs, nothing else
+## 1. Four tabs, nothing else
 
 There is no sidebar, no toolbar, no floating action button, no search field and
-no settings drawer. The header is a wordmark, one line of date, and one text link
-("Something changed? Say it") that appears on the Day tab only. Anything that is
+no settings drawer. The header is a wordmark and one line of date. Under the day list sits one
+line that takes a sentence, on Day and on Plan. Anything that is
 not a tab, a block, a seam or a sheet is missing on purpose.
 
 | # | Tab | Holds | The one job | Never contains |
 |---|---|---|---|---|
 | 1 | **Day** | Blocks, seams, block actions, End the day / Stay longer | 99% of opens. You look, you tap, you move | Forms, text inputs, chat history |
 | 2 | **Plan** | Week strip with load bars, tap a day, one sentence, preview, apply | The only place the future can be changed | Month grid, auto-opening keyboard, transcript |
-| 3 | **Mine** | Learned defaults: walk speed, usual Thursday end, usual lunch spot | First run, and later when you want to correct it | Streaks, ratings, surveys |
+| 3 | **Find** | The older lookup page, embedded whole, with the free rooms of a moment | Look a room up without leaving the day | Filters, maps, favourites |
+| 4 | **Mine** | Learned defaults: walk speed, usual Thursday end, usual lunch spot | First run, and later when you want to correct it | Streaks, ratings, surveys |
 
 The bottom bar is 56px tall, page colour, one 1px top border, no icons, no raised
 tab. The active tab is ink `#1C1A17` with a 4px vermilion dot centred under the

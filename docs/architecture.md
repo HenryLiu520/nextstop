@@ -33,7 +33,7 @@ and repair it when the day moves. The server stores no plan and has no opinion a
 | audit log, accounts, roles user < admin < superadmin               |
 | stores no plan, decides nothing about where you go                 |
 +--------------------------------------------------------------------+
-                                 |  JDBC, Flyway migrations V1 .. V16
+                                 |  JDBC, Flyway migrations V1 .. V20
                                  v
 +--------------------------------------------------------------------+
 | DATABASE   PostgreSQL 17, port 5433                                |
@@ -79,7 +79,7 @@ The server is smaller than it looks: it answers "can I go here" and gets out of 
 ## 3. The data layer
 
 Spring Boot 4.1.1 on Java 21, talking to PostgreSQL 17 on port 5433. Flyway manages the schema,
-V1 through V16. The service is covered by 32 automated tests that run against a real database.
+V1 through V20. The service is covered by 32 automated tests that run against a real database.
 
 | Method | Path | Who | Purpose |
 |---|---|---|---|
@@ -252,7 +252,7 @@ Three processes and one database, all on one machine for development:
 | Vue 3 phone | 5174 | a Vite dev server |
 
 `scripts/start-all.sh` brings them up in that order: database, service, then the two clients.
-`scripts/test.sh` runs the 27 automated tests. The first run applies V1 through V16 and takes a
+`scripts/test.sh` runs the 32 automated tests. The first run applies V1 through V20 and takes a
 few minutes.
 
 Docker is optional. `docker-compose.yml` packages the same three processes plus the database for

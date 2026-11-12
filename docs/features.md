@@ -78,7 +78,7 @@ and the time, never from a tap.
 ## 3. The four actions
 
 Actions belong to blocks, not to pages. There is no toolbar, and the bottom bar
-only switches between Day, Plan and Mine.
+only switches between Day, Plan, Find and Mine.
 
 | Action | Where | What it does | What you see | Depends on |
 |---|---|---|---|---|
