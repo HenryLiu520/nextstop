@@ -400,7 +400,8 @@ Stated plainly, so nothing above is read as a claim:
   [`algorithm.md`](algorithm.md) is specified and not implemented, so the one-block-versus-five-block
   behaviour in the prototype is an illustration, not a result.
 - **A real school feed.** `mock-school-api` simulates the timetable and `V2__seed.sql` seeds a
-  plausible one. The University's endpoint is not connected.
+  plausible one. The service pulls that feed every thirty minutes into `school_slots` and rebuilds
+  `class_slots` from it. The University's own endpoint is not connected.
 - **Production auth.** Tokens in memory, salted SHA-256 passwords, no HTTPS. Prototype grade.
 
 The split described here is real and running. What sits on top of the plan layer, and what a

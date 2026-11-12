@@ -16,7 +16,7 @@ part of the model.
 | Table | What it holds | Rows now |
 |---|---|---|
 | `rooms` | one row per teaching room; `code` is unique | 10 |
-| `school_slots` | the raw pull from the school system, every slot as it arrived, stamped with the pull time | 0 |
+| `school_slots` | the raw pull from the school system, every slot as it arrived, stamped with the pull time | 700 |
 | `class_slots` | the working timetable the service reads: which room, which weekday, which block, which course | 100 |
 | `room_updates` | a change an administrator published (use / release), with a reason and an optional expiry | 4 |
 | `room_reviews` | one review per person per room, with a rating and six factor scores | 9 |
@@ -25,6 +25,8 @@ part of the model.
 | `room_rejections` | one row per refusal, weighted 1.0 / 0.5 / 0.3 and decayed over 21 days | 2 |
 | `app_user` | accounts and roles (`user` / `admin` / `superadmin`) | 4 |
 | `audit_log` | append-only record of who changed what | 22 |
+
+**A view, not a column.** `room_block_state` exposes one row per room, date and hour, with `state` set to `school`, `admin` or `free`. School wins over admin, and the view is computed from the two tables, so it cannot drift.
 
 **How availability is derived.** There is no "free room" table. Free time is computed:
 `class_slots` (the school's timetable) plus active `room_updates` (what staff added or released)

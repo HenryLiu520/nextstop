@@ -37,6 +37,14 @@ app:
   # 教室开放时段（超出这个范围不展示为空闲）
   opening-start: "08:00"
   opening-end: "22:00"
+  # 学校课表接口：定时拉取，拉不到就保留现有课表
+  school-feed:
+    enabled: true
+    base-url: "http://127.0.0.1:9000"
+    api-key: "${MOCK_API_KEY:hku-demo-key}"
+    days: 7
+    initial-ms: 30000
+    every-ms: 1800000
   # 原型阶段的极简鉴权（非生产）
   cors-allowed-origin: "http://localhost:5173"
 

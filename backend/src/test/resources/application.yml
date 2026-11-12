@@ -1,0 +1,4 @@
+# 测试不打学校接口：定时拉取在测试里关掉，课表由用例自己写
+app:
+  school-feed:
+    enabled: false
