@@ -434,6 +434,7 @@ const STR = {
               zh:'还没接模型，这句读不了。点下面三句试试',
               tw:'還沒接模型，這句讀不了。點下面三句試試'},
   askOffTag:{en:'offline demo',zh:'离线演示',tw:'離線演示'},
+  askBusy:{en:'reading the sentence',zh:'正在读这句话',tw:'正在讀這句話'},
   askTaken:{en:'That slot is already taken',zh:'那个时段已经被占了',tw:'那個時段已經被佔了'},
   askNoStop:{en:'No such block in the plan',zh:'计划里没有这一站',tw:'計畫裡沒有這一站'},
   askBadTime:{en:'The end lands before the start',zh:'结束时间早于开始时间',tw:'結束時間早於開始時間'},
@@ -866,11 +867,12 @@ async function askSend(given){
   const bar=document.getElementById('askBar'), el=document.getElementById('askIn');
   const q=String(given!=null ? given : (el && el.value) || '').trim();
   if(!q || !bar) return;
-  if(el) el.value='';
+  if(el){ el.value=''; el.placeholder=t('askBusy'); el.disabled=true; }
   bar.classList.add('busy');
   let calls=[];
   try { calls = await interpret(q); } catch(e){ calls=[]; }
   bar.classList.remove('busy');
+  if(el){ el.placeholder=t('askPh'); el.disabled=false; }
   if(!calls.length){ toast(offline() ? t('askOffline') : t('askNo')); return; }
   runCalls(q, calls);
 }
@@ -1477,6 +1479,13 @@ function openHint(){
     <div class="chip" onclick="applyDeviation(10)">${LANG==='en'?'I am 10 min behind':LANG==='zh'?'我晚了 10 分钟':'我晚了 10 分鐘'}</div>
     </div><div class="sheetrow"><span class="btn" onclick="closeSheet()">${t('cancel')}</span></div>`);
 }
+
+/* ?agent=http://127.0.0.1:8787/interpret 打开真模型，不带就走离线规则 */
+(function(){
+  const qp=new URLSearchParams(location.search);
+  const a=qp.get('agent');
+  if(a) window.AGENT_ENDPOINT=a;
+})();
 
 buildWeek();
 render();

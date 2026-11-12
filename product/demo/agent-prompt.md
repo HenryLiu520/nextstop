@@ -13,6 +13,19 @@ window.AGENT_ENDPOINT = 'https://your-server.example/api/agent/interpret'
 The demo falls back to a small offline parser when no endpoint is set, so the button works before the
 model exists.
 
+## Run it against a real model
+
+The repository carries a stand-in endpoint, `agent-server.py`. It shells out to the `hermes` CLI, so
+no key sits in the page, and it answers on `http://127.0.0.1:8787/interpret`.
+
+```
+python3 product/demo/agent-server.py 8787
+open "product/demo/index.html?agent=http://127.0.0.1:8787/interpret"
+```
+
+Without the `?agent=` parameter the page stays offline and says so in the row. Latency is about
+thirty seconds, which is the CLI, not the design.
+
 ## System prompt
 
 Copy everything inside the block.
