@@ -23,7 +23,7 @@
         <div class="grid">
           <div class="tile" v-for="f in FACTORS" :key="f">
             <span class="k">{{ t('rev.' + f) }}</span>
-            <b class="v">{{ factorAvg(f) === null ? '—' : factorAvg(f) }}</b>
+            <b class="v">{{ factorAvg(f) === null ? '—' : factorAvg(f).toFixed(1) }}</b>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
       <div class="head">
         <h2>
           {{ t('room.reviews') }}
-          <span v-if="reviews && reviews.count" class="avg">{{ reviews.average }}<em>/10</em></span>
+          <span v-if="reviews && reviews.count" class="avg">{{ reviews.average.toFixed(1) }}<em>/10</em></span>
         </h2>
         <button v-if="!editing" class="addBtn" type="button" @click="editing = true">
           + {{ t('rev.add') }}
@@ -80,7 +80,10 @@
 
       <p v-if="reviews && !reviews.count" class="hint">{{ t('room.noReviews') }}</p>
 
-      <form v-if="editing" class="form" @submit.prevent="submit">
+    </div>
+
+    <div v-if="editing" class="scrim" @click.self="editing = false">
+      <form class="sheet" @submit.prevent="submit">
         <div class="row">
           <span class="lbl">{{ t('rev.overall') }}</span>
           <div class="stars">
@@ -197,7 +200,7 @@ async function submit() {
       fd.append('file', f)
       await api.post(`/reviews/${data.id}/photos`, fd)
     }
-    const fresh = await api.get(`/rooms/${code}/reviews`, { params: { sort: 'new' } })
+    const fresh = await api.get(`/rooms/${code}/reviews`, { params: { sort: 'time' } })
     reviews.value = fresh.data
     files.value = []
     form.value.body = ''
@@ -223,7 +226,7 @@ onMounted(async () => {
     segments.value = []
   }
   try {
-    const { data } = await api.get(`/rooms/${code}/reviews`, { params: { sort: 'new' } })
+    const { data } = await api.get(`/rooms/${code}/reviews`, { params: { sort: 'time' } })
     reviews.value = data
   } catch (e) {
     reviews.value = { count: 0, items: [] }
@@ -541,4 +544,28 @@ h2 {
   color: var(--muted);
   cursor: pointer;
 }
+
+/* 写评价：从底部弹一层，不在页面里往下长 */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: flex-end;
+  background: rgba(22, 33, 29, 0.42);
+}
+
+.sheet {
+  width: 100%;
+  max-height: 88vh;
+  overflow-y: auto;
+  padding: 14px 16px calc(18px + env(safe-area-inset-bottom));
+  border-radius: 14px 14px 0 0;
+  background: #faf7f2;
+  box-shadow: 0 -18px 40px rgba(22, 33, 29, 0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.page { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
 </style>
