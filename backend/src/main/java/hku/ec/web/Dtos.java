@@ -96,6 +96,13 @@ public final class Dtos {
 
     public record ReviewSummary(String roomCode, double average, int count) { }
 
+    /** 房间总览：设施 + 可选时段的空闲状态 + 评价综合分（10 分制） */
+    public record RoomOverview(
+            String code, String building, String floor, int capacity, Boolean sockets,
+            Boolean free, String nextBusyStart,
+            Double score, int reviewCount, Map<String, Double> factors
+    ) { }
+
     public record ReviewRequest(Integer rating, String body, Map<String, Integer> dimensions) { }
 
     /** 管理员编辑设施（第一批三条）：座位总数 / 有没有插座 / 座位类型 */

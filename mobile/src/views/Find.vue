@@ -6,149 +6,107 @@
       <label class="field">
         <span>{{ t('find.building') }}</span>
         <select v-model="building">
-          <option value="">{{ allBuildings }}</option>
+          <option value="">{{ t('find.allBuildings') }}</option>
           <option v-for="b in buildings" :key="b" :value="b">{{ b }}</option>
         </select>
       </label>
 
-      <label class="field">
-        <span>{{ t('find.date') }}</span>
-        <input v-model="date" type="date" />
+      <label class="toggle">
+        <input type="checkbox" v-model="useTime" />
+        <span>{{ t('find.timeFilter') }}</span>
       </label>
 
-      <div class="row">
+      <template v-if="useTime">
         <label class="field">
-          <span>{{ t('find.from') }}</span>
-          <select v-model="from">
-            <option v-for="h in hours" :key="h" :value="h">{{ h }}</option>
-          </select>
+          <span>{{ t('find.date') }}</span>
+          <input v-model="date" type="date" />
         </label>
-        <label class="field">
-          <span>{{ t('find.to') }}</span>
-          <select v-model="to">
-            <option v-for="h in toOptions" :key="h" :value="h">{{ h }}</option>
-          </select>
-        </label>
-      </div>
 
-      <button class="btn" :disabled="busy" @click="search">
-        {{ busy ? t('common.loading') : t('find.search') }}
-      </button>
+        <div class="row">
+          <label class="field">
+            <span>{{ t('find.from') }}</span>
+            <select v-model="from">
+              <option v-for="h in hours" :key="h" :value="h">{{ h }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>{{ t('find.to') }}</span>
+            <select v-model="to">
+              <option v-for="h in toOptions" :key="h" :value="h">{{ h }}</option>
+            </select>
+          </label>
+        </div>
+      </template>
+
       <p v-if="error" class="err">{{ error }}</p>
+      <p v-else class="hint">{{ t('find.count', { n: rooms.length }) }}</p>
     </div>
 
-    <p v-if="searched && !error" class="hint" style="margin: 0 2px 10px">
-      {{ result && result.matchedCount > 0 ? t('find.count', { n: result.matchedCount }) : t('find.none') }}
-    </p>
-
     <router-link
-      v-for="r in matched"
-      :key="r.room.code"
+      v-for="r in rooms"
+      :key="r.code"
       class="room"
-      :to="{ path: '/room/' + r.room.code, query: { date } }"
+      :to="{ path: '/room/' + r.code, query: { date } }"
     >
-      <div class="code">{{ r.room.code }}</div>
+      <div class="code">{{ r.code }}</div>
       <div class="where">
-        {{ r.room.building }} · {{ floorText(r.room) }} · {{ t('find.seats', { n: r.room.capacity }) }}
+        {{ r.building }} · {{ floorText(r) }} · {{ t('find.seats', { n: r.capacity }) }}
       </div>
       <div class="meta">
-        <span class="chip" v-if="r.room.sockets === true">{{ t('find.sockets') }}</span>
-        <span class="chip off" v-else-if="r.room.sockets === false">{{ t('find.noSockets') }}</span>
-        <span class="chip off" v-else>{{ t('find.socketsUnknown') }}</span>
-        <span class="chip">
-          {{ r.nextBusyStart ? t('find.nextBusy', { t: r.nextBusyStart }) : t('find.allDay') }}
+        <span class="score" :class="{ none: r.score === null }">
+          {{ r.score === null ? t('find.noScore') : r.score.toFixed(1) + ' / 10' }}
         </span>
+        <span class="chip" v-if="r.reviewCount">{{ t('find.reviews', { n: r.reviewCount }) }}</span>
+        <span class="chip" v-if="useTime && r.free === true">{{ t('find.free') }}</span>
+        <span class="chip off" v-else-if="useTime && r.free === false">{{ t('find.busy') }}</span>
       </div>
     </router-link>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { api, errorText } from '../api.js'
 import { t } from '../i18n.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const pad = (n) => String(n).padStart(2, '0')
 
-// 从下一个整点开始（后端要求 from 是整点）；超出 08:00–21:00 就退回 09:00
-function defaultFrom() {
-  const h = new Date().getHours() + 1
-  return h >= 8 && h <= 20 ? `${pad(h)}:00` : '09:00'
-}
-
+const rooms = ref([])
 const buildings = ref([])
 const building = ref('')
+const useTime = ref(false)
 const date = ref(today())
-const from = ref(defaultFrom())
-const to = ref(plusMinutes(from.value, 110))
-
-const busy = ref(false)
+const from = ref('09:00')
+const to = ref('10:50')
 const error = ref('')
-const searched = ref(false)
-const result = ref(null)
 
-const hours = Array.from({ length: 14 }, (_, i) => `${pad(i + 8)}:00`) // 08:00–21:00
-const allBuildings = computed(() => (building.value ? 'All buildings' : 'All buildings'))
+const hours = Array.from({ length: 13 }, (_, i) => `${pad(i + 8)}:00`)
+const toOptions = Array.from({ length: 12 }, (_, i) => `${pad(i + 9)}:50`)
 
-const toOptions = computed(() => {
-  const [h, m] = from.value.split(':').map(Number)
-  const start = h * 60 + (m || 0)
-  // 只允许 :50 结尾；1–3 个 block
-  return [50, 110, 170]
-    .map((d) => start + d)
-    .filter((mins) => mins <= 21 * 60 + 50)
-    .map((mins) => `${pad(Math.floor(mins / 60))}:${pad(mins % 60)}`)
-})
-
-function plusMinutes(hhmm, mins) {
-  const [h, m] = hhmm.split(':').map(Number)
-  const total = h * 60 + m + mins
-  return `${pad(Math.floor(total / 60))}:${pad(total % 60)}`
-}
-
-const matched = computed(() => (result.value?.rooms || []).filter((r) => r.matches))
-
-function floorText(room) {
-  return room.floor ? `${t('room.floor')} ${room.floor}` : ''
-}
+const floorText = (room) => (room.floor ? `${t('room.floor')} ${room.floor}` : '')
 
 async function load() {
-  try {
-    const [b, r] = await Promise.all([api.get('/buildings'), api.get('/rooms')])
-    buildings.value = b.data || []
-    rooms.value = r.data || []
-  } catch (e) {
-    // 楼栋列表拿不到不影响查询
-  }
-}
-
-const rooms = ref([])
-
-async function search() {
-  busy.value = true
   error.value = ''
   try {
-    const { data } = await api.get('/availability', {
-      params: {
-        date: date.value,
-        building: building.value || undefined,
-        from: from.value,
-        to: to.value,
-      },
-    })
-    result.value = data
-    searched.value = true
+    const params = useTime.value ? { date: date.value, from: from.value, to: to.value } : {}
+    const { data } = await api.get('/rooms/overview', { params })
+    rooms.value = (data || []).filter((r) => !building.value || r.building === building.value)
   } catch (e) {
     error.value = errorText(e)
-    result.value = null
-  } finally {
-    busy.value = false
+    rooms.value = []
   }
 }
 
+watch([building, useTime, date, from, to], load)
+
 onMounted(async () => {
+  try {
+    const { data } = await api.get('/buildings')
+    buildings.value = data || []
+  } catch {
+    /* 楼栋拿不到不影响列表 */
+  }
   await load()
-  await search()
 })
 </script>

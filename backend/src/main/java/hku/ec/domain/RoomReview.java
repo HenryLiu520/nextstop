@@ -40,6 +40,14 @@ public class RoomReview {
     @Column(name = "dimensions")
     private String dimensions;
 
+    /* 六个因子拆成列，便于按房间求平均 */
+    private Integer quiet;
+    private Integer desk;
+    private Integer sockets;
+    private Integer aircon;
+    private Integer space;
+    private Integer light;
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -57,6 +65,19 @@ public class RoomReview {
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public Integer getQuiet() { return quiet; }
+    public void setQuiet(Integer quiet) { this.quiet = quiet; }
+    public Integer getDesk() { return desk; }
+    public void setDesk(Integer desk) { this.desk = desk; }
+    public Integer getSockets() { return sockets; }
+    public void setSockets(Integer sockets) { this.sockets = sockets; }
+    public Integer getAircon() { return aircon; }
+    public void setAircon(Integer aircon) { this.aircon = aircon; }
+    public Integer getSpace() { return space; }
+    public void setSpace(Integer space) { this.space = space; }
+    public Integer getLight() { return light; }
+    public void setLight(Integer light) { this.light = light; }
 
     public String getDimensions() { return dimensions; }
     public void setDimensions(String dimensions) { this.dimensions = dimensions; }

@@ -21,4 +21,9 @@ public interface RoomReviewRepository extends JpaRepository<RoomReview, Long> {
     /** 每间房的平均分与条数，用于房间列表上直接显示星级 */
     @Query("select r.roomId, avg(r.rating), count(r) from RoomReview r group by r.roomId")
     List<Object[]> summaryByRoom();
+
+    /** 每间房的六个因子均值与条数，用来算 10 分制的综合分 */
+    @Query("select r.roomId, count(r), avg(r.quiet), avg(r.desk), avg(r.sockets), "
+            + "avg(r.aircon), avg(r.space), avg(r.light) from RoomReview r group by r.roomId")
+    List<Object[]> factorAverages();
 }

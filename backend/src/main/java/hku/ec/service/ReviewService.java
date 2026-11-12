@@ -67,6 +67,7 @@ public class ReviewService {
         r.setRating(rating);
         r.setBody(body.trim());
         r.setDimensions(writeDimensions(dimensions));
+        applyFactors(r, dimensions);
         r.setCreatedBy(actor);
         LocalDateTime now = LocalDateTime.now();
         if (isNew) r.setCreatedAt(now);
@@ -142,6 +143,17 @@ public class ReviewService {
 
     // ---------------------------------------------------------------- internal
 
+
+    /** 分项同时落到六个独立列上，列表页要按列求平均 */
+    private void applyFactors(RoomReview r, Map<String, Integer> dims) {
+        if (dims == null) return;
+        r.setQuiet(dims.get("quiet"));
+        r.setDesk(dims.get("desk"));
+        r.setSockets(dims.get("sockets"));
+        r.setAircon(dims.get("aircon"));
+        r.setSpace(dims.get("space"));
+        r.setLight(dims.get("light"));
+    }
 
     /** 分项只接受算法里那六个固态因子，取值 1 到 10，缺项允许 */
     private static final java.util.Set<String> FACTORS = java.util.Set.of(
