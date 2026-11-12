@@ -14,6 +14,19 @@
         <dt>{{ t('find.sockets') }}</dt>
         <dd>{{ room.sockets === true ? '✓' : room.sockets === false ? '✗' : t('room.unknown') }}</dd>
       </dl>
+
+      <div class="scores">
+        <div class="tile overall">
+          <span class="k">{{ t('rev.score') }}</span>
+          <b class="v">{{ overall === null ? '—' : overall.toFixed(1) }}<em v-if="overall !== null">/10</em></b>
+        </div>
+        <div class="grid">
+          <div class="tile" v-for="f in FACTORS" :key="f">
+            <span class="k">{{ t('rev.' + f) }}</span>
+            <b class="v">{{ factorAvg(f) === null ? '—' : factorAvg(f) }}</b>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -86,25 +99,25 @@
 
         <div class="row" v-for="f in FACTORS" :key="f">
           <span class="lbl">{{ t('rev.' + f) }}</span>
-          <div class="ticks10">
+          <div class="stars small">
             <button
               v-for="n in 10"
               :key="n"
               type="button"
-              class="tick"
+              class="star"
               :class="{ on: n <= form.dims[f] }"
               :aria-label="n"
               @click="form.dims[f] = n"
-            />
+            >★</button>
           </div>
           <b class="val">{{ form.dims[f] }}</b>
         </div>
 
-        <textarea v-model="form.body" rows="3" :placeholder="t('rev.body')" class="area" />
+        <textarea v-model="form.body" rows="3" class="area" />
 
         <label class="file">
           <input type="file" accept="image/*" multiple @change="onFiles" />
-          <span>{{ files.length ? t('rev.picked', { n: files.length }) : t('rev.photo') }}</span>
+          <span class="pick">{{ files.length ? t('rev.picked', { n: files.length }) : t('rev.addPhoto') }}</span>
         </label>
 
         <p v-if="formError" class="err">{{ formError }}</p>
@@ -125,7 +138,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { api, token, setToken, errorText } from '../api.js'
 import { t } from '../i18n.js'
@@ -140,6 +153,18 @@ const files = ref([])
 const saving = ref(false)
 const formError = ref('')
 const editing = ref(false)
+
+const overall = computed(() => {
+  const v = FACTORS.map((f) => factorAvg(f)).filter((x) => x !== null)
+  if (!v.length) return null
+  return v.reduce((a, b) => a + b, 0) / v.length
+})
+
+function factorAvg(f) {
+  const items = (reviews.value?.items || []).filter((r) => r.dimensions && r.dimensions[f] != null)
+  if (!items.length) return null
+  return Math.round((items.reduce((a, r) => a + r.dimensions[f], 0) / items.length) * 10) / 10
+}
 
 const room = ref(null)
 const segments = ref([])
@@ -440,5 +465,78 @@ h2 {
   max-width: 92%;
   max-height: 86%;
   border-radius: 6px;
+}
+
+/* 六个评分方框：一行三个，两排，全部等宽等高；样式照首页的 NOW 标签 */
+.scores {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.tile {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 34px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.tile .k {
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tile .v {
+  font-size: 12px;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tile .v em {
+  font-style: normal;
+  font-size: 8px;
+  color: var(--muted);
+}
+
+.tile.overall {
+  background: var(--green);
+  border-color: var(--green);
+}
+
+.tile.overall .k { color: rgba(247, 244, 236, 0.72); }
+.tile.overall .v { color: #e3c68c; }
+.tile.overall .v em { color: rgba(227, 198, 140, 0.75); }
+
+.stars.small .star { font-size: 13px; }
+
+.file input { display: none; }
+
+.pick {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  font-size: 10px;
+  color: var(--muted);
+  cursor: pointer;
 }
 </style>

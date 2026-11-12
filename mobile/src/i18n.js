@@ -2,6 +2,8 @@ import { ref } from 'vue'
 
 const dict = {
   en: {
+    'rev.score': 'Score',
+    'rev.addPhoto': 'Add photos',
     'rev.photo': 'Add photos, up to three',
     'rev.add': 'Add review',
     'rev.cancel': 'Cancel',
@@ -67,6 +69,8 @@ const dict = {
     'common.back': 'Back',
   },
   zh: {
+    'rev.score': '综合',
+    'rev.addPhoto': '添加照片',
     'rev.photo': '添加照片，最多三张',
     'rev.add': '添加评论',
     'rev.cancel': '取消',
@@ -132,6 +136,8 @@ const dict = {
     'common.back': '返回',
   },
   tw: {
+    'rev.score': '綜合',
+    'rev.addPhoto': '添加照片',
     'rev.photo': '添加照片，最多三張',
     'rev.add': '添加評論',
     'rev.cancel': '取消',
