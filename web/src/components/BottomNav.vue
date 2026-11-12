@@ -1,8 +1,14 @@
 <script setup>
+/* 底栏：深绿一条，四个页签，第三个是查找。图标手写 SVG，不引图标库。 */
 import { state, setTab } from '../store.js'
 import { t } from '../i18n/index.js'
 
-const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'find' }, { id: 'me' }]
+const tabs = [
+  { id: 'day', icon: 'day' },
+  { id: 'plan', icon: 'plan' },
+  { id: 'find', icon: 'find' },
+  { id: 'me', icon: 'me' },
+]
 </script>
 
 <template>
@@ -17,20 +23,37 @@ const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'find' }, { id: 'me' }]
       :aria-selected="state.tab === tab.id"
       @click="setTab(tab.id)"
     >
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true">
+        <template v-if="tab.icon === 'day'">
+          <rect x="4" y="5" width="16" height="15" rx="2" />
+          <path d="M4 10h16M9 3v4M15 3v4" />
+        </template>
+        <template v-else-if="tab.icon === 'plan'">
+          <rect x="4" y="4" width="7" height="7" rx="1" />
+          <rect x="13" y="4" width="7" height="7" rx="1" />
+          <rect x="4" y="13" width="7" height="7" rx="1" />
+          <rect x="13" y="13" width="7" height="7" rx="1" />
+        </template>
+        <template v-else-if="tab.icon === 'find'">
+          <circle cx="11" cy="11" r="6" />
+          <path d="M16 16l4 4" />
+        </template>
+        <template v-else>
+          <circle cx="12" cy="8" r="3.4" />
+          <path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6" />
+        </template>
+      </svg>
       <span class="label">{{ t('nav.' + tab.id) }}</span>
-      <span class="dot" aria-hidden="true" />
     </button>
   </nav>
 </template>
 
 <style scoped>
-/* 56 高，1px 上边框，与页面同色；选中只有一个朱红小点 */
 .nav {
   flex: none;
   display: flex;
-  height: var(--nav-h);
-  border-top: 1px solid var(--line);
-  background: var(--paper);
+  height: 62px;
+  background: #00382c;
   z-index: 20;
 }
 
@@ -40,26 +63,31 @@ const tabs = [{ id: 'day' }, { id: 'plan' }, { id: 'find' }, { id: 'me' }]
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  color: var(--ink-2);
-  font-size: 15px;
-  letter-spacing: 0.02em;
-  transition: color 180ms var(--ease);
+  gap: 4px;
+  border: none;
+  background: transparent;
+  color: rgba(247, 244, 236, 0.62);
+  cursor: pointer;
+  transition: color 160ms ease;
 }
 
 .tab.on {
-  color: var(--ink);
+  color: #f7f4ec;
 }
 
-.dot {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: transparent;
-  transition: background 180ms var(--ease);
+.ico {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-.tab.on .dot {
-  background: var(--red);
+.label {
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
 </style>

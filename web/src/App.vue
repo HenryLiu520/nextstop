@@ -1,6 +1,6 @@
 <script setup>
 import { computed, onMounted } from 'vue'
-import { state, load } from './store.js'
+import { state, load, toast } from './store.js'
 import crest from './assets/hku-crest.png'
 import { t, fmtDate } from './i18n/index.js'
 import LangSwitch from './components/LangSwitch.vue'
@@ -39,6 +39,11 @@ const dateLine = computed(() => fmtDate(state.day))
           <FindView v-else-if="state.tab === 'find'" />
           <MeView v-else />
         </main>
+
+        <div v-if="state.tab === 'day'" class="dock">
+          <button class="dbtn solid" type="button" @click="toast(t('day.end'), { undo: true })">{{ t('day.end') }}</button>
+          <button class="dbtn" type="button" @click="toast(t('day.extend'), { undo: true })">{{ t('day.extend') }}</button>
+        </div>
 
         <BottomNav />
         <BottomSheet />
@@ -130,6 +135,32 @@ const dateLine = computed(() => fmtDate(state.day))
   font-size: 12px;
   letter-spacing: 0.04em;
   color: var(--ink-2);
+}
+
+.dock {
+  flex: none;
+  display: flex;
+  gap: 10px;
+  padding: 10px var(--pad);
+  background: var(--paper);
+}
+
+.dbtn {
+  flex: 1 1 0;
+  height: 46px;
+  border: 1px solid var(--green);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--green);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dbtn.solid {
+  background: var(--green);
+  color: #f7f4ec;
 }
 
 .body {
