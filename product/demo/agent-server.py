@@ -90,14 +90,19 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
-        # 同一个端口把页面也发出去，页面和接口同源，就不存在跨域这回事
-        if self.path in ("/", "/index.html"):
-            page = (HERE / "index.html").read_bytes()
+        # 同一个端口把页面和它引用的静态文件都发出去，页面和接口同源
+        rel = self.path.split("?")[0].lstrip("/") or "index.html"
+        target = (HERE / rel).resolve()
+        if str(target).startswith(str(HERE.resolve())) and target.is_file():
+            ctype = "text/html; charset=utf-8" if target.suffix == ".html" else \
+                    "application/javascript; charset=utf-8" if target.suffix == ".js" else \
+                    "text/plain; charset=utf-8"
+            body = target.read_bytes()
             self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Type", ctype)
             self.send_header("Cache-Control", "no-store")
             self.end_headers()
-            self.wfile.write(page)
+            self.wfile.write(body)
             return
         body = json.dumps({"ok": True, "hint": "POST /interpret"}).encode()
         self.send_response(200)
