@@ -77,6 +77,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { api, errorText } from '../api.js'
 import { t } from '../i18n.js'
+import '../../../product/demo/personal-state.js'
 
 const today = () => new Date().toISOString().slice(0, 10)
 const pad = (n) => String(n).padStart(2, '0')
@@ -100,7 +101,10 @@ async function load() {
   try {
     const params = useTime.value ? { date: date.value, from: from.value, to: to.value } : {}
     const { data } = await api.get('/rooms/overview', { params })
-    rooms.value = (data || []).filter((r) => !building.value || r.building === building.value)
+    let profile = 'device'
+    try { profile = JSON.parse(localStorage.getItem('ec.user') || '{}').username || profile } catch {}
+    rooms.value = (data || []).map(r => globalThis.NextStopPersonal.score(r, profile))
+      .filter((r) => !building.value || r.building === building.value)
   } catch (e) {
     error.value = errorText(e)
     rooms.value = []

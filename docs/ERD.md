@@ -1,5 +1,7 @@
 # Database schema
 
+Current boundary: room_visits and room_rejections below are retired legacy server tables retained for compatibility. The application no longer reads or writes them. Personal visits, rejections, familiarity and recommendation scores are held and computed on the client. The diagrams below are historical schema snapshots.
+
 Two databases, one per service. Both diagrams were rendered **from the live schema** (columns,
 keys and constraints read out of PostgreSQL), not from the migration files, so what you see is
 what the running system actually has.

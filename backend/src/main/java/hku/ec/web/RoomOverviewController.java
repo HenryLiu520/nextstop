@@ -8,9 +8,7 @@ package hku.ec.web;
 import hku.ec.domain.Room;
 import hku.ec.repo.RoomRepository;
 import hku.ec.repo.RoomReviewRepository;
-import hku.ec.service.AuthService;
 import hku.ec.service.AvailabilityService;
-import hku.ec.service.RoomScoreService;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -20,7 +18,7 @@ import java.util.*;
 /**
  * 房间总览：一次给全部教室，带评分。
  * 时间是可选的：给了 from 与 to 就附上这段时间空不空，不给就只给设施与评价。
- * 带上 token 时按七因子算（含这个人的熟悉度与拒绝折扣），不带就按六因子归一。
+ * 仅返回公共设施与六项归一化评价因子；个人评分、访问与拒绝记录由客户端维护。
  */
 @RestController
 @RequestMapping("/api")
@@ -33,27 +31,20 @@ public class RoomOverviewController {
     private final RoomRepository rooms;
     private final RoomReviewRepository reviews;
     private final AvailabilityService availability;
-    private final RoomScoreService scoring;
-    private final AuthService auth;
 
     public RoomOverviewController(RoomRepository rooms, RoomReviewRepository reviews,
-                                  AvailabilityService availability, RoomScoreService scoring,
-                                  AuthService auth) {
+                                  AvailabilityService availability) {
         this.rooms = rooms;
         this.reviews = reviews;
         this.availability = availability;
-        this.scoring = scoring;
-        this.auth = auth;
     }
 
     @GetMapping("/rooms/overview")
     public List<Dtos.RoomOverview> overview(@RequestParam(required = false) String date,
                                             @RequestParam(required = false) String from,
-                                            @RequestParam(required = false) String to,
-                                            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+                                            @RequestParam(required = false) String to) {
         LocalDate d = (date == null || date.isBlank()) ? LocalDate.now() : LocalDate.parse(date);
 
-        String viewer = auth.resolve(Tokens.from(authHeader)).map(AuthService.Session::username).orElse(null);
 
         // 时间段可选
         Map<String, Dtos.RoomAvailability> window = Map.of();
@@ -100,15 +91,13 @@ public class RoomOverviewController {
                     r.getComfortScore() == null ? null : r.getComfortScore() / 10.0);
             reviewFactors.values().removeIf(Objects::isNull);
 
-            RoomScoreService.Result s = scoring.score(r, viewer, reviewFactors);
 
             Dtos.RoomAvailability st = window.get(r.getCode());
             Boolean free = st == null ? null : st.matches();
             String nextBusy = st == null ? null : st.nextBusyStart();
 
             out.add(new Dtos.RoomOverview(r.getCode(), r.getBuilding(), r.getFloor(), r.getCapacity(),
-                    r.getSockets(), free, nextBusy, s.score(), s.sPrime(), s.nEff(), s.familiarity(),
-                    count, s.factors()));
+                    r.getSockets(), free, nextBusy, count, reviewFactors));
         }
         out.sort(Comparator.comparing(Dtos.RoomOverview::code));
         return out;

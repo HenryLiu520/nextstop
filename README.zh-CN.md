@@ -21,7 +21,7 @@
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="32 个测试" src="https://img.shields.io/badge/tests-32%20passing-1C1A17">
+  <img alt="32 个测试" src="https://img.shields.io/badge/tests-31%20passing-1C1A17">
   <img alt="规划器仍是桩" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
@@ -30,6 +30,8 @@
 </p>
 
 <p align="center"><sub>一张卡，一个时间，一个去向。这一天剩下的部分在下面。</sub></p>
+
+个人偏好、访问、拒绝历史与个人推荐分均在客户端保存及计算。服务端提供公共教室资料与共享评价。扣除步行和缓冲后，最短可用自习时间为15分钟，恰好15分钟也可安排。
 
 ---
 

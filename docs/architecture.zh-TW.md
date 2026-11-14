@@ -118,7 +118,7 @@ free(room, date) = blocks(room, date) - blocks taken by a class
 
 ### 房間屬性
 
-房間質量來自服務端的一份資料集，兩個客戶端因此把同一間房排到同一個位置。固態分在裝置上用這些數值和 [`room-scoring.md`](room-scoring.md) 裡的權重算出。
+公共房間資料來自伺服器，各客戶端結合本機個人歷史計算，因此個人排名可以不同。固態分在裝置上用這些數值和 [`room-scoring.md`](room-scoring.md) 裡的權重算出。
 
 ```
 GET /v1/rooms/attributes

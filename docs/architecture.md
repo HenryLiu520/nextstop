@@ -127,7 +127,7 @@ permanent edit. When the expiry passes the block stops counting, so nothing is c
 
 ### Room attributes
 
-Room quality comes from one dataset on the server, so two clients rank the same room the same way.
+Public room quality comes from the server. Each client combines these shared factors with its own local history, so personalised rankings can differ.
 The static score is computed on the device from these values and the weights in
 [`room-scoring.md`](room-scoring.md).
 

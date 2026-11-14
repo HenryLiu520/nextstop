@@ -21,7 +21,7 @@
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="32 tests" src="https://img.shields.io/badge/tests-32%20passing-1C1A17">
+  <img alt="31 tests" src="https://img.shields.io/badge/tests-31%20passing-1C1A17">
   <img alt="planner still a stub" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
@@ -30,6 +30,8 @@
 </p>
 
 <p align="center"><sub>One card, one time, one destination. The rest of the day sits underneath.</sub></p>
+
+Personal preferences, visits, rejection history and personalised scores stay on the client. The server supplies public room information and shared reviews. The minimum usable study duration is 15 minutes after travel and buffers; exactly 15 minutes is accepted.
 
 ---
 

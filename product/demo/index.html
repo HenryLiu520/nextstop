@@ -377,6 +377,7 @@ h2{font-family:var(--serif);font-size:17px;font-weight:400;margin:0 0 8px;color:
   <div id="sheet"></div>
 </div>
 
+<script src="personal-state.js"></script>
 <script>
 /* ==========================================================================
    UI/UX 六条原则 · 代码索引（答辩时按这六条讲）
@@ -511,6 +512,7 @@ const STR = {
   bookThis:{en:'Book this room',zh:'一键预约',tw:'一鍵預約'},
   removeItem:{en:'Remove this item',zh:'删掉这一项',tw:'刪掉這一項'},
   swapped:{en:'Moved to <b>{p}</b> · only this block changed',zh:'已换到 <b>{p}</b> · 只改了这一站',tw:'已換到 <b>{p}</b> · 只改了這一站'},
+  minStudy:{en:'Study needs at least 15 minutes',zh:'自习至少需要15分钟',tw:'自習至少需要15分鐘'},
   undo:{en:'Undo',zh:'撤回',tw:'撤回'},
   skipped:{en:'Skipped · that time is now study',zh:'这节课不去了 · 这段时间当自习用',tw:'這節課不去了 · 這段時間當自習用'},
   endedToast:{en:'That is the day · Thursdays usually end at 20:00',zh:'今天到这儿 · 周四一般 20:00 结束',tw:'今天到這兒 · 週四一般 20:00 結束'},
@@ -609,6 +611,7 @@ const typeName=s=> s.type==='class'?t('typeClass') : s.type==='study'?t('typeStu
                     s.type==='eat'?t('typeEat') : s.type==='other' ? (s.label||t('typeOther')) : t('typeMeet');
 const sortStops=()=>S.stops.sort((a,b)=>a.start.localeCompare(b.start));
 const WALK=8;
+const MIN_STUDY_MINUTES = NextStopPersonal.MIN_STUDY_MINUTES;
 
 function fillGaps(){
   sortStops();
@@ -616,11 +619,11 @@ function fillGaps(){
   for(let i=1;i<live.length;i++){
     const prev=live[i-1],next=live[i];
     const free=mins(next.start)-mins(prev.end)-WALK;
-    if(free<10) continue;
+    if(free<MIN_STUDY_MINUTES) continue;
     if(prev.type==='study'||prev.type==='eat'){ prev.end=r10(shift(next.start,-WALK)); }
     else{
       const st=r10(shift(prev.end,WALK)), en=r10(shift(next.start,-WALK));
-      if(mins(en)-mins(st)>=10) S.stops.push({id:nextId++,type:'study',start:st,end:en,place:'nearby',status:'planned'});
+      if(mins(en)-mins(st)>=MIN_STUDY_MINUTES) S.stops.push({id:nextId++,type:'study',start:st,end:en,place:'nearby',status:'planned'});
     }
   }
   sortStops();
@@ -680,6 +683,7 @@ const TOOLS = {
     if(a.place) { s.place=a.place; if(s.status==='todo') s.status='planned'; }
     if(a.label) s.label=a.label;
     if(mins(s.end)<=mins(s.start)){ s.start=bs; s.end=be; return {error:'end before start'}; }
+    if(s.type==='study' && mins(s.end)-mins(s.start)<MIN_STUDY_MINUTES){ s.start=bs; s.end=be; return {error:'study requires 15 minutes'}; }
     if(overlaps(s)){ s.start=bs; s.end=be; return {error:'that time is taken'}; }
     refreshGaps(); render();
     return {ok:true, stop:{start:s.start,end:s.end,type:s.type,place:s.place}};
@@ -689,6 +693,7 @@ const TOOLS = {
     if(!a || !a.start) return {error:'start required'};
     const st=r10(a.start), en=r10(a.end||shift(a.start,30));
     if(mins(en)<=mins(st)) return {error:'end before start'};
+    if((a.type||'study')==='study' && mins(en)-mins(st)<MIN_STUDY_MINUTES) return {error:'study requires 15 minutes'};
     const id=nextId++;
     const fresh={id,type:a.type||'study',start:st,end:en,label:a.label,
                  place:a.place||'tbd',status:'planned',src:'self'};
@@ -868,7 +873,7 @@ function fallbackParse(sentence, plan){
       const next=plan.filter(x=>mins(x.start)>start).sort((a,b)=>mins(a.start)-mins(b.start))[0];
       const room=next ? mins(next.start)-start-10 : 120;
       const len=Math.min(mins(s.end)-mins(s.start), room);
-      if(len>=30){
+      if(len>=MIN_STUDY_MINUTES){
         const en=String(Math.floor((start+len)/60)).padStart(2,'0')+':'+String((start+len)%60).padStart(2,'0');
         return [{name:'change_stop',args:{stop:s.start,start:times[0],end:en}}];
       }
@@ -893,6 +898,7 @@ async function askSend(given){
 }
 
 function errText(code){
+  if(code==='study requires 15 minutes') return t('minStudy');
   if(code==='that time is taken') return t('askTaken');
   if(code==='no such stop') return t('askNoStop');
   if(code==='end before start') return t('askBadTime');
@@ -1417,9 +1423,10 @@ function nextBatch(id){ batchCount++; if(batchCount>2){ closeSheet(); batchCount
 function pickSwap(id,place){
   const s=S.stops.find(x=>x.id===id);
   const before=s.place;
+  const rejectionId = s.type==='study' && before!==place ? NextStopPersonal.recordRejection((PLACE[before] && PLACE[before].en) || before, .5) : null;
   s.place=place; if(s.status==='todo') s.status='planned';
   fillGaps(); closeSheet(); render();
-  toast(t('swapped',{p:P(place)}),()=>{s.place=before;fillGaps();render();hideToast();});
+  toast(t('swapped',{p:P(place)}),()=>{if(rejectionId) NextStopPersonal.undoRejection(rejectionId);s.place=before;fillGaps();render();hideToast();});
 }
 function bookStop(id){
   const s=S.stops.find(x=>x.id===id);
@@ -1500,6 +1507,7 @@ function addSheet(){
 }
 function doAdd(){
   const st=document.getElementById('aStart').value, en=document.getElementById('aEnd').value;
+  if(addType==='study' && mins(en)-mins(st)<MIN_STUDY_MINUTES){ toast(t('minStudy')); return; }
   const nameEl=document.getElementById('aName'); if(nameEl) addName=nameEl.value.trim();
   const pl=addType==='study'?'nearby':'tbd';
   const item={id:nextId++,type:addType,start:st,end:en,place:pl,status:'planned',src:'self'};

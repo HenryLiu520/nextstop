@@ -10,10 +10,7 @@ Step 1 removes rooms that cannot serve the window at all. Step 2 scores the two 
 with the hour. Step 3 blends the two scores with a weight that follows the length of the window.
 Step 4 takes the first room and keeps three more for the swap action.
 
-Two parts of this document carry different status. The static score and the rejection discount are
-implemented and read the review, visit and rejection tables on the server, so all seven factors
-score when the request carries an account. The dynamic score and the fusion are specified with design
-values and no shipped code.
+The client computes personal static scores and the rejection discount from public room factors and local history. The server returns shared room information and review averages. Personal visits, rejections, preferences and recommendation scores stay on the device. The current client module uses localStorage; the revision-keyed IndexedDB cache below remains a design. Dynamic fusion and the complete planner remain specified.
 
 ## 01 Pipeline
 
@@ -77,12 +74,9 @@ server stores each factor in its own column, so a rating is never parsed out of 
 f_i = mean(reviews on factor i) / 10        missing factor, weight redistributed
 ```
 
-The overall score in a review is kept for display and does not feed the ranking, because a single
-number carries no information about which quality moved. Familiarity comes from `room_visits`, so it
-is read only when the request carries an account. Without one the endpoint scores the six reviewable
-factors and renormalises them to 0.80, and the response says so by leaving familiarity out.
+The overall review rating is for display. The client uses the six public factor averages, normalised by dividing by 10, and its locally stored building visit count for familiarity. Ten visits give familiarity 1.0; no visits give 0. Missing quality factors are omitted and the remaining weights are normalised. The server returns factors only through `GET /api/rooms/overview`.
 
-Six weights renormalise to 0.80, and `GET /api/rooms/overview` reports the result:
+For comparison, the six public factor weights alone would be normalised as follows. The personal client calculation also includes the familiarity factor.
 
 | Factor | Table weight | Renormalised |
 |---|---|---|
@@ -93,9 +87,7 @@ Six weights renormalise to 0.80, and `GET /api/rooms/overview` reports the resul
 | Space | 0.10 | 0.125 |
 | Daylight | 0.10 | 0.125 |
 
-The endpoint prints the result on the ten point scale, which is ten times `S`. A room with no
-reviews reports a null score, and the interface prints a dash. Printed as zero it would sink to the
-bottom of a list it never entered.
+The client displays ten times the discounted score S′. Without any public quality factors it displays a dash. Local history is scoped to a profile and stays in browser storage. Visits are explicit observations of arrival, not counts of opening a room page; automatic arrival detection remains outside the prototype.
 
 ### Where the table lives
 
@@ -159,8 +151,8 @@ Slack sets the price of a walking minute. A student arriving with five minutes t
 five minutes of walking still scores 0.66. Time tolerance lives inside this factor, which is why the
 table carries no separate term for it.
 
-Two tests gate feasibility before any score is computed. The walk in has to leave five minutes to
-sit, `t_prev ≤ window minutes − 5`, and the walk out has to fit, `t_next ≤ next.start − t1 − 2`. A
+Two tests gate feasibility before any score is computed. The walk in has to leave at least 15 usable study minutes,
+`t_prev ≤ window minutes − 15`, and the walk out has to fit, `t_next ≤ next.start − t1 − 2`. A
 candidate that fails either test leaves the set at once.
 
 ### Contiguous availability
@@ -190,7 +182,7 @@ F  = wS × S' + wD × D
 
 | Window | wS, the room | wD, the walk | Reading |
 |---|---|---|---|
-| 20 minute break | 0.35 | 0.65 | settle reachability first |
+| 20 minute break | 0.3917 | 0.6083 | dynamic factors receive more weight |
 | 60 minutes | 0.475 | 0.525 | an even split |
 | 120 minutes and above | 0.60 | 0.40 | start being picky about the room |
 
@@ -236,9 +228,7 @@ so `wS` is 0.475 and `wD` is 0.525.
 LIB 3F holds the best room and takes first place at a price of 21 minutes of walking. KB 227 sits
 downstairs, carries two rejections and offers an ordinary room, so it lands third.
 
-The outcome is a trade between the room and the walk. Shrink the window to 20 minutes and `wD` rises
-to 0.65 while slack falls, so `κ` drops to 3 and KB 227 moves to first place. Same rooms, same
-student, two windows, two answers. The weighting exists to produce exactly this.
+A 20-minute window raises wD from 0.525 to approximately 0.6083. The dynamic score gains influence because travel consumes a larger share of a short break. Holding the other inputs fixed gives LIB 3F approximately 0.492 and KB 227 approximately 0.445, so LIB remains ahead. A real window change requires feasibility checks and recalculation of any affected dynamic inputs before ranking.
 
 ## 07 Parameters
 
@@ -266,7 +256,7 @@ one room by at most 0.2 over the whole score. Location and quiet outweigh it.
 **A rejection that buries a room.** The product stays above zero, and eight effective rejections
 leave 36%. A renovated room returns to the shortlist.
 
-**A window too short to fill.** Below 25 minutes the window produces no study stop. The planner
+**A window too short to fill.** Below 15 usable minutes the window produces no study stop. Exactly 15 usable minutes is accepted. The planner
 merges it into a neighbour or skips it.
 
 **A stale snapshot.** `contiguousFree` reads the snapshot, which carries a fetch time. After ten

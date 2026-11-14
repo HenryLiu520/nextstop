@@ -118,7 +118,7 @@ free(room, date) = blocks(room, date) - blocks taken by a class
 
 ### 房间属性
 
-房间质量来自服务端的一份数据集，两个客户端因此把同一间房排到同一个位置。固态分在设备上用这些数值和 [`room-scoring.md`](room-scoring.md) 里的权重算出。
+公共房间质量来自服务端。各客户端结合本地个人历史计算，因此个人排名可以不同。固态分在设备上用这些数值和 [`room-scoring.md`](room-scoring.md) 里的权重算出。
 
 ```
 GET /v1/rooms/attributes

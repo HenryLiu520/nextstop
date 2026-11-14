@@ -21,7 +21,7 @@
   <img alt="Vue 3" src="https://img.shields.io/badge/Vue-3-42b883?logo=vuedotjs&logoColor=white">
   <img alt="Spring Boot" src="https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?logo=springboot&logoColor=white">
   <img alt="PostgreSQL 17" src="https://img.shields.io/badge/PostgreSQL-17-4169E1?logo=postgresql&logoColor=white">
-  <img alt="32 個測試" src="https://img.shields.io/badge/tests-32%20passing-1C1A17">
+  <img alt="32 個測試" src="https://img.shields.io/badge/tests-31%20passing-1C1A17">
   <img alt="規劃器仍是樁" src="https://img.shields.io/badge/planner-still%20a%20stub-C8452D">
 </p>
 
@@ -30,6 +30,8 @@
 </p>
 
 <p align="center"><sub>一張卡，一個時間，一個去向。這一天剩下的部分在下面。</sub></p>
+
+個人偏好、到訪、拒絕歷史與個人推薦分均在客戶端儲存及計算。伺服器提供公共教室資料與共享評價。扣除步行和緩衝後，最短可用自習時間為15分鐘，恰好15分鐘也可安排。
 
 ---
 

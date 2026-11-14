@@ -72,14 +72,7 @@ The worked Thursday leaves three windows.
 | 14:20 to 15:30, CSIT to CSIT | 70 | 0 | 4 | 66 |
 | 16:20 to 19:00, CSIT to the Main Library | 160 | 8 | 4 | 148 |
 
-Two rules decide what a window can hold. A window under 25 minutes gets no study stop, because
-twenty minutes covers unzipping a bag, opening a laptop and packing again. Such a window merges into
-the block before it or into the walk. A window that crosses a meal band first cuts a meal segment at
-the nearest edge, and the remainder becomes study time.
-
-Both numbers come from the same arithmetic. 25 minutes is the smallest sit that leaves 15 minutes of
-work after two minutes of settling at each end. The meal bands are 11:30 to 13:30 and 17:30 to
-19:30.
+A usable study interval must contain at least 15 minutes after walking and the two-minute buffer at each end have been deducted. An interval of exactly 15 minutes is accepted. Shorter intervals merge into adjacent time or remain unallocated. A window crossing a meal band first reserves the meal constraint and then checks the remaining study intervals against the same 15-minute minimum. The meal bands are 11:30 to 13:30 and 17:30 to 19:30.
 
 The 186 window starts before noon, so it holds lunch as well as study. The 66 window is study from
 end to end. The 148 window holds dinner, and its right wall is a commitment at 19:00 in a different
